@@ -18,6 +18,7 @@ namespace Eden
             {
                 if (aMsg[1] == "start")
                 {
+                    //hello here is the test
                     Dictionary<string, JsonElement> dic = Tools.EZData.JsonStr2Dic(aMsg[2]);
                     string szID = dic["ID"].GetString();
 
