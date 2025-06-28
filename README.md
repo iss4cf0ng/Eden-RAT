@@ -1,8 +1,29 @@
 # Eden-RAT
 Linux GUI RAT written in C# and Python.
 
-Still in developing...
+Still in developing!!! :(
+
+# Warning
+This tool is use for legal penetration test and educational purpose only, please do not use in illegal purpose.
+
+# Features
+- Linux RAT.
+- Encrypted communication (RSA-4096 + AES-CBC-256).
+- C2 architrecture.
+- Client(backdoor) written in Python.
+
+# Current functions.
+- Information.
+- File Manager.
+
+# Anticipation (Depends on my time!)
+- Remote plugin(without pip install), such as scapy, OpenCV, pycryptodome, RPI.GPIO.
+- HTTP, DNS channel.
+- Vulnerability exploit.
+- Info stealer.
+- LAN scanner.
+- Write in memory
 
 # Screenshot
-![](https://github.com/iss4cf0ng/Eden-RAT/blob/main/Screenshot/1.png)
-![](https://github.com/iss4cf0ng/Eden-RAT/blob/main/Screenshot/2.png)
+![](https://github.com/iss4cf0ng/Eden-RAT/blob/main/png/1.png)
+![](https://github.com/iss4cf0ng/Eden-RAT/blob/main/png/2.png)
