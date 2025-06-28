@@ -55,6 +55,7 @@ namespace Eden
                 Close();
             }
 
+            StartPosition = FormStartPosition.CenterScreen;
             richTextBox1.Text = string.Empty;
 
             m_clnt.ServerMessageReceived += Received;

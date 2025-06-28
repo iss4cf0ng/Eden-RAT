@@ -280,7 +280,8 @@ class Listener:
     
     def boardcast_clnt(self, aMsg: list):
         if len(self.dic_user.keys()) == 0:
-            cp.pf_err('No user is login.')
+            #cp.pf_err('No user is login.')
+            return
 
         for szToken in self.dic_token.keys():
             if not self.send_clnt(szToken, aMsg):

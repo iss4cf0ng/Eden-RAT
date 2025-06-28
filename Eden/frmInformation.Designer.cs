@@ -90,6 +90,7 @@
             Font = new Font("Microsoft JhengHei UI", 11.25F, FontStyle.Regular, GraphicsUnit.Point, 136);
             Margin = new Padding(4);
             Name = "frmInformation";
+            StartPosition = FormStartPosition.CenterScreen;
             Text = "frmInformation";
             FormClosed += frmInformation_FormClosed;
             Load += frmInformation_Load;

