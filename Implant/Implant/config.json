@@ -1,0 +1,7 @@
+{
+    "host": "0.0.0.0",
+    "port": 44444,
+    "max_conn": 10000,
+    "timeout": 10,
+    "password": ""
+}
