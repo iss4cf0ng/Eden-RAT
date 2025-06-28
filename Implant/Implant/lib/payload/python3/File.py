@@ -152,9 +152,15 @@ class File:
 
         return (szFilename, nCode, szMsg)
 
+    '''
+    Upload file write chunk.
+    '''
     def uf_write(self):
         pass
 
+    '''
+    Download file return chunk.
+    '''
     def df_read(self):
         pass
 

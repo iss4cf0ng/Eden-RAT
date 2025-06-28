@@ -31,61 +31,68 @@ namespace Eden
 
         void Received(Client clnt, string szVictimID, string[] aMsg)
         {
-            if (aMsg[0] == "listener")
+            try
             {
-                if (aMsg[1] == "list")
+                if (aMsg[0] == "listener")
                 {
-                    if (aMsg[2] == "temp")
+                    if (aMsg[1] == "list")
                     {
-                        List<string> lsTemplate = Tools.EZData.String2OneDList(aMsg[3]);
-                        Invoke(new Action(() =>
+                        if (aMsg[2] == "temp")
                         {
-                            foreach (string szTemplate in lsTemplate)
-                                comboBox1.Items.Add(szTemplate);
+                            List<string> lsTemplate = Tools.EZData.String2OneDList(aMsg[3]);
+                            Invoke(new Action(() =>
+                            {
+                                foreach (string szTemplate in lsTemplate)
+                                    comboBox1.Items.Add(szTemplate);
 
-                            if (comboBox1.Items.Count > 0)
-                                comboBox1.SelectedIndex = 0;
-                        }));
+                                if (comboBox1.Items.Count > 0)
+                                    comboBox1.SelectedIndex = 0;
+                            }));
+                        }
+                    }
+                    else if (aMsg[1] == "add")
+                    {
+                        int nCode = int.Parse(aMsg[2]);
+                        if (nCode == 1)
+                        {
+                            MessageBox.Show("Add listener successfully.", "OK", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                            Close();
+                        }
+                        else
+                        {
+                            MessageBox.Show("Add listener failed.", "Failed", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        }
+                    }
+                    else if (aMsg[1] == "edit")
+                    {
+                        int nCode = int.Parse(aMsg[2]);
+                        if (nCode == 1)
+                        {
+                            MessageBox.Show("Edit listener successfully.", "OK", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                            Close();
+                        }
+                        else
+                        {
+                            MessageBox.Show("Edit listener failed.", "Failed", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        }
+                    }
+                    else if (aMsg[1] == "del")
+                    {
+                        int nCode = int.Parse(aMsg[2]);
+                        if (nCode == 1)
+                        {
+                            MessageBox.Show("Delete listener successfully.", "OK", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        }
+                        else
+                        {
+                            MessageBox.Show("Delete listener failed.", "Failed", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        }
                     }
                 }
-                else if (aMsg[1] == "add")
-                {
-                    int nCode = int.Parse(aMsg[2]);
-                    if (nCode == 1)
-                    {
-                        MessageBox.Show("Add listener successfully.", "OK", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                        Close();
-                    }
-                    else
-                    {
-                        MessageBox.Show("Add listener failed.", "Failed", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    }
-                }
-                else if (aMsg[1] == "edit")
-                {
-                    int nCode = int.Parse(aMsg[2]);
-                    if (nCode == 1)
-                    {
-                        MessageBox.Show("Edit listener successfully.", "OK", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                        Close();
-                    }
-                    else
-                    {
-                        MessageBox.Show("Edit listener failed.", "Failed", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    }
-                }
-                else if (aMsg[1] == "del")
-                {
-                    int nCode = int.Parse(aMsg[2]);
-                    if (nCode == 1)
-                    {
-                        MessageBox.Show("Delete listener successfully.", "OK", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                    }
-                    else
-                    {
-                        MessageBox.Show("Delete listener failed.", "Failed", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    }
-                }
+            }
+            catch (Exception ex)
+            {
+
             }
         }
 

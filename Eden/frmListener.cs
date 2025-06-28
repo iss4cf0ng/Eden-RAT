@@ -21,42 +21,49 @@ namespace Eden
 
         void MessageReceived(Client clnt, string szVictimID, string[] aMsg)
         {
-            if (aMsg[0] == "listener")
+            try
             {
-                if (aMsg[1] == "list")
+                if (aMsg[0] == "listener")
                 {
-                    if (aMsg[2] == "listener")
+                    if (aMsg[1] == "list")
                     {
-                        List<List<string>> lsListener = Tools.EZData.String2TwoDList(aMsg[3]);
-                        Invoke(new Action(() =>
+                        if (aMsg[2] == "listener")
                         {
-                            foreach (List<string> ls in lsListener)
+                            List<List<string>> lsListener = Tools.EZData.String2TwoDList(aMsg[3]);
+                            Invoke(new Action(() =>
                             {
-                                ListViewItem item = new ListViewItem(ls[0]);
-                                item.SubItems.AddRange(ls.Skip(1).ToList().Select(x => new ListViewItem.ListViewSubItem() { Text = x }).ToArray());
-                                listView1.Items.Add(item);
-                            }
+                                foreach (List<string> ls in lsListener)
+                                {
+                                    ListViewItem item = new ListViewItem(ls[0]);
+                                    item.SubItems.AddRange(ls.Skip(1).ToList().Select(x => new ListViewItem.ListViewSubItem() { Text = x }).ToArray());
+                                    listView1.Items.Add(item);
+                                }
 
-                            toolStripStatusLabel1.Text = $"Listener[{listView1.Items.Count}]";
-                        }));
+                                toolStripStatusLabel1.Text = $"Listener[{listView1.Items.Count}]";
+                            }));
+                        }
                     }
-                }
-                else if (aMsg[1] == "add")
-                {
-                    if (aMsg[2] == "1")
+                    else if (aMsg[1] == "add")
                     {
-                        MessageBox.Show("Add listener successfully.", "OK", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                        GetListener();
+                        if (aMsg[2] == "1")
+                        {
+                            MessageBox.Show("Add listener successfully.", "OK", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                            GetListener();
+                        }
                     }
-                }
-                else if (aMsg[1] == "del")
-                {
-                    if (aMsg[2] == "1")
+                    else if (aMsg[1] == "del")
                     {
-                        MessageBox.Show("Delete listener successfully.", "OK", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                        GetListener();
+                        if (aMsg[2] == "1")
+                        {
+                            MessageBox.Show("Delete listener successfully.", "OK", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                            GetListener();
+                        }
                     }
                 }
+            }
+            catch (Exception ex)
+            {
+
             }
         }
 

