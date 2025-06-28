@@ -22,7 +22,10 @@ This tool is use for legal penetration test and educational purpose only, please
 - Vulnerability exploit.
 - Info stealer.
 - LAN scanner.
-- Write in memory
+- Run in memory
+
+# Architecture
+![](https://github.com/iss4cf0ng/Eden-RAT/blob/main/png/3.png)
 
 # Screenshot
 ![](https://github.com/iss4cf0ng/Eden-RAT/blob/main/png/1.png)
