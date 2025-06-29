@@ -24,7 +24,7 @@ This tool is use for legal penetration test and educational purpose only, please
 - LAN scanner.
 - Run in memory
 
-# Architecture
+# Network Architecture
 ![](https://github.com/iss4cf0ng/Eden-RAT/blob/main/png/3.png)
 
 # Screenshot
