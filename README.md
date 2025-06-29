@@ -10,7 +10,7 @@ This tool is use for legal penetration test and educational purpose only, please
 - Linux RAT.
 - Encrypted communication (RSA-4096 + AES-CBC-256).
 - C2 architrecture.
-- Client(backdoor) written in Python.
+- Client(backdoor) written in Python(Pure implementation, no third library).
 
 # Current functions.
 - Information.
