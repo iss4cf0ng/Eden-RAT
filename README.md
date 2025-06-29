@@ -3,6 +3,8 @@ Linux GUI RAT written in C# and Python.
 
 Still in developing!!! :(
 
+If you like it, please give it a ⭐! It would mean a lot to me and really motivates me!
+
 # Warning
 This tool is use for legal penetration test and educational purpose only, please do not use in illegal purpose.
 
