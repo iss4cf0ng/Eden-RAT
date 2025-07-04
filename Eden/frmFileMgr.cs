@@ -371,7 +371,7 @@ namespace Eden
                 if (f == null)
                 {
                     f = new frmFileEditor();
-                    f.szVictimID = szVictimID;
+                    f.m_szVictimID = szVictimID;
 
                     f.Show();
                 }
@@ -733,7 +733,7 @@ namespace Eden
         private void toolStripMenuItem13_Click(object sender, EventArgs e)
         {
             frmFileEditor f = new frmFileEditor();
-            f.szVictimID = szVictimID;
+            f.m_szVictimID = szVictimID;
             f.m_clnt = m_clnt;
 
             f.Show();

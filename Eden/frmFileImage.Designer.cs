@@ -59,7 +59,7 @@
             tabControl1.Controls.Add(tabPage1);
             tabControl1.Dock = DockStyle.Fill;
             tabControl1.Location = new Point(0, 25);
-            tabControl1.Margin = new Padding(4, 4, 4, 4);
+            tabControl1.Margin = new Padding(4);
             tabControl1.Name = "tabControl1";
             tabControl1.SelectedIndex = 0;
             tabControl1.Size = new Size(845, 484);
@@ -69,9 +69,9 @@
             // 
             tabPage1.Controls.Add(listView1);
             tabPage1.Location = new Point(4, 28);
-            tabPage1.Margin = new Padding(4, 4, 4, 4);
+            tabPage1.Margin = new Padding(4);
             tabPage1.Name = "tabPage1";
-            tabPage1.Padding = new Padding(4, 4, 4, 4);
+            tabPage1.Padding = new Padding(4);
             tabPage1.Size = new Size(837, 452);
             tabPage1.TabIndex = 0;
             tabPage1.Text = "tabPage1";
@@ -81,7 +81,7 @@
             // 
             listView1.Dock = DockStyle.Fill;
             listView1.Location = new Point(4, 4);
-            listView1.Margin = new Padding(4, 4, 4, 4);
+            listView1.Margin = new Padding(4);
             listView1.Name = "listView1";
             listView1.Size = new Size(829, 444);
             listView1.TabIndex = 0;
@@ -96,10 +96,11 @@
             Controls.Add(toolStrip1);
             Controls.Add(statusStrip1);
             Font = new Font("Microsoft JhengHei UI", 11.25F, FontStyle.Regular, GraphicsUnit.Point, 136);
-            Margin = new Padding(4, 4, 4, 4);
+            Margin = new Padding(4);
             Name = "frmFileImage";
             StartPosition = FormStartPosition.CenterScreen;
             Text = "frmFileImage";
+            FormClosed += frmFileImage_FormClosed;
             Load += frmFileImage_Load;
             tabControl1.ResumeLayout(false);
             tabPage1.ResumeLayout(false);

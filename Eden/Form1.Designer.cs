@@ -56,6 +56,7 @@
             toolStripMenuItem2 = new ToolStripMenuItem();
             toolStripSeparator1 = new ToolStripSeparator();
             toolStripMenuItem4 = new ToolStripMenuItem();
+            timer1 = new System.Windows.Forms.Timer(components);
             toolStrip1.SuspendLayout();
             statusStrip1.SuspendLayout();
             lvMenu.SuspendLayout();
@@ -198,7 +199,7 @@
             // toolStripMenuItem5
             // 
             toolStripMenuItem5.Name = "toolStripMenuItem5";
-            toolStripMenuItem5.Size = new Size(180, 22);
+            toolStripMenuItem5.Size = new Size(160, 24);
             toolStripMenuItem5.Text = "Information";
             toolStripMenuItem5.Click += toolStripMenuItem5_Click;
             // 
@@ -219,20 +220,24 @@
             // toolStripMenuItem2
             // 
             toolStripMenuItem2.Name = "toolStripMenuItem2";
-            toolStripMenuItem2.Size = new Size(180, 22);
+            toolStripMenuItem2.Size = new Size(160, 24);
             toolStripMenuItem2.Text = "Shell";
             toolStripMenuItem2.Click += toolStripMenuItem2_Click;
             // 
             // toolStripSeparator1
             // 
             toolStripSeparator1.Name = "toolStripSeparator1";
-            toolStripSeparator1.Size = new Size(177, 6);
+            toolStripSeparator1.Size = new Size(157, 6);
             // 
             // toolStripMenuItem4
             // 
             toolStripMenuItem4.Name = "toolStripMenuItem4";
-            toolStripMenuItem4.Size = new Size(180, 22);
+            toolStripMenuItem4.Size = new Size(160, 24);
             toolStripMenuItem4.Text = "Victim";
+            // 
+            // timer1
+            // 
+            timer1.Tick += timer1_Tick;
             // 
             // Form1
             // 
@@ -285,5 +290,6 @@
         private ColumnHeader columnHeader10;
         private ColumnHeader columnHeader11;
         private ToolStripButton toolStripButton1;
+        private System.Windows.Forms.Timer timer1;
     }
 }

@@ -85,5 +85,10 @@ namespace Eden
         {
             setup();
         }
+
+        private void frmFileImage_FormClosed(object sender, FormClosedEventArgs e)
+        {
+            m_clnt.ServerMessageReceived -= Received;
+        }
     }
 }

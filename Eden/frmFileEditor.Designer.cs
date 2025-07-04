@@ -44,7 +44,7 @@
             tabControl1.Location = new Point(0, 25);
             tabControl1.Name = "tabControl1";
             tabControl1.SelectedIndex = 0;
-            tabControl1.Size = new Size(1029, 523);
+            tabControl1.Size = new Size(770, 380);
             tabControl1.TabIndex = 0;
             tabControl1.KeyDown += tabControl1_KeyDown;
             // 
@@ -53,7 +53,7 @@
             tabPage1.Location = new Point(4, 28);
             tabPage1.Name = "tabPage1";
             tabPage1.Padding = new Padding(3);
-            tabPage1.Size = new Size(1021, 491);
+            tabPage1.Size = new Size(762, 348);
             tabPage1.TabIndex = 0;
             tabPage1.Text = "tabPage1";
             tabPage1.UseVisualStyleBackColor = true;
@@ -72,15 +72,15 @@
             // 
             toolStrip1.Location = new Point(0, 0);
             toolStrip1.Name = "toolStrip1";
-            toolStrip1.Size = new Size(1029, 25);
+            toolStrip1.Size = new Size(770, 25);
             toolStrip1.TabIndex = 1;
             toolStrip1.Text = "toolStrip1";
             // 
             // statusStrip1
             // 
-            statusStrip1.Location = new Point(0, 548);
+            statusStrip1.Location = new Point(0, 405);
             statusStrip1.Name = "statusStrip1";
-            statusStrip1.Size = new Size(1029, 22);
+            statusStrip1.Size = new Size(770, 22);
             statusStrip1.TabIndex = 2;
             statusStrip1.Text = "statusStrip1";
             // 
@@ -88,7 +88,7 @@
             // 
             AutoScaleDimensions = new SizeF(9F, 19F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(1029, 570);
+            ClientSize = new Size(770, 427);
             Controls.Add(tabControl1);
             Controls.Add(toolStrip1);
             Controls.Add(statusStrip1);

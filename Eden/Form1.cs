@@ -17,7 +17,7 @@ namespace Eden
 
         #region Tools
 
-        private 
+        private
 
         #endregion
 
@@ -119,15 +119,17 @@ namespace Eden
             }));
         }
 
-        void setup()
+        void fnSetup()
         {
             toolStripMenuItem7.Enabled = m_clnt != null;
             toolStripButton1.Enabled = m_clnt != null;
+
+            timer1.Start();
         }
 
         private void Form1_Load(object sender, EventArgs e)
         {
-            setup();
+            fnSetup();
         }
 
         private void toolStripButton1_Click(object sender, EventArgs e)
@@ -246,6 +248,13 @@ namespace Eden
                 frmShell f = new frmShell(m_clnt, item.Text);
                 f.Show();
             }
+        }
+
+        private void timer1_Tick(object sender, EventArgs e)
+        {
+            Text = $"Eden RAT by ISSAC | Online[{listView1.Items.Count}] | " +
+                $"Selected[{listView1.SelectedItems.Count}] | " +
+                $"Is Connected: {(fnClientIsNull() ? "False" : "True")}";
         }
     }
 }
