@@ -39,7 +39,7 @@ namespace Eden
         public EZCrypto.EZRSA m_EZRSA;
         public EZCrypto.EZAES m_EZAES;
 
-        public byte[] m_abBuffer = new byte[Tools.MAX_BUFFER_LENGTH];
+        public byte[] m_abBuffer = new byte[clsTools.MAX_BUFFER_LENGTH];
 
         public const int MAX_BUFFER_LENGTH = 65536;
         public (int nCmd, int nParam) SERVER_COMMAND = (3, 3);
@@ -64,7 +64,7 @@ namespace Eden
 
         void ShowBytes(byte[] abBuffer)
         {
-            MessageBox.Show(Tools.Debug.DisplayBytes(abBuffer));
+            MessageBox.Show(clsTools.Debug.DisplayBytes(abBuffer));
         }
 
         public bool Connect(string szIPAddr, int nPort)
@@ -125,7 +125,7 @@ namespace Eden
 
                 do
                 {
-                    abStaticRecv = new byte[Tools.MAX_BUFFER_LENGTH];
+                    abStaticRecv = new byte[clsTools.MAX_BUFFER_LENGTH];
                     nRecvLength = socket.Receive(abStaticRecv);
                     abDynamicRecv = EP.CombineBytes(abDynamicRecv, 0, abDynamicRecv.Length, abStaticRecv, 0, nRecvLength);
 
@@ -280,7 +280,7 @@ namespace Eden
 
         public void SendCmdParam(int nCmd, int nParam)
         {
-            Send(nCmd, nParam, Tools.GenerateRandomString());
+            Send(nCmd, nParam, clsTools.GenerateRandomString());
         }
 
         public void SendCommand(string szMsg)

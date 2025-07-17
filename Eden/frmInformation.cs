@@ -30,11 +30,11 @@ namespace Eden
             {
                 if (aMsg[1] == "details")
                 {
-                    foreach (string szJson in Tools.EZData.String2OneDList(aMsg[2]))
+                    foreach (string szJson in clsTools.EZData.String2OneDList(aMsg[2]))
                     {
                         Invoke(new Action(() =>
                         {
-                            Dictionary<string, JsonElement> dic = Tools.EZData.JsonStr2Dic(szJson);
+                            Dictionary<string, JsonElement> dic = clsTools.EZData.JsonStr2Dic(szJson);
                             foreach (string szKey in dic.Keys)
                             {
                                 richTextBox1.AppendText($"{szKey}: {dic[szKey].ToString()}{Environment.NewLine}");

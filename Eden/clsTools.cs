@@ -10,7 +10,7 @@ using System.Runtime.CompilerServices;
 
 namespace Eden
 {
-    internal class Tools
+    public class clsTools
     {
         public static int MAX_BUFFER_LENGTH = 65536;
 
@@ -93,6 +93,11 @@ namespace Eden
 
         public static string TreeNodePathToLinuxPath(string szTreeNodeFullPath) => szTreeNodeFullPath.Replace("\\", "/").Replace("///", "/").Replace("//", "");
         public static string LinuxPathToTreeNodePath(string szLinuxPath) => $"/{szLinuxPath.Replace("/", "\\")}";
+
+        public static Victim fnGetVictimTag(ListViewItem item)
+        {
+            return (Victim)item.Tag;
+        }
 
         public class Debug
         {

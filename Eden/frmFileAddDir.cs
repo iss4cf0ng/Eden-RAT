@@ -22,7 +22,7 @@ namespace Eden
 
         void setup()
         {
-            textBox1.Text = "NewFolder_" + Tools.GetFileNameFromDatetime();
+            textBox1.Text = "NewFolder_" + clsTools.GetFileNameFromDatetime();
         }
 
         private void frmFileAddDir_Load(object sender, EventArgs e)

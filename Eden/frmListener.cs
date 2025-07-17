@@ -29,7 +29,7 @@ namespace Eden
                     {
                         if (aMsg[2] == "listener")
                         {
-                            List<List<string>> lsListener = Tools.EZData.String2TwoDList(aMsg[3]);
+                            List<List<string>> lsListener = clsTools.EZData.String2TwoDList(aMsg[3]);
                             Invoke(new Action(() =>
                             {
                                 foreach (List<string> ls in lsListener)
@@ -116,7 +116,7 @@ namespace Eden
             {
                 if (szName == null)
                 {
-                    m_clnt.SendCommand("listener|del|" + Tools.EZData.OneDList2String(listView1.SelectedItems.Cast<ListViewItem>().Select(x => x.Text).ToList()));
+                    m_clnt.SendCommand("listener|del|" + clsTools.EZData.OneDList2String(listView1.SelectedItems.Cast<ListViewItem>().Select(x => x.Text).ToList()));
                 }
                 else
                 {
@@ -172,7 +172,7 @@ namespace Eden
             DialogResult dr = MessageBox.Show("Are you sure?", "Delete", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
             if (dr == DialogResult.Yes)
             {
-                m_clnt.SendCommand("listener|del|" + Tools.EZData.OneDList2String(listView1.SelectedItems.Cast<ListViewItem>().Select(x => x.Text).ToList()));
+                m_clnt.SendCommand("listener|del|" + clsTools.EZData.OneDList2String(listView1.SelectedItems.Cast<ListViewItem>().Select(x => x.Text).ToList()));
             }
         }
 

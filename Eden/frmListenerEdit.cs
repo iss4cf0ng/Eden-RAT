@@ -39,7 +39,7 @@ namespace Eden
                     {
                         if (aMsg[2] == "temp")
                         {
-                            List<string> lsTemplate = Tools.EZData.String2OneDList(aMsg[3]);
+                            List<string> lsTemplate = clsTools.EZData.String2OneDList(aMsg[3]);
                             Invoke(new Action(() =>
                             {
                                 foreach (string szTemplate in lsTemplate)
