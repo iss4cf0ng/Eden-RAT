@@ -32,6 +32,9 @@
             toolStripProgressBar1 = new ToolStripProgressBar();
             toolStripStatusLabel1 = new ToolStripStatusLabel();
             menuStrip1 = new MenuStrip();
+            toolStripMenuItem2 = new ToolStripMenuItem();
+            toolStripMenuItem3 = new ToolStripMenuItem();
+            toolStripMenuItem4 = new ToolStripMenuItem();
             toolStripMenuItem1 = new ToolStripMenuItem();
             listView1 = new ListView();
             columnHeader1 = new ColumnHeader();
@@ -39,6 +42,7 @@
             columnHeader3 = new ColumnHeader();
             splitContainer1 = new SplitContainer();
             richTextBox1 = new RichTextBox();
+            toolStripMenuItem5 = new ToolStripMenuItem();
             statusStrip1.SuspendLayout();
             menuStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)splitContainer1).BeginInit();
@@ -72,13 +76,34 @@
             // menuStrip1
             // 
             menuStrip1.Font = new Font("Microsoft JhengHei UI", 11.25F);
-            menuStrip1.Items.AddRange(new ToolStripItem[] { toolStripMenuItem1 });
+            menuStrip1.Items.AddRange(new ToolStripItem[] { toolStripMenuItem2, toolStripMenuItem1 });
             menuStrip1.Location = new Point(0, 0);
             menuStrip1.Name = "menuStrip1";
             menuStrip1.Padding = new Padding(8, 3, 0, 3);
             menuStrip1.Size = new Size(608, 29);
             menuStrip1.TabIndex = 1;
             menuStrip1.Text = "menuStrip1";
+            // 
+            // toolStripMenuItem2
+            // 
+            toolStripMenuItem2.DropDownItems.AddRange(new ToolStripItem[] { toolStripMenuItem5, toolStripMenuItem3, toolStripMenuItem4 });
+            toolStripMenuItem2.Name = "toolStripMenuItem2";
+            toolStripMenuItem2.Size = new Size(65, 23);
+            toolStripMenuItem2.Text = "Action";
+            // 
+            // toolStripMenuItem3
+            // 
+            toolStripMenuItem3.Name = "toolStripMenuItem3";
+            toolStripMenuItem3.Size = new Size(180, 24);
+            toolStripMenuItem3.Text = "Resume";
+            toolStripMenuItem3.Click += toolStripMenuItem3_Click;
+            // 
+            // toolStripMenuItem4
+            // 
+            toolStripMenuItem4.Name = "toolStripMenuItem4";
+            toolStripMenuItem4.Size = new Size(180, 24);
+            toolStripMenuItem4.Text = "Stop";
+            toolStripMenuItem4.Click += toolStripMenuItem4_Click;
             // 
             // toolStripMenuItem1
             // 
@@ -143,6 +168,13 @@
             richTextBox1.TabIndex = 0;
             richTextBox1.Text = "";
             // 
+            // toolStripMenuItem5
+            // 
+            toolStripMenuItem5.Name = "toolStripMenuItem5";
+            toolStripMenuItem5.Size = new Size(180, 24);
+            toolStripMenuItem5.Text = "Pause";
+            toolStripMenuItem5.Click += toolStripMenuItem5_Click;
+            // 
             // frmFileTransfer
             // 
             AutoScaleDimensions = new SizeF(9F, 19F);
@@ -183,5 +215,9 @@
         private SplitContainer splitContainer1;
         private RichTextBox richTextBox1;
         private ToolStripProgressBar toolStripProgressBar1;
+        private ToolStripMenuItem toolStripMenuItem2;
+        private ToolStripMenuItem toolStripMenuItem3;
+        private ToolStripMenuItem toolStripMenuItem4;
+        private ToolStripMenuItem toolStripMenuItem5;
     }
 }

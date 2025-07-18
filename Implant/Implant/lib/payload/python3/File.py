@@ -1,3 +1,16 @@
+'''
+
+File Manager v1.0.0
+Author: ISSAC
+
+Todo:
+Upload
+Download
+Compress
+Extract
+
+'''
+
 import sys
 
 sys.path.append('../../../')
@@ -155,8 +168,11 @@ class File:
     '''
     Upload file write chunk.
     '''
-    def uf_write(self):
-        pass
+    def uf_write(self, szFilePath: str, nIndex: int, nChunkSize: int, nTotalSize: int, abChunkData: bytes):
+        with open(szFilePath, encoding='utf-8', mode='ab') as f:
+            nOffset = nIndex * nChunkSize
+            f.seek(nOffset)
+            f.write(abChunkData)
 
     '''
     Download file return chunk.
@@ -316,14 +332,46 @@ class File:
                 ]
             elif aMsg[0] == 'uf':
                 if aMsg[1] == 'write':
-                    pass
+                    szFilePath = aMsg[2]
+                    nIndex = int(aMsg[3])
+                    nChunkSize = int(aMsg[4])
+                    nTotalSize = int(aMsg[5])
+                    abChunkData = Encoder.b64str2bytes(aMsg[6])
+
+                    self.uf_write(szFilePath, nIndex, nChunkSize, nTotalSize, abChunkData)
                 elif aMsg[1] == 'stop':
-                    pass
+                    self.bUf = False
             elif aMsg[0] == 'df':
                 if aMsg[1] == 'write':
-                    pass
+                    self.bDf = True
+                    lsFilePath = EZData.list2str(aMsg[2])
+                    for szFilePath in lsFilePath:
+                        if not self.bDf:
+                            break
+
+                        with open(szFilePath, encoding='utf-8', mode='rb') as f:
+                            nIndex = 0
+                            while self.bDf:
+                                abChunkData = f.read(self.nDfChunkSize)
+                                if not abChunkData:
+                                    break
+                                
+                                nFileSize = os.stat(szFilePath).st_size
+                                clnt.sendserver
+                                (
+                                    [
+                                        'file',
+                                        'df',
+                                        szFilePath,
+                                        nIndex,
+                                        nFileSize,
+                                        Encoder.bytes2b64str(abChunkData)
+                                    ]
+                                )
+
+                                nIndex += 1
                 elif aMsg[1] == "stop":
-                    pass
+                    self.bDf = False
             elif aMsg[0] == 'goto':
                 nCode = int(self.goto(aMsg[1]))
                 return [
