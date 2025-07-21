@@ -72,7 +72,7 @@ namespace Eden
                             {
                                 var stVictimInfo = new Victim.stVictimInfo()
                                 {
-                                    clnt = clnt,
+                                    clnt = m_clnt,
 
                                     ID = szID,
                                     IPAddr = szIP,

@@ -19,6 +19,17 @@ namespace Eden
             InitializeComponent();
         }
 
+        private void fnLogin()
+        {
+            Client clnt = new Client();
+            clnt.SecureServerSocketEstablished += ServerSocketEstablished;
+            clnt.LoginSuccessful += LoginSuccessed;
+            clnt.LoginFailed += LoginFailed;
+            clnt.StatusMessage += StatusMessage;
+
+            new Thread(() => clnt.Connect(textBox1.Text, (int)numericUpDown1.Value)).Start();
+        }
+
         private void ServerSocketEstablished(Client clnt)
         {
             clnt.Login(textBox2.Text, textBox3.Text);
@@ -51,13 +62,7 @@ namespace Eden
 
         private void button1_Click(object sender, EventArgs e)
         {
-            Client clnt = new Client();
-            clnt.SecureServerSocketEstablished += ServerSocketEstablished;
-            clnt.LoginSuccessful += LoginSuccessed;
-            clnt.LoginFailed += LoginFailed;
-            clnt.StatusMessage += StatusMessage;
-
-            new Thread(() => clnt.Connect(textBox1.Text, (int)numericUpDown1.Value)).Start();
+            fnLogin();
         }
 
         private void checkBox1_CheckedChanged(object sender, EventArgs e)
@@ -67,7 +72,17 @@ namespace Eden
 
         private void frmConnect_FormClosed(object sender, FormClosedEventArgs e)
         {
-            
+
+        }
+
+        private void textBox3_KeyDown(object sender, KeyEventArgs e)
+        {
+            switch (e.KeyCode)
+            {
+                case Keys.Enter:
+                    fnLogin();
+                    break;
+            }
         }
     }
 }

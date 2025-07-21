@@ -83,6 +83,7 @@
             textBox3.PasswordChar = '*';
             textBox3.Size = new Size(277, 27);
             textBox3.TabIndex = 5;
+            textBox3.KeyDown += textBox3_KeyDown;
             // 
             // label3
             // 

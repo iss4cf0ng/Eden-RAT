@@ -230,7 +230,8 @@ class Listener:
                                     cp.pf_err('Vertification failed.', clnt.addr)
                         elif nCmd == 3: # C2 User
                             abMsg = Encoder.b64str2bytes(abMsg.decode('utf-8'))
-                            szDecMsg = clnt.pAES.decrypt_cbc(abMsg).decode('utf-8')
+                            print(clnt.pAES.decrypt_cbc(abMsg))
+                            szDecMsg = clnt.pAES.decrypt_cbc(abMsg).decode()
                             aMsg = szDecMsg.split('|')
 
                             # check login

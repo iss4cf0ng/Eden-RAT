@@ -24,6 +24,9 @@ import time
 import base64
 import zipfile
 import urllib.request
+import threading
+
+lock = threading.Lock()
 
 class File:
     def __init__(self):
@@ -168,17 +171,22 @@ class File:
     '''
     Upload file write chunk.
     '''
-    def uf_write(self, szFilePath: str, nIndex: int, nChunkSize: int, nTotalSize: int, abChunkData: bytes):
-        with open(szFilePath, encoding='utf-8', mode='ab') as f:
-            nOffset = nIndex * nChunkSize
-            f.seek(nOffset)
-            f.write(abChunkData)
+    def uf_write(self, szFilePath: str, nIndex: int, nChunkSize: int, nTotalSize: int, abChunkData: bytes) -> tuple[int, str]:
+        nCode = 0
+        szMsg = ''
 
-    '''
-    Download file return chunk.
-    '''
-    def df_read(self):
-        pass
+        try:
+            with open(szFilePath, mode='ab') as f:
+                nOffset = nIndex * nChunkSize
+                #f.seek(nOffset)
+                f.write(abChunkData)
+
+                nCode = 1
+                print(f'=> {nIndex}')
+        except Exception as ex:
+            szMsg = str(ex)
+        
+        return (nCode, szMsg)
 
     def goto(self, szDirName: str) -> bool:
         return os.path.exists(szDirName)
@@ -336,9 +344,25 @@ class File:
                     nIndex = int(aMsg[3])
                     nChunkSize = int(aMsg[4])
                     nTotalSize = int(aMsg[5])
-                    abChunkData = Encoder.b64str2bytes(aMsg[6])
+                    abChunkData = base64.b64decode(Encoder.b64str2bytes(aMsg[6]).decode())
 
-                    self.uf_write(szFilePath, nIndex, nChunkSize, nTotalSize, abChunkData)
+                    #t = threading.Thread(target=self.uf_write, args=[szFilePath, nIndex, nChunkSize, nTotalSize, abChunkData, ])
+                    #t.start()
+
+                    tp = self.uf_write(szFilePath, nIndex, nChunkSize, nTotalSize, abChunkData)
+
+                    return [
+                        'file',
+                        'uf',
+                        'write',
+                        str(nIndex),
+                        str(nTotalSize),
+                        szFilePath,
+
+                        str(tp[0]), # nCode
+                        Encoder.stre2b64(tp[1]), # szMsg
+                    ]
+
                 elif aMsg[1] == 'stop':
                     self.bUf = False
             elif aMsg[0] == 'df':
@@ -468,7 +492,8 @@ class File:
             
             elif aMsg[0] == 'new':
                 if aMsg[1] == 'd':
-                    os.mkdir(Encoder.b64d2str(aMsg[2]))
+                    szDirPath = Encoder.b64d2str(aMsg[2])
+                    os.mkdir(szDirPath)
 
                     return [
                         'file',
@@ -479,6 +504,7 @@ class File:
                     ]
 
         except Exception as ex:
+            print(ex)
             ls = [
                 'file',
                 'error',

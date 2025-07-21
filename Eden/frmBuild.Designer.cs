@@ -44,22 +44,22 @@
             comboBox3 = new ComboBox();
             groupBox2 = new GroupBox();
             groupBox3 = new GroupBox();
-            numericUpDown2 = new NumericUpDown();
-            label6 = new Label();
-            label7 = new Label();
             numericUpDown3 = new NumericUpDown();
+            label7 = new Label();
+            label6 = new Label();
+            numericUpDown2 = new NumericUpDown();
             ((System.ComponentModel.ISupportInitialize)numericUpDown1).BeginInit();
             groupBox1.SuspendLayout();
             groupBox2.SuspendLayout();
             groupBox3.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)numericUpDown2).BeginInit();
             ((System.ComponentModel.ISupportInitialize)numericUpDown3).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)numericUpDown2).BeginInit();
             SuspendLayout();
             // 
             // label1
             // 
             label1.AutoSize = true;
-            label1.Location = new Point(25, 32);
+            label1.Location = new Point(56, 63);
             label1.Name = "label1";
             label1.Size = new Size(29, 19);
             label1.TabIndex = 0;
@@ -67,14 +67,14 @@
             // 
             // textBox1
             // 
-            textBox1.Location = new Point(60, 26);
+            textBox1.Location = new Point(91, 57);
             textBox1.Name = "textBox1";
-            textBox1.Size = new Size(197, 27);
+            textBox1.Size = new Size(168, 27);
             textBox1.TabIndex = 1;
             // 
             // numericUpDown1
             // 
-            numericUpDown1.Location = new Point(60, 59);
+            numericUpDown1.Location = new Point(91, 90);
             numericUpDown1.Maximum = new decimal(new int[] { 65535, 0, 0, 0 });
             numericUpDown1.Name = "numericUpDown1";
             numericUpDown1.Size = new Size(120, 27);
@@ -83,24 +83,24 @@
             // comboBox1
             // 
             comboBox1.FormattingEnabled = true;
-            comboBox1.Location = new Point(107, 59);
+            comboBox1.Location = new Point(91, 26);
             comboBox1.Name = "comboBox1";
-            comboBox1.Size = new Size(126, 27);
+            comboBox1.Size = new Size(228, 27);
             comboBox1.TabIndex = 3;
             comboBox1.SelectedIndexChanged += comboBox1_SelectedIndexChanged;
             // 
             // comboBox2
             // 
             comboBox2.FormattingEnabled = true;
-            comboBox2.Location = new Point(107, 92);
+            comboBox2.Location = new Point(107, 59);
             comboBox2.Name = "comboBox2";
-            comboBox2.Size = new Size(126, 27);
+            comboBox2.Size = new Size(216, 27);
             comboBox2.TabIndex = 4;
             // 
             // label2
             // 
             label2.AutoSize = true;
-            label2.Location = new Point(30, 62);
+            label2.Location = new Point(14, 29);
             label2.Name = "label2";
             label2.Size = new Size(71, 19);
             label2.TabIndex = 5;
@@ -109,7 +109,7 @@
             // label3
             // 
             label3.AutoSize = true;
-            label3.Location = new Point(9, 61);
+            label3.Location = new Point(40, 92);
             label3.Name = "label3";
             label3.Size = new Size(45, 19);
             label3.TabIndex = 6;
@@ -118,7 +118,7 @@
             // checkBox1
             // 
             checkBox1.AutoSize = true;
-            checkBox1.Location = new Point(263, 28);
+            checkBox1.Location = new Point(265, 59);
             checkBox1.Name = "checkBox1";
             checkBox1.Size = new Size(60, 23);
             checkBox1.TabIndex = 7;
@@ -128,7 +128,7 @@
             // label4
             // 
             label4.AutoSize = true;
-            label4.Location = new Point(8, 95);
+            label4.Location = new Point(8, 62);
             label4.Name = "label4";
             label4.Size = new Size(93, 19);
             label4.TabIndex = 8;
@@ -137,23 +137,25 @@
             // groupBox1
             // 
             groupBox1.Controls.Add(button1);
+            groupBox1.Controls.Add(comboBox1);
             groupBox1.Controls.Add(label1);
             groupBox1.Controls.Add(textBox1);
+            groupBox1.Controls.Add(label2);
             groupBox1.Controls.Add(checkBox1);
             groupBox1.Controls.Add(numericUpDown1);
             groupBox1.Controls.Add(label3);
             groupBox1.Location = new Point(12, 12);
             groupBox1.Name = "groupBox1";
-            groupBox1.Size = new Size(337, 97);
+            groupBox1.Size = new Size(337, 123);
             groupBox1.TabIndex = 9;
             groupBox1.TabStop = false;
             groupBox1.Text = "Host";
             // 
             // button1
             // 
-            button1.Location = new Point(189, 57);
+            button1.Location = new Point(213, 88);
             button1.Name = "button1";
-            button1.Size = new Size(134, 29);
+            button1.Size = new Size(112, 29);
             button1.TabIndex = 10;
             button1.Text = "Test";
             button1.UseVisualStyleBackColor = true;
@@ -181,20 +183,18 @@
             comboBox3.FormattingEnabled = true;
             comboBox3.Location = new Point(107, 26);
             comboBox3.Name = "comboBox3";
-            comboBox3.Size = new Size(126, 27);
+            comboBox3.Size = new Size(216, 27);
             comboBox3.TabIndex = 12;
             // 
             // groupBox2
             // 
             groupBox2.Controls.Add(label5);
-            groupBox2.Controls.Add(comboBox1);
             groupBox2.Controls.Add(comboBox3);
             groupBox2.Controls.Add(comboBox2);
-            groupBox2.Controls.Add(label2);
             groupBox2.Controls.Add(label4);
-            groupBox2.Location = new Point(12, 115);
+            groupBox2.Location = new Point(12, 141);
             groupBox2.Name = "groupBox2";
-            groupBox2.Size = new Size(337, 129);
+            groupBox2.Size = new Size(337, 103);
             groupBox2.TabIndex = 14;
             groupBox2.TabStop = false;
             groupBox2.Text = "Client";
@@ -212,21 +212,12 @@
             groupBox3.TabStop = false;
             groupBox3.Text = "Connection";
             // 
-            // numericUpDown2
+            // numericUpDown3
             // 
-            numericUpDown2.Location = new Point(103, 26);
-            numericUpDown2.Name = "numericUpDown2";
-            numericUpDown2.Size = new Size(106, 27);
-            numericUpDown2.TabIndex = 0;
-            // 
-            // label6
-            // 
-            label6.AutoSize = true;
-            label6.Location = new Point(44, 29);
-            label6.Name = "label6";
-            label6.Size = new Size(53, 19);
-            label6.TabIndex = 1;
-            label6.Text = "Retry :";
+            numericUpDown3.Location = new Point(103, 59);
+            numericUpDown3.Name = "numericUpDown3";
+            numericUpDown3.Size = new Size(106, 27);
+            numericUpDown3.TabIndex = 3;
             // 
             // label7
             // 
@@ -237,12 +228,21 @@
             label7.TabIndex = 2;
             label7.Text = "Send Info :";
             // 
-            // numericUpDown3
+            // label6
             // 
-            numericUpDown3.Location = new Point(103, 59);
-            numericUpDown3.Name = "numericUpDown3";
-            numericUpDown3.Size = new Size(106, 27);
-            numericUpDown3.TabIndex = 3;
+            label6.AutoSize = true;
+            label6.Location = new Point(44, 29);
+            label6.Name = "label6";
+            label6.Size = new Size(53, 19);
+            label6.TabIndex = 1;
+            label6.Text = "Retry :";
+            // 
+            // numericUpDown2
+            // 
+            numericUpDown2.Location = new Point(103, 26);
+            numericUpDown2.Name = "numericUpDown2";
+            numericUpDown2.Size = new Size(106, 27);
+            numericUpDown2.TabIndex = 0;
             // 
             // frmBuild
             // 
@@ -268,8 +268,8 @@
             groupBox2.PerformLayout();
             groupBox3.ResumeLayout(false);
             groupBox3.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)numericUpDown2).EndInit();
             ((System.ComponentModel.ISupportInitialize)numericUpDown3).EndInit();
+            ((System.ComponentModel.ISupportInitialize)numericUpDown2).EndInit();
             ResumeLayout(false);
         }
 
