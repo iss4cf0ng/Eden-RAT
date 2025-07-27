@@ -32,7 +32,7 @@ namespace Eden
 
         private List<stEntryTag> lsCopy = new List<stEntryTag>();
 
-        private struct stEntryTag
+        public struct stEntryTag
         {
             public bool bDirectory;
             public string szFullName;
@@ -58,6 +58,10 @@ namespace Eden
             InitializeComponent();
 
             m_victim = victim;
+
+            m_ilFileExt = new ImageList();
+            m_ilFileExt.ImageSize = new Size(25, 25);
+            m_ilFileExt.ColorDepth = ColorDepth.Depth32Bit;
         }
 
         void Received(Client clnt, string szVictimID, string[] aMsg)
@@ -80,6 +84,7 @@ namespace Eden
                             szHomeDir = szDir;
 
                             TreeNode tn = AddTreeNodeWithFullPath(treeView1, $"/{szDir.Replace("/", "\\")}");
+
                             treeView1.SelectedNode = tn;
                         }));
                     }
@@ -126,6 +131,31 @@ namespace Eden
                                 szFullName = $"{szDirPath}/{item.Text}",
                             };
 
+                            if (bIsDir)
+                            {
+                                item.ImageKey = "folder";
+                            }
+                            else
+                            {
+                                string szFileExt = Path.GetExtension(item.Text).Replace(".", string.Empty);
+                                if (!m_ilFileExt.Images.ContainsKey(szFileExt))
+                                {
+                                    string szTempFilePath = Path.GetTempFileName();
+                                    string szExtTemp = szTempFilePath + "." + szFileExt;
+
+                                    File.WriteAllText(szExtTemp, string.Empty);
+                                    Icon icon = Icon.ExtractAssociatedIcon(szExtTemp);
+
+                                    m_ilFileExt.Images.Add(icon);
+                                    m_ilFileExt.Images.SetKeyName(m_ilFileExt.Images.Count - 1, szFileExt);
+
+                                    File.Delete(szExtTemp);
+                                    File.Delete(szTempFilePath);
+                                }
+
+                                item.ImageKey = szFileExt;
+                            }
+
                             //Classify listview items.
                             if (bIsDir)
                                 lsDir.Add(item);
@@ -135,7 +165,7 @@ namespace Eden
 
                         Invoke(new Action(() =>
                         {
-                            listView1.Items.AddRange(lsDir.Concat(lsFile).ToArray());
+                            listView1.Items.AddRange(lsDir.Concat(lsFile).Where(x => listView1.FindItemWithText(x.Text) == null).ToArray());
 
                             //Process lsDir and add them in treeview.
                             TreeNode currentNode = tnFindTreeNodeFromTreeView(treeView1.Nodes, szDirPath);
@@ -148,12 +178,13 @@ namespace Eden
                             lsDir = lsDir.Where(x => tnFindTreeNodeFromTreeView(treeView1.Nodes, $"{fnGetCurrentDir()}/{x.Text}") == null).ToList();
 
                             if (currentNode.Nodes.Count == 0)
-                                currentNode.Nodes.AddRange(lsDir.Select(x => new TreeNode(x.Text)).ToArray());
+                                currentNode.Nodes.AddRange(lsDir.Select(x => new TreeNode(x.Text) { ImageKey = "folder" }).ToArray());
                             else
                             {
                                 foreach (ListViewItem item in lsDir)
                                 {
                                     TreeNode node = new TreeNode(item.Text);
+                                    node.ImageKey = item.Text == "/" ? "drive" : "folder";
                                     bool bAdd = false;
                                     for (int i = 0; i < currentNode.Nodes.Count; i++)
                                     {
@@ -338,11 +369,13 @@ namespace Eden
                 if (tn == null)
                 {
                     tn = new TreeNode(aDir[0]);
+                    tn.ImageKey = tn.Text == "/" ? "drive" : "folder";
                     tv.Nodes.Add(tn);
                 }
                 else
                 {
                     TreeNode subNode = new TreeNode(aDir[0]);
+                    subNode.ImageKey = subNode.Text == "/" ? "drive" : "folder";
                     tn.Nodes.Add(subNode);
                     tn = subNode;
                     tn.EnsureVisible();
@@ -546,8 +579,13 @@ namespace Eden
 
             toolStripStatusLabel1.Text = "Loading...";
 
+            m_ilFileExt.Images.Add(fileImageList.Images["folder"]);
+            m_ilFileExt.Images.SetKeyName(m_ilFileExt.Images.Count - 1, "folder");
+
             //ListView
             listView1.View = View.Details;
+            listView1.SmallImageList = m_ilFileExt;
+
             string[] aCols = { "Name", "Size", "Permission", "CreateDate", "LastModified", "LastAccessed" };
             foreach (string szCol in aCols)
             {
@@ -569,6 +607,8 @@ namespace Eden
 
         private void treeView1_AfterSelect(object sender, TreeViewEventArgs e)
         {
+            treeView1.SelectedImageKey = treeView1.SelectedNode.ImageKey;
+
             toolStripStatusLabel1.Text = "Loading...";
 
             listView1.Items.Clear();
@@ -836,17 +876,30 @@ namespace Eden
         //Archive - Compress
         private void toolStripMenuItem18_Click(object sender, EventArgs e)
         {
+            var lEntry = listView1.SelectedItems.Cast<ListViewItem>().Select(x => fnGetEntryTag(x)).ToList();
 
+            frmFileArchive f = new frmFileArchive(m_victim, lEntry, true);
+            f.Show();
         }
         //Archive - Extract
         private void toolStripMenuItem19_Click(object sender, EventArgs e)
         {
+            var lEntry = listView1.SelectedItems.Cast<ListViewItem>().Select(x => fnGetEntryTag(x)).ToList();
 
+            frmFileArchive f = new frmFileArchive(m_victim, lEntry, true);
+            f.Show();
         }
         //Datetime
         private void toolStripMenuItem17_Click(object sender, EventArgs e)
         {
+            var lEntry = listView1.SelectedItems.Cast<ListViewItem>().Select(x => fnGetEntryTag(x)).ToList();
+            if (lEntry.Count == 0)
+                return;
 
+            frmFileDatetime f = new frmFileDatetime(m_victim, lEntry[0]);
+            f.ShowDialog();
+
+            LvRefresh();
         }
     }
 }

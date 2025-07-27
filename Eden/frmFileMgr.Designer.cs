@@ -51,6 +51,10 @@
             toolStripMenuItem6 = new ToolStripMenuItem();
             toolStripSeparator2 = new ToolStripSeparator();
             toolStripMenuItem11 = new ToolStripMenuItem();
+            toolStripMenuItem16 = new ToolStripMenuItem();
+            toolStripMenuItem18 = new ToolStripMenuItem();
+            toolStripMenuItem19 = new ToolStripMenuItem();
+            toolStripMenuItem17 = new ToolStripMenuItem();
             toolStripSeparator3 = new ToolStripSeparator();
             toolStripMenuItem7 = new ToolStripMenuItem();
             toolStripMenuItem8 = new ToolStripMenuItem();
@@ -60,10 +64,7 @@
             toolStripMenuItem12 = new ToolStripMenuItem();
             toolStripMenuItem13 = new ToolStripMenuItem();
             textBox1 = new TextBox();
-            toolStripMenuItem16 = new ToolStripMenuItem();
-            toolStripMenuItem17 = new ToolStripMenuItem();
-            toolStripMenuItem18 = new ToolStripMenuItem();
-            toolStripMenuItem19 = new ToolStripMenuItem();
+            fileImageList = new ImageList(components);
             toolStrip1.SuspendLayout();
             statusStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)splitContainer1).BeginInit();
@@ -153,8 +154,11 @@
             // treeView1
             // 
             treeView1.Dock = DockStyle.Fill;
+            treeView1.ImageIndex = 0;
+            treeView1.ImageList = fileImageList;
             treeView1.Location = new Point(0, 0);
             treeView1.Name = "treeView1";
+            treeView1.SelectedImageIndex = 0;
             treeView1.Size = new Size(301, 489);
             treeView1.TabIndex = 0;
             treeView1.AfterSelect += treeView1_AfterSelect;
@@ -177,7 +181,7 @@
             lvFileMenu.Font = new Font("Microsoft JhengHei UI", 11.25F, FontStyle.Regular, GraphicsUnit.Point, 136);
             lvFileMenu.Items.AddRange(new ToolStripItem[] { toolStripMenuItem1, toolStripSeparator1, toolStripMenuItem2, toolStripMenuItem3, toolStripMenuItem4, toolStripMenuItem5, toolStripMenuItem6, toolStripSeparator2, toolStripMenuItem11, toolStripMenuItem16, toolStripMenuItem17, toolStripSeparator3, toolStripMenuItem7, toolStripMenuItem8, toolStripMenuItem9, toolStripSeparator4, toolStripMenuItem10 });
             lvFileMenu.Name = "lvFileMenu";
-            lvFileMenu.Size = new Size(181, 362);
+            lvFileMenu.Size = new Size(151, 340);
             // 
             // toolStripMenuItem1
             // 
@@ -252,6 +256,35 @@
             toolStripMenuItem11.Text = "Rename";
             toolStripMenuItem11.Click += toolStripMenuItem11_Click;
             // 
+            // toolStripMenuItem16
+            // 
+            toolStripMenuItem16.DropDownItems.AddRange(new ToolStripItem[] { toolStripMenuItem18, toolStripMenuItem19 });
+            toolStripMenuItem16.Name = "toolStripMenuItem16";
+            toolStripMenuItem16.Size = new Size(150, 24);
+            toolStripMenuItem16.Text = "Archive";
+            toolStripMenuItem16.Click += toolStripMenuItem16_Click;
+            // 
+            // toolStripMenuItem18
+            // 
+            toolStripMenuItem18.Name = "toolStripMenuItem18";
+            toolStripMenuItem18.Size = new Size(148, 24);
+            toolStripMenuItem18.Text = "Compress";
+            toolStripMenuItem18.Click += toolStripMenuItem18_Click;
+            // 
+            // toolStripMenuItem19
+            // 
+            toolStripMenuItem19.Name = "toolStripMenuItem19";
+            toolStripMenuItem19.Size = new Size(148, 24);
+            toolStripMenuItem19.Text = "Extract";
+            toolStripMenuItem19.Click += toolStripMenuItem19_Click;
+            // 
+            // toolStripMenuItem17
+            // 
+            toolStripMenuItem17.Name = "toolStripMenuItem17";
+            toolStripMenuItem17.Size = new Size(150, 24);
+            toolStripMenuItem17.Text = "Datetime";
+            toolStripMenuItem17.Click += toolStripMenuItem17_Click;
+            // 
             // toolStripSeparator3
             // 
             toolStripSeparator3.Name = "toolStripSeparator3";
@@ -313,34 +346,13 @@
             textBox1.TabIndex = 3;
             textBox1.KeyDown += textBox1_KeyDown;
             // 
-            // toolStripMenuItem16
+            // fileImageList
             // 
-            toolStripMenuItem16.DropDownItems.AddRange(new ToolStripItem[] { toolStripMenuItem18, toolStripMenuItem19 });
-            toolStripMenuItem16.Name = "toolStripMenuItem16";
-            toolStripMenuItem16.Size = new Size(180, 24);
-            toolStripMenuItem16.Text = "Archive";
-            toolStripMenuItem16.Click += toolStripMenuItem16_Click;
-            // 
-            // toolStripMenuItem17
-            // 
-            toolStripMenuItem17.Name = "toolStripMenuItem17";
-            toolStripMenuItem17.Size = new Size(180, 24);
-            toolStripMenuItem17.Text = "Datetime";
-            toolStripMenuItem17.Click += toolStripMenuItem17_Click;
-            // 
-            // toolStripMenuItem18
-            // 
-            toolStripMenuItem18.Name = "toolStripMenuItem18";
-            toolStripMenuItem18.Size = new Size(180, 24);
-            toolStripMenuItem18.Text = "Compress";
-            toolStripMenuItem18.Click += toolStripMenuItem18_Click;
-            // 
-            // toolStripMenuItem19
-            // 
-            toolStripMenuItem19.Name = "toolStripMenuItem19";
-            toolStripMenuItem19.Size = new Size(180, 24);
-            toolStripMenuItem19.Text = "Extract";
-            toolStripMenuItem19.Click += toolStripMenuItem19_Click;
+            fileImageList.ColorDepth = ColorDepth.Depth32Bit;
+            fileImageList.ImageStream = (ImageListStreamer)resources.GetObject("fileImageList.ImageStream");
+            fileImageList.TransparentColor = Color.Transparent;
+            fileImageList.Images.SetKeyName(0, "drive");
+            fileImageList.Images.SetKeyName(1, "folder");
             // 
             // frmFileMgr
             // 
@@ -407,5 +419,6 @@
         private ToolStripMenuItem toolStripMenuItem17;
         private ToolStripMenuItem toolStripMenuItem18;
         private ToolStripMenuItem toolStripMenuItem19;
+        private ImageList fileImageList;
     }
 }

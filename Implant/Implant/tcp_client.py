@@ -583,7 +583,7 @@ def handler(clnt_sock: socket.socket):
 
                                     clnt.dic_class[szClassName] = clnt.dic_class[szClassName]()
 
-                                ret_val = clnt.dic_class[szClassName].run(clnt, aParam)
+                                ret_val = clnt.dic_class[szClassName].run(clnt, szToken, aParam)
 
                                 if ret_val == None:
                                     continue

@@ -8,23 +8,41 @@ namespace Eden
 {
     internal class clsTransferFileHandler
     {
-        public string m_szFilePath { get; set; }
+        public string m_szLocalFilePath { get; set; }
+        public string m_szRemoteFilePath { get; set; }
+
         public int m_nIndex { get; set; }
         public long m_nFileSize { get; set; }
 
-        private int m_nChunkSize { get; set; }
+        public int m_nChunkSize { get; set; }
+
+        private TransferFileType m_transferType { get; set; }
         private FileStream m_fstream { get; set; }
 
-        public long fnGetChunkCount() => (int)Math.Ceiling((decimal)(m_nFileSize / m_nChunkSize));
-        public bool fnbIsDone() => m_nIndex + 1 == fnGetChunkCount();
-
-        public clsTransferFileHandler(string szFilePath, int nChunkSize = 1024 * 5)
+        public long fnGetChunkCount()
         {
-            m_szFilePath = szFilePath;
+            long nQ = m_nFileSize / m_nChunkSize;
+            long nR = m_nFileSize % m_nChunkSize;
+
+            return nR == 0 ? nQ : nQ + 1;
+        }
+        public bool fnbIsDone() => m_nIndex + 1 >= fnGetChunkCount();
+
+        public clsTransferFileHandler(TransferFileType transferType, string szLocalFilePath, string szRemoteFilePath, int nChunkSize = 1024 * 5, int nFileSize = 0)
+        {
+            m_transferType = transferType;
+
+            m_szLocalFilePath = szLocalFilePath;
+            m_szRemoteFilePath = szRemoteFilePath;
+
             m_nIndex = 0;
             m_nChunkSize = nChunkSize;
-            m_nFileSize = new FileInfo(szFilePath).Length;
-            m_fstream = new FileStream(szFilePath, FileMode.Open, FileAccess.Read, FileShare.Read);
+            m_nFileSize = transferType == TransferFileType.UploadFile ? new FileInfo(szLocalFilePath).Length : nFileSize;
+
+            if (transferType == TransferFileType.UploadFile)
+                m_fstream = new FileStream(szLocalFilePath, FileMode.Open, FileAccess.Read, FileShare.Read);
+            else
+                m_fstream = new FileStream(szLocalFilePath, FileMode.Create, FileAccess.Write, FileShare.Read);
         }
 
         /// <summary>
@@ -49,8 +67,22 @@ namespace Eden
             try
             {
                 int nOffset = nIndex * m_nChunkSize;
-                m_fstream.Seek(nOffset, SeekOrigin.Begin);
-                m_fstream.Write(abBuffer);
+                /*
+                using (FileStream f = new FileStream(m_szLocalFilePath, FileMode.Create, FileAccess.Write, FileShare.Write))
+                {
+                    f.Seek(nOffset, SeekOrigin.Begin);
+                    f.Write(abBuffer);
+                }
+                */
+
+                Task.Run(() =>
+                {
+                    m_fstream.Seek(nOffset, SeekOrigin.Begin);
+                    m_fstream.Write(abBuffer);
+                    m_fstream.Flush();
+                });
+
+                m_nIndex++;
 
                 return true;
             }

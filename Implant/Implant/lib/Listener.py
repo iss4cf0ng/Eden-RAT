@@ -277,7 +277,9 @@ class Listener:
                 cp.pf_info(f'User offline: {clnt.username}')
         except Exception as ex:
             cp.pf_err(ex)
-            raise ex
+            self.dic_user.pop(clnt.username)
+            self.dic_token.pop(clnt.szUUID)
+            #raise ex
     
     def boardcast_clnt(self, aMsg: list):
         if len(self.dic_user.keys()) == 0:

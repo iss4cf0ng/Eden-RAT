@@ -4,8 +4,6 @@ File Manager v1.0.0
 Author: ISSAC
 
 Todo:
-Upload
-Download
 Compress
 Extract
 
@@ -68,38 +66,42 @@ class File:
 
             with os.scandir(szDir) as entries:
                 for entry in entries:
-                    name = entry.name
+                    try:
+                        name = entry.name
 
-                    if nCntFolder == nMaxFolder and nCntFile == nMaxFile:
-                        break
+                        if nCntFolder == nMaxFolder and nCntFile == nMaxFile:
+                            break
 
-                    if entry.is_dir() and nCntFolder == nMaxFolder:
-                        continue
-                    elif (entry.is_file() or entry.is_symlink()) and nCntFile == nMaxFile:
-                        continue
+                        if entry.is_dir() and nCntFolder == nMaxFolder:
+                            continue
+                        elif (entry.is_file() or entry.is_symlink()) and nCntFile == nMaxFile:
+                            continue
 
-                    if entry.is_dir():
-                        name = '/' + name
-                    elif entry.is_symlink():
-                        name = f'{name} -> {os.readlink(entry.path)}'
+                        if entry.is_dir():
+                            name = '/' + name
+                        elif entry.is_symlink():
+                            name = f'{name} -> {os.readlink(entry.path)}'
 
-                    szPermission = self.get_permissions(entry.stat().st_mode)
+                        szPermission = self.get_permissions(entry.stat().st_mode)
 
-                    dic_entry = {
-                        'Name': name,
-                        'Size': entry.stat().st_size,
-                        'Permission': f'd{szPermission}' if entry.is_dir() else f'-{szPermission}',
-                        'CreateDate': time.ctime(entry.stat().st_ctime),
-                        'LastModified': time.ctime(entry.stat().st_mtime),
-                        'LastAccessed': time.ctime(entry.stat().st_atime)
-                    }
+                        dic_entry = {
+                            'Name': name,
+                            'Size': entry.stat().st_size,
+                            'Permission': f'd{szPermission}' if entry.is_dir() else f'-{szPermission}',
+                            'CreateDate': time.ctime(entry.stat().st_ctime),
+                            'LastModified': time.ctime(entry.stat().st_mtime),
+                            'LastAccessed': time.ctime(entry.stat().st_atime)
+                        }
 
-                    ls_result.append(dic_entry)
+                        ls_result.append(dic_entry)
 
-                    if entry.is_dir() or (entry.is_symlink() and os.path.isdir(os.readlink(entry.path))) and nMaxFolder != -1:
-                        nCntFolder += 1
-                    elif entry.is_file() or (entry.is_symlink() and os.path.isfile(os.readlink(entry.path))) and nMaxFile != -1:
-                        nCntFile += 1
+                        if entry.is_dir() or (entry.is_symlink() and os.path.isdir(os.readlink(entry.path))) and nMaxFolder != -1:
+                            nCntFolder += 1
+                        elif entry.is_file() or (entry.is_symlink() and os.path.isfile(os.readlink(entry.path))) and nMaxFile != -1:
+                            nCntFile += 1
+                    
+                    except Exception as ex:
+                        print(ex)
             
             return ls_result
         except Exception as ex:
@@ -278,25 +280,27 @@ class File:
         
         return (nCode, szMsg)
     
-    def zip_entries(self, lsEntries, szZipName) -> tuple[int, str]:
-        nCode = 1
-        szMsg = 'OK'
+    def archive_zip(self, szZipFilePath: str, lsFolderPath: list, lsFilePath: list) -> tuple[int, str]:
+        with zipfile.ZipFile(szZipFilePath, mode='a') as zf:
 
-        try:
-            with zipfile.ZipFile(szZipName, 'w', zipfile.ZIP_DEFLATED) as f:
-                for szEntry in lsEntries:
-                    for entry in os.scandir(szEntry):
-                        if entry.is_dir():
-                            pass
-                        else:
-                            pass
-        except Exception as ex:
-            nCode = 0
-            szMsg = str(ex)
-        
-        return (nCode, szMsg)
+            for szDirPath in lsFolderPath:
+                lsNewFolderPath = lsNewFilePath = list()
 
-    def run(self, clnt: object, aMsg: list) -> list:
+                for entry in os.scandir(szDirPath):
+                    if entry.is_file():
+                        lsNewFilePath.append(entry.path)
+                    elif entry.is_dir():
+                        lsNewFolderPath.append(entry.path)
+                
+                self.archive_zip(lsNewFolderPath, lsNewFilePath)
+
+            for szFilePath in lsFilePath:
+                zf.write(szFilePath)
+
+    def archive_unzip() -> tuple[int, str]:
+        pass
+
+    def run(self, clnt: object, szToken: str, aMsg: list) -> list:
         try:
             if aMsg[0] == 'init':
                 return [
@@ -366,34 +370,31 @@ class File:
                 elif aMsg[1] == 'stop':
                     self.bUf = False
             elif aMsg[0] == 'df':
-                if aMsg[1] == 'write':
+                if aMsg[1] == 'read':
                     self.bDf = True
-                    lsFilePath = EZData.list2str(aMsg[2])
-                    for szFilePath in lsFilePath:
-                        if not self.bDf:
-                            break
+                    nIndex = int(aMsg[2])
+                    nChunkSize = int(aMsg[3])
+                    szFilePath = aMsg[4]
 
-                        with open(szFilePath, encoding='utf-8', mode='rb') as f:
-                            nIndex = 0
-                            while self.bDf:
-                                abChunkData = f.read(self.nDfChunkSize)
-                                if not abChunkData:
-                                    break
-                                
-                                nFileSize = os.stat(szFilePath).st_size
-                                clnt.sendserver
-                                (
-                                    [
-                                        'file',
-                                        'df',
-                                        szFilePath,
-                                        nIndex,
-                                        nFileSize,
-                                        Encoder.bytes2b64str(abChunkData)
-                                    ]
-                                )
+                    with open(szFilePath, mode='rb') as f:
+                        nOffSet = nIndex * nChunkSize
+                        nFileSize = os.stat(szFilePath).st_size
 
-                                nIndex += 1
+                        f.seek(nOffSet)
+                        abChunkData = f.read(self.nDfChunkSize)
+                        
+                        lsPayload = [
+                            szToken,
+                            'file',
+                            'df',
+                            szFilePath,
+                            str(nIndex),
+                            str(nFileSize),
+                            Encoder.stre2b64(base64.b64encode(abChunkData).decode('utf-8')),
+                        ]
+
+                        clnt.sendserver(lsPayload)
+
                 elif aMsg[1] == "stop":
                     self.bDf = False
             elif aMsg[0] == 'goto':
@@ -415,10 +416,9 @@ class File:
                     'rename',
                     aMsg[1],
                     aMsg[2],
-                    nCode,
+                    str(nCode),
                     szMsg,
                 ]
-
             elif aMsg[0] == 'paste':
                 bMove = aMsg[1] == "1"
                 lsSources = EZData.oneSpliter2list(aMsg[2])
@@ -449,7 +449,6 @@ class File:
                     aMsg[1],
                     EZData.twoDlist2str(ls_results)
                 ]
-
             elif aMsg[0] == 'wget':
                 ls = list()
 
@@ -502,6 +501,19 @@ class File:
                         aMsg[2],
                         '1'
                     ]
+            
+            elif aMsg[0] == 'archive':
+                if aMsg[1] == 'zip':
+                    lsDirPath = EZData.oneSpliter2list(aMsg[2])
+                    lsFilePath = EZData.oneSpliter2list(aMsg[3])
+
+
+
+                elif aMsg[1] == 'unzip':
+                    lsArchiveFilePath = EZData.oneSpliter2list(aMsg[2])
+            
+            elif aMsg[0] == 'dt': # Datetime
+                pass
 
         except Exception as ex:
             print(ex)

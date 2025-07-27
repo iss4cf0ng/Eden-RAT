@@ -136,6 +136,8 @@ namespace Eden
                 MessageBox.Show("You are disconnected to the server.", "Disconnect", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 listView1.Items.Clear();
 
+                m_clnt = null;
+
                 toolStripMenuItem7.Enabled = m_clnt != null;
                 toolStripButton1.Enabled = m_clnt != null;
             }));

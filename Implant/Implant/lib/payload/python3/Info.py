@@ -118,7 +118,7 @@ class Info:
 
         return ls
 
-    def run(self, clnt: object, aMsg: list) -> list:
+    def run(self, clnt: object, szToken: str, aMsg: list) -> list:
         global g_Info
         global g_thread
 

