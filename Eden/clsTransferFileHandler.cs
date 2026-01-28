@@ -28,7 +28,7 @@ namespace Eden
         }
         public bool fnbIsDone() => m_nIndex + 1 >= fnGetChunkCount();
 
-        public clsTransferFileHandler(TransferFileType transferType, string szLocalFilePath, string szRemoteFilePath, int nChunkSize = 1024 * 5, int nFileSize = 0)
+        public clsTransferFileHandler(TransferFileType transferType, string szLocalFilePath, string szRemoteFilePath, int nChunkSize = 1024 * 20, int nFileSize = 0)
         {
             m_transferType = transferType;
 

@@ -89,9 +89,6 @@ def main():
                 handler(sock)
             except Exception as ex:
                 raise ex
-                print(ex)
-                g_bConnected = False
-                break
         
         time.sleep(1)
         

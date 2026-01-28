@@ -836,7 +836,7 @@ namespace Eden
             frmFileImage f = clsTools.FindForm<frmFileImage>(szVictimID);
             if (f == null)
             {
-                f = new frmFileImage();
+                f = new frmFileImage(lsImgFilename);
 
                 f.m_szVictimID = szVictimID;
                 f.m_clnt = m_clnt;
@@ -859,7 +859,7 @@ namespace Eden
             frmFileImage f = clsTools.FindForm<frmFileImage>(szVictimID);
             if (f == null)
             {
-                f = new frmFileImage();
+                f = new frmFileImage(lsImgFilename);
 
                 f.m_szVictimID = szVictimID;
                 f.m_clnt = m_clnt;

@@ -39,7 +39,7 @@ namespace Eden
                 {
                     Invoke(new Action(() =>
                     {
-                        richTextBox1.AppendText(aszMsg[1]);
+                        
                     }));
                 }
             }
@@ -51,8 +51,7 @@ namespace Eden
 
         private void fnInitCmd()
         {
-            richTextBox1.Clear();
-
+            
         }
 
         private void fnSendCmdCommand(string szCmd)
@@ -79,7 +78,6 @@ namespace Eden
             StartPosition = FormStartPosition.CenterScreen;
 
             textBox1.Text = "/bin/bash";
-            textBox2.Text = "netstat -ano | grep \"ESTABLISHED\"";
 
             m_victim.m_clnt.ServerMessageReceived += fnReceived;
 
@@ -96,22 +94,6 @@ namespace Eden
             if (e.KeyCode == Keys.Enter)
             {
                 fnInitCmd();
-            }
-        }
-
-        private void textBox2_KeyDown(object sender, KeyEventArgs e)
-        {
-            switch (e.KeyCode)
-            {
-                case Keys.Enter:
-                    fnSendCmdCommand(textBox2.Text);
-                    break;
-                case Keys.Up:
-                    fnHistoryCmd(HistoryCmd.Previous);
-                    break;
-                case Keys.Down:
-                    fnHistoryCmd(HistoryCmd.Next);
-                    break;
             }
         }
     }

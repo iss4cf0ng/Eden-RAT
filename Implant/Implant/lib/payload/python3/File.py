@@ -280,22 +280,20 @@ class File:
         
         return (nCode, szMsg)
     
-    def archive_zip(self, szZipFilePath: str, lsFolderPath: list, lsFilePath: list) -> tuple[int, str]:
-        with zipfile.ZipFile(szZipFilePath, mode='a') as zf:
+    def archive_zip(self, lsFolderPath: list, lsFilePath: list, zf: zipfile.ZipFile) -> tuple[int, str]:
+        for szDirPath in lsFolderPath:
+            lsNewFolderPath = lsNewFilePath = list()
 
-            for szDirPath in lsFolderPath:
-                lsNewFolderPath = lsNewFilePath = list()
+            for entry in os.scandir(szDirPath):
+                if entry.is_file():
+                    lsNewFilePath.append(entry.path)
+                elif entry.is_dir():
+                    lsNewFolderPath.append(entry.path)
+            
+            self.archive_zip(lsNewFolderPath, lsNewFilePath)
 
-                for entry in os.scandir(szDirPath):
-                    if entry.is_file():
-                        lsNewFilePath.append(entry.path)
-                    elif entry.is_dir():
-                        lsNewFolderPath.append(entry.path)
-                
-                self.archive_zip(lsNewFolderPath, lsNewFilePath)
-
-            for szFilePath in lsFilePath:
-                zf.write(szFilePath)
+        for szFilePath in lsFilePath:
+            zf.write(szFilePath)
 
     def archive_unzip() -> tuple[int, str]:
         pass
@@ -504,10 +502,12 @@ class File:
             
             elif aMsg[0] == 'archive':
                 if aMsg[1] == 'zip':
-                    lsDirPath = EZData.oneSpliter2list(aMsg[2])
-                    lsFilePath = EZData.oneSpliter2list(aMsg[3])
+                    szArchiveFileName = aMsg[2]
+                    lsDirPath = EZData.oneSpliter2list(aMsg[3])
+                    lsFilePath = EZData.oneSpliter2list(aMsg[4])
 
-
+                    with zipfile.ZipFile(szArchiveFileName, mode='a') as zf:
+                        self.archive_zip(lsDirPath, lsFilePath, zf)
 
                 elif aMsg[1] == 'unzip':
                     lsArchiveFilePath = EZData.oneSpliter2list(aMsg[2])

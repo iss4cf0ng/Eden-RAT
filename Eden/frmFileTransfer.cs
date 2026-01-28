@@ -140,7 +140,11 @@ namespace Eden
             Invoke(new Action(() =>
             {
                 double dProgress = (double)(handler.m_nIndex / handler.fnGetChunkCount()) * 100;
-                ListViewItem item = listView1.FindItemWithText(handler.m_szRemoteFilePath, true, 0);
+                string szFileName = Path.GetFileName(handler.m_szRemoteFilePath);
+                ListViewItem item = listView1.FindItemWithText(szFileName, true, 0);
+
+                if (item == null)
+                    return;
 
                 if (handler.fnbIsDone())
                 {
