@@ -5,7 +5,7 @@ namespace Eden
 {
     public partial class Form1 : Form
     {
-        public Client m_clnt;
+        public clsClient m_clnt;
         private List<List<string>> m_lsListener;
 
         public Form1()
@@ -19,7 +19,7 @@ namespace Eden
 
         #endregion
 
-        void ServerMessageReceived(Client clnt, string szVictimID, string[] aMsg)
+        void ServerMessageReceived(clsClient clnt, string szVictimID, string[] aMsg)
         {
             try
             {
@@ -70,7 +70,7 @@ namespace Eden
 
                             if (x == null)
                             {
-                                var stVictimInfo = new Victim.stVictimInfo()
+                                var stVictimInfo = new clsVictim.stVictimInfo()
                                 {
                                     clnt = m_clnt,
 
@@ -86,7 +86,7 @@ namespace Eden
                                     VictimDirectory = szDirectory,
                                 };
 
-                                Victim v = new Victim(stVictimInfo);
+                                clsVictim v = new clsVictim(stVictimInfo);
                                 item.Tag = v;
 
                                 listView1.Items.Add(item);
@@ -129,7 +129,7 @@ namespace Eden
             }
         }
 
-        void Disconnect(Client clnt, string szMsg)
+        void Disconnect(clsClient clnt, string szMsg)
         {
             Invoke(new Action(() =>
             {
@@ -171,7 +171,7 @@ namespace Eden
             frmConnect f = new frmConnect();
             f.ShowDialog();
 
-            Client clnt = f.m_clnt;
+            clsClient clnt = f.m_clnt;
             f.Dispose();
 
             toolStripMenuItem7.Enabled = clnt != null;

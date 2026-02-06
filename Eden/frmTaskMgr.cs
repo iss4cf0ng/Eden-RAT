@@ -13,10 +13,10 @@ namespace Eden
 {
     public partial class frmTaskMgr : Form
     {
-        private Victim m_victim;
+        private clsVictim m_victim;
         public string m_szVictimID;
 
-        public frmTaskMgr(Victim victim)
+        public frmTaskMgr(clsVictim victim)
         {
             InitializeComponent();
 

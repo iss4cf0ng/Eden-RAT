@@ -17,7 +17,7 @@ namespace Eden
 {
     public partial class frmFileEditor : Form
     {
-        public Client m_clnt;
+        public clsClient m_clnt;
         public string m_szVictimID;
 
         private struct stTabInfoTag

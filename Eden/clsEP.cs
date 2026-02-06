@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace Eden
 {
-    public class EP
+    public class clsEP
     {
         //HEADER
         public const int HEADER_SIZE = 6; //6 BYTES
@@ -26,7 +26,7 @@ namespace Eden
         public byte[] MoreData { get { return _MoreData; } }
 
         //CONSTRUCTOR-1
-        public EP(byte[] buffer)
+        public clsEP(byte[] buffer)
         {
             if (buffer == null || buffer.Length < HEADER_SIZE)
                 return;
@@ -63,7 +63,7 @@ namespace Eden
             }
         }
         //CONSTRUCTOR-2
-        public EP(byte cmd, byte para, byte[] msg)
+        public clsEP(byte cmd, byte para, byte[] msg)
         {
             _Command = cmd;
             _Param = para;

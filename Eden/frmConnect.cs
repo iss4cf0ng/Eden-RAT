@@ -12,7 +12,7 @@ namespace Eden
 {
     public partial class frmConnect : Form
     {
-        public Client m_clnt;
+        public clsClient m_clnt;
 
         public frmConnect()
         {
@@ -21,7 +21,7 @@ namespace Eden
 
         private void fnLogin()
         {
-            Client clnt = new Client();
+            clsClient clnt = new clsClient();
             clnt.SecureServerSocketEstablished += ServerSocketEstablished;
             clnt.LoginSuccessful += LoginSuccessed;
             clnt.LoginFailed += LoginFailed;
@@ -30,18 +30,18 @@ namespace Eden
             new Thread(() => clnt.Connect(textBox1.Text, (int)numericUpDown1.Value)).Start();
         }
 
-        private void ServerSocketEstablished(Client clnt)
+        private void ServerSocketEstablished(clsClient clnt)
         {
             clnt.Login(textBox2.Text, textBox3.Text);
         }
-        private void LoginSuccessed(Client clnt, string szUsername, int nAuthority)
+        private void LoginSuccessed(clsClient clnt, string szUsername, int nAuthority)
         {
             MessageBox.Show("Login successfully.", "OK", MessageBoxButtons.OK, MessageBoxIcon.Information);
             m_clnt = clnt;
 
             Invoke(new Action(Close));
         }
-        private void LoginFailed(Client clnt, string szUsername, string szMsg)
+        private void LoginFailed(clsClient clnt, string szUsername, string szMsg)
         {
             MessageBox.Show(szMsg, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
         }

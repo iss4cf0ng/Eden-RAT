@@ -12,14 +12,14 @@ namespace Eden
 {
     public partial class frmListener : Form
     {
-        public Client m_clnt;
+        public clsClient m_clnt;
 
         public frmListener()
         {
             InitializeComponent();
         }
 
-        void MessageReceived(Client clnt, string szVictimID, string[] aMsg)
+        void MessageReceived(clsClient clnt, string szVictimID, string[] aMsg)
         {
             try
             {

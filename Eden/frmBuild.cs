@@ -19,10 +19,10 @@ namespace Eden
             HTTP,
         }
 
-        private Client m_clnt;
+        private clsClient m_clnt;
         private List<List<string>> m_lsListener;
 
-        public frmBuild(Client clnt, List<List<string>> lsListener)
+        public frmBuild(clsClient clnt, List<List<string>> lsListener)
         {
             InitializeComponent();
 

