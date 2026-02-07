@@ -24,7 +24,7 @@ namespace Eden
 
         private Queue<clsTransferFileHandler> m_qTransferFile = new Queue<clsTransferFileHandler>();
         private Dictionary<string, clsTransferFileHandler> m_dicTransferFile = new Dictionary<string, clsTransferFileHandler>();
-        private int m_nChunkSize = 1024 * 5;
+        private int m_nChunkSize = 1024 * 20;
         private bool m_bPause { get; set; }
         private bool m_bStop { get; set; }
 
@@ -272,7 +272,7 @@ namespace Eden
 
                 string szRemoteFilePath = Path.Combine(m_szCurrentDir, Path.GetFileName(szFilePath)).Replace("\\", "/");
 
-                var handler = new clsTransferFileHandler(m_transferType, szLocalFilePath, szRemoteFilePath);
+                var handler = new clsTransferFileHandler(m_transferType, szLocalFilePath, szRemoteFilePath, m_nChunkSize);
 
                 m_qTransferFile.Enqueue(handler);
                 m_dicTransferFile[szRemoteFilePath] = handler;

@@ -31,7 +31,9 @@ class C2P:
             if len(abBuffer) - C2P.HEADER_LENGTH >= self.nLength:
                 self.abData = self.abBuffer[C2P.HEADER_LENGTH:C2P.BUFFER_MAX_LENGTH]
             if len(abBuffer) - C2P.HEADER_LENGTH - self.nLength > 0:
-                self.abMoreData = abBuffer[C2P.BUFFER_MAX_LENGTH:C2P.BUFFER_MAX_LENGTH+len(abBuffer) - C2P.HEADER_LENGTH - self.nLength]
+                start_idx = C2P.HEADER_LENGTH + self.nLength
+                self.abMoreData = abBuffer[start_idx:]
+
         else:
             self.nCmd = nCmd
             self.abCmd = nCmd.to_bytes(1, 'big')
@@ -454,16 +456,7 @@ class Client:
         self.dic_class = dict()
 
     def send(self, nCmd: int, nParam: int, szMsg: str):
-        buffer = C2P(nCmd=nCmd, nParam=nParam, abData=szMsg.encode('utf-8')).get_buffer()
-        self.sock.send(buffer)
-
-    def sendpayload(self, szMsg: str):
-        payload = szMsg.encode('utf-8').get_buffer()
-        payload = Encoder.bytes2b64str(payload)
-        payload = self.pAES.encrypt_cbc(payload)
-
-        buffer = C2P(nCmd=3, nParam=0, abData=payload)
-
+        buffer = C2P(nCmd=nCmd, nParam=nParam, abData=szMsg.encode('ascii')).get_buffer()
         self.sock.send(buffer)
 
     def sendcommand(self, nCmd: int, nParam: int):
@@ -471,13 +464,14 @@ class Client:
 
     def sendcipher(self, nCmd: int, nParam: int, szMsg: str):
         pAES = self.get_aes()
-        abMsg = szMsg.encode('utf-8')
+        abMsg = szMsg.encode()
         abEncMsg = pAES.encrypt_cbc(abMsg)
-        szEncMsg = Encoder.bytes2b64str(abEncMsg)
+        szEncMsg = base64.b64encode(abEncMsg).decode('ascii')
 
         self.send(nCmd=nCmd, nParam=nParam, szMsg=szEncMsg)
 
     def sendserver(self, aMsg: list):
+        
         self.sendcipher(2, 3, '|'.join([Encoder.stre2b64(x) for x in aMsg]))
 
     def set_aes(self, pAES: PAES):
@@ -565,20 +559,26 @@ def handler(clnt_sock: socket.socket):
 
                                 clnt.send(1, 4, sz_b64_resp)
                         elif nCmd == 2:
-                            abMsg = Encoder.b64str2bytes(abMsg.decode('utf-8'))
+                            #abMsg = Encoder.b64str2bytes(abMsg.decode('utf-8'))
+                            abMsg = base64.b64decode(abMsg)
                             szDecMsg = clnt.pAES.decrypt_cbc(abMsg).decode('utf-8')
                             
                             if nParam == 0:
                                 clnt.sendcipher(2, 1, g_szTag)
                             elif nParam == 2: # Send machine information.
                                 aMsg = [base64.b64decode(x).decode('utf-8') for x in szDecMsg.split('|')]
+
+                                #print(aMsg)
                                 
                                 szToken = aMsg[0]
                                 szClassName = aMsg[1]
                                 szClassStr = aMsg[2]
                                 aParam = aMsg[3:]
 
+                                print(aParam)
+
                                 if szClassName not in clnt.dic_class.keys():
+                                    print(szClassName)
                                     exec(szClassStr, clnt.dic_class)
 
                                     clnt.dic_class[szClassName] = clnt.dic_class[szClassName]()

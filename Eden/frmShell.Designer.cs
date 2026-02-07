@@ -81,6 +81,7 @@
             Name = "frmShell";
             StartPosition = FormStartPosition.CenterScreen;
             Text = "frmShell";
+            FormClosed += frmShell_FormClosed;
             Load += frmShell_Load;
             ((System.ComponentModel.ISupportInitialize)webView21).EndInit();
             ResumeLayout(false);

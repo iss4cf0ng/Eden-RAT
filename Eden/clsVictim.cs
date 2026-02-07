@@ -41,6 +41,8 @@ namespace Eden
             m_stVictimInfo = st;
         }
 
+        public void fnSendCommand(string[] asMsg, bool bAsync = true) => fnSendCommand(asMsg.ToList(), bAsync);
+        public void fnSendCommand(List<string> lsMsg, bool bAsync = true) => fnSendCommand(string.Join("|", lsMsg), bAsync);
         public void fnSendCommand(string szMsg, bool bAsync = true) => m_stVictimInfo.clnt.SendVictim(m_szID, szMsg, bAsync);
     }
 }

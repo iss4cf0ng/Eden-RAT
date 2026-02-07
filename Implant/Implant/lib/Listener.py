@@ -7,6 +7,7 @@ import sys
 import uuid
 from datetime import datetime
 import importlib.util
+import argparse
 
 from lib.C2P import C2P
 from lib.Client import Client
@@ -19,7 +20,7 @@ from lib.EZPayload import get_payload
 import lib.c2login as c2login
 
 class Listener:
-    def __init__(self, ip: str, port: int):
+    def __init__(self, ip: str, port: int, args: argparse):
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM) # TCP
         sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         sock.bind((ip, port))

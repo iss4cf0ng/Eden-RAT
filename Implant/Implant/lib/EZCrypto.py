@@ -437,7 +437,7 @@ def main():
     #print(privKey)
     #print(PRSA.rsa_decrypt(PRSA.rsa_encrypt(b'aaa', pubKey), privKey))
 
-    x = aes.encrypt_cbc(b'user|asddqw23|bbbfffgerer23231231231231232er')
+    x = aes.encrypt_cbc(b'user|asddqw23|bbbfffgerer23231231231231232er' * 1024 * 128)
     print(x)
     print(aes.decrypt_cbc(x))
 

@@ -12,11 +12,14 @@ class C2P:
         if abBuffer:
             self.abBuffer = abBuffer
             self.get_header()
-
+            
+            # Data
             if len(abBuffer) - C2P.HEADER_LENGTH >= self.nLength:
-                self.abData = self.abBuffer[C2P.HEADER_LENGTH:C2P.BUFFER_MAX_LENGTH]
-            if len(abBuffer) - C2P.HEADER_LENGTH - self.nLength > 0:
-                self.abMoreData = abBuffer[C2P.BUFFER_MAX_LENGTH:C2P.BUFFER_MAX_LENGTH+len(abBuffer) - C2P.HEADER_LENGTH - self.nLength]
+                self.abData = abBuffer[C2P.HEADER_LENGTH:C2P.HEADER_LENGTH + self.nLength]
+            
+            # More data
+            if len(abBuffer) > C2P.HEADER_LENGTH + self.nLength:
+                self.abMoreData = abBuffer[C2P.HEADER_LENGTH + self.nLength:]
         else:
             self.nCmd = nCmd
             self.abCmd = nCmd.to_bytes(1, 'big')
@@ -47,6 +50,14 @@ class C2P:
     def combine_bytes(self, abFirst: bytes, nIdxFirst: int, nLenFirst: int, abSecond: bytes, nIdxSecond: int, nLenSecond: int) -> bytes:
         return abFirst[nIdxFirst:nIdxFirst + nLenFirst] + abSecond[nIdxSecond:nIdxSecond + nLenSecond]
     
+    @staticmethod
+    def static_get_header(abBuffer: bytes) -> tuple[int, int, int]:
+        nCmd = abBuffer[0]
+        nParam = abBuffer[1]
+        nLength = int.from_bytes(abBuffer[2:C2P.HEADER_LENGTH], byteorder='big')
+
+        return [nCmd, nParam, nLength]
+
     @staticmethod
     def random_str(n_str_len = 10):
         return ''.join(random.SystemRandom().choice(string.ascii_uppercase + string.digits) for _ in range(n_str_len))
