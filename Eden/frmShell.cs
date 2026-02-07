@@ -28,7 +28,7 @@ namespace Eden
             m_victim = victim;
         }
 
-        private void fnReceived(clsClient m_clnt, string szVictimID, string[] asMsg)
+        private void fnReceived(clsClient m_clnt, string szVictimID, List<string> asMsg)
         {
             if (!string.Equals(szVictimID, m_szVictimID))
                 return;
@@ -127,6 +127,19 @@ namespace Eden
         private void frmShell_FormClosed(object sender, FormClosedEventArgs e)
         {
             m_victim.m_clnt.ServerMessageReceived -= fnReceived;
+        }
+
+        private void frmShell_Resize(object sender, EventArgs e)
+        {
+            if (webView21.CoreWebView2 != null)
+            {
+                webView21.CoreWebView2.ExecuteScriptAsync("fitTerminal();");
+            }
+        }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            fnInitCmd();
         }
     }
 }

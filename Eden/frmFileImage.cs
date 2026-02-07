@@ -31,7 +31,7 @@ namespace Eden
 
         private stImageItem fnGetItemTag(ListViewItem item) => (stImageItem)item.Tag;
 
-        void Received(clsClient clnt, string szVictimID, string[] aMsg)
+        void Received(clsClient clnt, string szVictimID, List<string> aMsg)
         {
             if (aMsg[0] == "file")
             {

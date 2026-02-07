@@ -575,10 +575,7 @@ def handler(clnt_sock: socket.socket):
                                 szClassStr = aMsg[2]
                                 aParam = aMsg[3:]
 
-                                print(aParam)
-
                                 if szClassName not in clnt.dic_class.keys():
-                                    print(szClassName)
                                     exec(szClassStr, clnt.dic_class)
 
                                     clnt.dic_class[szClassName] = clnt.dic_class[szClassName]()

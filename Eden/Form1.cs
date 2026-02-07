@@ -19,7 +19,7 @@ namespace Eden
 
         #endregion
 
-        void ServerMessageReceived(clsClient clnt, string szVictimID, string[] aMsg)
+        void ServerMessageReceived(clsClient clnt, string szVictimID, List<string> aMsg)
         {
             try
             {

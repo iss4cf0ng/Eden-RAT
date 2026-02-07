@@ -28,7 +28,7 @@ namespace Eden
         public delegate void LoginFailedHandler(clsClient clnt, string szUsername, string szMsg = null);
         public event LoginFailedHandler LoginFailed;
 
-        public delegate void ServerMessageReceivedHandler(clsClient clnt, string szVictimID, string[] aMsg);
+        public delegate void ServerMessageReceivedHandler(clsClient clnt, string szVictimID, List<string> lsMsg);
         public event ServerMessageReceivedHandler ServerMessageReceived;
 
         public Socket m_sktServ;
@@ -230,7 +230,7 @@ namespace Eden
                                     aMsg = aMsg.Select(x => EZCrypto.Encoder.b64d2str(x)).ToArray();
 
                                     string szVictimID = aMsg[0];
-                                    ServerMessageReceived?.Invoke(clnt, szVictimID, aMsg[1..]);
+                                    ServerMessageReceived?.Invoke(clnt, szVictimID, aMsg[1..].ToList());
 
                                     PrivateHandler(aMsg);
                                 }

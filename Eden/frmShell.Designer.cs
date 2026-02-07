@@ -55,10 +55,12 @@
             button1.TabIndex = 1;
             button1.Text = "Start";
             button1.UseVisualStyleBackColor = false;
+            button1.Click += button1_Click;
             // 
             // webView21
             // 
             webView21.AllowExternalDrop = true;
+            webView21.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             webView21.CreationProperties = null;
             webView21.DefaultBackgroundColor = Color.White;
             webView21.Location = new Point(13, 38);
@@ -83,6 +85,7 @@
             Text = "frmShell";
             FormClosed += frmShell_FormClosed;
             Load += frmShell_Load;
+            Resize += frmShell_Resize;
             ((System.ComponentModel.ISupportInitialize)webView21).EndInit();
             ResumeLayout(false);
             PerformLayout();

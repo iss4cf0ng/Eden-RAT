@@ -64,7 +64,7 @@ namespace Eden
             m_ilFileExt.ColorDepth = ColorDepth.Depth32Bit;
         }
 
-        void Received(clsClient clnt, string szVictimID, string[] aMsg)
+        void Received(clsClient clnt, string szVictimID, List<string> aMsg)
         {
             try
             {

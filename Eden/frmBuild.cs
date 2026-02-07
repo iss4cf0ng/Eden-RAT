@@ -50,5 +50,10 @@ namespace Eden
         {
             numericUpDown1.Value = int.Parse(m_lsListener[comboBox1.SelectedIndex][3]);
         }
+
+        private void button2_Click(object sender, EventArgs e)
+        {
+
+        }
     }
 }

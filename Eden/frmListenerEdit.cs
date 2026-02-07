@@ -29,7 +29,7 @@ namespace Eden
             InitializeComponent();
         }
 
-        void Received(clsClient clnt, string szVictimID, string[] aMsg)
+        void Received(clsClient clnt, string szVictimID, List<string> aMsg)
         {
             try
             {

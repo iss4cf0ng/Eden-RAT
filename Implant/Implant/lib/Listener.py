@@ -165,7 +165,6 @@ class Listener:
                                     clnt.dtLastLattency = datetime.now()
                             
                                 '''
-
                                 clnt.send(0, 1, C2P.random_str())
                         elif nCmd == 1:
                             if nParam == 0:

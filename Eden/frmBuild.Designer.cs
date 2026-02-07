@@ -168,6 +168,7 @@
             button2.TabIndex = 11;
             button2.Text = "Build";
             button2.UseVisualStyleBackColor = true;
+            button2.Click += button2_Click;
             // 
             // label5
             // 

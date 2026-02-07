@@ -1,4 +1,9 @@
-import socket
+'''
+Name: python3 Xterm virtual shell.
+Author: ISSAC
+Github: https://github.com/iss4cf0ng
+'''
+
 import sys
 
 sys.path.append('../../../')
@@ -43,13 +48,14 @@ class Shell:
             os.environ['TERM'] = 'xterm-256color'
             os.environ['SHELL'] = shell
 
-            os.execvp(shell, [shell, '-i'])
+            os.execvp(shell, [shell, '-l', '-i'])
         else:
             self.running = True
             self.thread = threading.Thread(target=self._io_loop, daemon=True)
             self.thread.start()
 
-            os.write(self.master_fd, b'echo SHELL_OK\n')
+            os.write(self.master_fd, b'clear')
+            os.write(self.master_fd, b'')
 
     def _io_loop(self):
         try:
@@ -113,11 +119,11 @@ class Shell:
                     return
                 
                 raw = base64.b64decode(aMsg[1])
-                print(raw)
                 self.input_q.put(raw)
 
             elif cmd == 'resize':
-                pass
+                cols, rows = int(aMsg[1]), int(aMsg[2])
+                self._resize(cols, rows)
             elif cmd == 'stop':
                 pass
             else:
