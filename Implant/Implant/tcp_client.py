@@ -22,28 +22,64 @@ class C2P:
     HEADER_LENGTH = 6
     BUFFER_MAX_LENGTH = 65565
 
-    def __init__(self, nCmd: int = None, nParam: int = None, abData: bytes = None, abBuffer: bytes = None) -> None:
+    def __init__(
+        self,
+        nCmd: int = None,
+        nParam: int = None,
+        abData: bytes = None,
+        abBuffer: bytes = None
+    ) -> None:
+
         self.abMoreData = b''
-        if abBuffer:
+        self.abData = b''
+        self.abBuffer = b''
+        self.nCmd = 0
+        self.nParam = 0
+        self.nLength = 0
+
+        # ===== Constructor-1 (from buffer) =====
+        if abBuffer is not None:
+            if len(abBuffer) < C2P.HEADER_LENGTH:
+                return
+
             self.abBuffer = abBuffer
-            self.get_header()
+
+            # HEADER
+            self.nCmd = abBuffer[0]
+            self.nParam = abBuffer[1]
+            self.nLength = int.from_bytes(
+                abBuffer[2:C2P.HEADER_LENGTH],
+                byteorder='big'
+            )
+
+            # DATA
+            data_start = C2P.HEADER_LENGTH
+            data_end = data_start + self.nLength
 
             if len(abBuffer) - C2P.HEADER_LENGTH >= self.nLength:
-                self.abData = self.abBuffer[C2P.HEADER_LENGTH:C2P.BUFFER_MAX_LENGTH]
-            if len(abBuffer) - C2P.HEADER_LENGTH - self.nLength > 0:
-                start_idx = C2P.HEADER_LENGTH + self.nLength
-                self.abMoreData = abBuffer[start_idx:]
+                self.abData = abBuffer[data_start:data_end]
 
+            # MORE DATA
+            if len(abBuffer) > data_end:
+                self.abMoreData = abBuffer[data_end:]
+
+        # ===== Constructor-2 (cmd, param, msg) =====
         else:
+            if abData is None:
+                abData = b''
+
             self.nCmd = nCmd
-            self.abCmd = nCmd.to_bytes(1, 'big')
             self.nParam = nParam
-            self.abParam = nParam.to_bytes(1, 'big')
             self.abData = abData
             self.nLength = len(abData)
-            self.abLength = self.nLength.to_bytes(C2P.HEADER_LENGTH - 2, 'big')
 
-            self.abBuffer = self.abCmd + self.abParam + self.abLength + self.abData
+            self.abBuffer = (
+                nCmd.to_bytes(1, 'big') +
+                nParam.to_bytes(1, 'big') +
+                self.nLength.to_bytes(4, 'big') +
+                abData
+            )
+
 
     def get_header(self) -> tuple[int, int, int]:
         self.nCmd = self.abBuffer[0]
@@ -567,8 +603,6 @@ def handler(clnt_sock: socket.socket):
                                 clnt.sendcipher(2, 1, g_szTag)
                             elif nParam == 2: # Send machine information.
                                 aMsg = [base64.b64decode(x).decode('utf-8') for x in szDecMsg.split('|')]
-
-                                #print(aMsg)
                                 
                                 szToken = aMsg[0]
                                 szClassName = aMsg[1]

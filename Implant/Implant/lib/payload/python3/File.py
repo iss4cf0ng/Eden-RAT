@@ -180,7 +180,7 @@ class File:
         try:
             with open(szFilePath, mode='ab') as f:
                 nOffset = nIndex * nChunkSize
-                #f.seek(nOffset)
+                f.seek(nOffset)
                 f.write(abChunkData)
 
                 nCode = 1
@@ -342,56 +342,70 @@ class File:
                 ]
             elif aMsg[0] == 'uf':
                 if aMsg[1] == 'write':
-                    szFilePath = aMsg[2]
-                    nIndex = int(aMsg[3])
-                    nChunkSize = int(aMsg[4])
-                    nTotalSize = int(aMsg[5])
-                    abChunkData = base64.b64decode(Encoder.b64str2bytes(aMsg[6]).decode())
+                    chunk_size = int(aMsg[2])
+                    offset = int(aMsg[3])
+                    filepath = aMsg[4]
+                    b64 = aMsg[5]
 
-                    #t = threading.Thread(target=self.uf_write, args=[szFilePath, nIndex, nChunkSize, nTotalSize, abChunkData, ])
-                    #t.start()
+                    try:
+                        buffer = base64.b64decode(b64)
 
-                    tp = self.uf_write(szFilePath, nIndex, nChunkSize, nTotalSize, abChunkData)
+                        with open(filepath, 'ab') as f:
+                            f.seek(offset)
+                            f.write(buffer)
 
-                    return [
-                        'file',
-                        'uf',
-                        'write',
-                        str(nIndex),
-                        str(nTotalSize),
-                        szFilePath,
-
-                        str(tp[0]), # nCode
-                        Encoder.stre2b64(tp[1]), # szMsg
-                    ]
+                        return [
+                            'file',
+                            'uf',
+                            'write',
+                            '1',
+                            filepath,
+                            str(len(buffer)),
+                        ]
+                    except Exception as ex:
+                        return [
+                            'file',
+                            'uf',
+                            'write',
+                            '0',
+                            filepath,
+                            str(ex),
+                        ]
 
                 elif aMsg[1] == 'stop':
                     self.bUf = False
             elif aMsg[0] == 'df':
                 if aMsg[1] == 'read':
-                    self.bDf = True
-                    nIndex = int(aMsg[2])
-                    nChunkSize = int(aMsg[3])
-                    szFilePath = aMsg[4]
+                    chunk_size = int(aMsg[2])
+                    offset = int(aMsg[3])
+                    filepath = aMsg[4]
 
-                    with open(szFilePath, mode='rb') as f:
-                        nOffSet = nIndex * nChunkSize
-                        nFileSize = os.stat(szFilePath).st_size
-
-                        f.seek(nOffSet)
-                        abChunkData = f.read(self.nDfChunkSize)
+                    try:
+                        with open(filepath, 'rb') as f:
+                            f.seek(offset)
+                            buffer = f.read(chunk_size)
                         
-                        lsPayload = [
-                            szToken,
+                        b64 = base64.b64encode(buffer).decode('utf-8')
+                        file_size = os.path.getsize(filepath)
+
+                        return [
                             'file',
                             'df',
-                            szFilePath,
-                            str(nIndex),
-                            str(nFileSize),
-                            Encoder.stre2b64(base64.b64encode(abChunkData).decode('utf-8')),
+                            'read',
+                            '1',
+                            filepath,
+                            b64,
+                            str(file_size),
                         ]
-
-                        clnt.sendserver(lsPayload)
+                    except Exception as ex:
+                        return [
+                            'file',
+                            'df',
+                            'read',
+                            '0',
+                            filepath,
+                            str(ex),
+                        ]
 
                 elif aMsg[1] == "stop":
                     self.bDf = False

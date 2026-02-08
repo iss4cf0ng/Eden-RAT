@@ -770,7 +770,7 @@ namespace Eden
             if (ofd.ShowDialog() == DialogResult.OK)
             {
                 List<string> lszFilePath = ofd.FileNames.ToList();
-                frmFileTransfer f = new frmFileTransfer(m_victim, fnGetCurrentDir(), lszFilePath, TransferFileType.UploadFile);
+                frmFileTransfer f = new frmFileTransfer(m_victim, fnGetCurrentDir(), lszFilePath, clsTransferFileHandler.enMethod.Upload);
                 f.Show();
             }
         }
@@ -802,7 +802,7 @@ namespace Eden
                 );
             }
 
-            frmFileTransfer f = new frmFileTransfer(m_victim, fnGetCurrentDir(), lFile, TransferFileType.DownloadFile);
+            frmFileTransfer f = new frmFileTransfer(m_victim, fnGetCurrentDir(), lFile, clsTransferFileHandler.enMethod.Download);
             f.Show();
         }
         //New - Folder

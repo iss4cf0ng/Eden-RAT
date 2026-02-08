@@ -54,7 +54,7 @@ class Shell:
             self.thread = threading.Thread(target=self._io_loop, daemon=True)
             self.thread.start()
 
-            os.write(self.master_fd, b'clear')
+            os.write(self.master_fd, b'clear\n')
             os.write(self.master_fd, b'')
 
     def _io_loop(self):

@@ -2,6 +2,7 @@ import argparse
 import sys
 import threading
 import os
+import logging
 
 from lib.database import DB, Interactive as db_interactive
 from lib import Listener
@@ -10,6 +11,8 @@ from lib.C2P import C2P
 from lib.ColorPrint import ColorPrint as cp
 from lib.EZCrypto import EZRSA, PRSA, Encoder
 
+from lib.Logger import setup_logging
+
 szBanner = '''
 Project: Eden-RAT v1.0.0
 Author: ISSAC
@@ -17,11 +20,13 @@ Github: https://github.com/Eden/
 '''
 
 parser = argparse.ArgumentParser()
-parser.add_argument('-v', '--verbose', action='store_true', help='Show details.')
+parser.add_argument('-v', '--verbose', action='count', help='Verbose.', default=0)
 parser.add_argument('-l', '--listen', action='store_true', help='Listen')
 parser.add_argument('-p', '--port', help='Bind port.')
 parser.add_argument('--db', action='store_true', help='Database interactive shell')
 args = parser.parse_args()
+
+setup_logging(args.verbose)
 
 sql_db = None
 
@@ -42,7 +47,7 @@ def main():
 
     sql_db = DB()
     if not sql_db:
-        cp.pf_err('Database initialization failed.')
+        logging.error('Database initialization failed.')
         sys.exit(-1)
 
     if len(sys.argv) < 2:

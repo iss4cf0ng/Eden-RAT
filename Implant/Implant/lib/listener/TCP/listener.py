@@ -177,10 +177,10 @@ class Listener:
                                     cp.pf_err('Vertification failed.', clnt.addr)
                         elif nCmd == 2: # Victim
                             try:
-                                cipher = Encoder.b64str2bytes(abMsg.decode('ascii'))
+                                cipher = Encoder.b64str2bytes(abMsg.decode('utf-8'))
                                 plain = clnt.pAES.decrypt_cbc(cipher)
 
-                                szPlain = plain.decode('ascii')
+                                szPlain = plain.decode('utf-8')
 
                                 aMsg = szPlain.split('|')
 

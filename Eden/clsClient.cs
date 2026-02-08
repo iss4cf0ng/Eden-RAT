@@ -251,6 +251,7 @@ namespace Eden
         public void Send(int nCmd, int nParam, byte[] abMsg, bool bAsync = true)
         {
             byte[] abBuffer = new clsEP((byte)nCmd, (byte)nParam, abMsg).GetBytes();
+
             try
             {
                 if (bAsync)
@@ -279,9 +280,27 @@ namespace Eden
         {
             byte[] abPlain = Encoding.UTF8.GetBytes(szMsg);
             byte[] abCipher = m_EZAES.Encrypt(abPlain);
-            string szCipher = Convert.ToBase64String(abCipher);
 
-            Send(nCmd, nParam, szCipher, bAsync);
+            byte[] abBuffer = new clsEP((byte)nCmd, (byte)nParam, abCipher).GetBytes();
+
+            try
+            {
+                if (bAsync)
+                {
+                    m_sktServ.BeginSend(abBuffer, 0, abBuffer.Length, SocketFlags.None, new AsyncCallback((ar) =>
+                    {
+                        m_sktServ.EndSend(ar);
+                    }), abBuffer);
+                }
+                else
+                {
+                    m_sktServ.Send(abBuffer);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
         }
 
         public void SendCmdParam(int nCmd, int nParam)

@@ -6,96 +6,83 @@ using System.Threading.Tasks;
 
 namespace Eden
 {
-    internal class clsTransferFileHandler
+    public partial class clsTransferFileHandler : IDisposable
     {
-        public string m_szLocalFilePath { get; set; }
-        public string m_szRemoteFilePath { get; set; }
+        public long m_nFileSize = -1;
 
-        public int m_nIndex { get; set; }
-        public long m_nFileSize { get; set; }
+        public string m_szSrcFilePath { get; init; }
+        public string m_szDstFilePath { get; init; }
+        public enMethod m_enMethod { get; init; }
+        public int m_nChunkSize { get; init; }
+        public string szRemoteFile { get { return m_enMethod == enMethod.Upload ? m_szDstFilePath : m_szSrcFilePath; } }
 
-        public int m_nChunkSize { get; set; }
+        public bool m_bFinished = false;
 
-        private TransferFileType m_transferType { get; set; }
-        private FileStream m_fstream { get; set; }
+        private FileStream m_fileStream { get; init; }
 
-        public long fnGetChunkCount()
+        public long m_nWritten = 0;
+        public long m_nRead = 0;
+
+        public clsTransferFileHandler(string szSrcFilePath, string szDstFilePath, enMethod method, int nChunkSize)
         {
-            long nQ = m_nFileSize / m_nChunkSize;
-            long nR = m_nFileSize % m_nChunkSize;
-
-            return nR == 0 ? nQ : nQ + 1;
-        }
-        public bool fnbIsDone() => m_nIndex + 1 >= fnGetChunkCount();
-
-        public clsTransferFileHandler(TransferFileType transferType, string szLocalFilePath, string szRemoteFilePath, int nChunkSize = 1024 * 20, int nFileSize = 0)
-        {
-            m_transferType = transferType;
-
-            m_szLocalFilePath = szLocalFilePath;
-            m_szRemoteFilePath = szRemoteFilePath;
-
-            m_nIndex = 0;
+            m_szSrcFilePath = szSrcFilePath;
+            m_szDstFilePath = szDstFilePath;
             m_nChunkSize = nChunkSize;
-            m_nFileSize = transferType == TransferFileType.UploadFile ? new FileInfo(szLocalFilePath).Length : nFileSize;
+            m_enMethod = method;
 
-            if (transferType == TransferFileType.UploadFile)
-                m_fstream = new FileStream(szLocalFilePath, FileMode.Open, FileAccess.Read, FileShare.Read);
+            if (method == enMethod.Upload)
+            {
+                m_nFileSize = new FileInfo(szSrcFilePath).Length;
+                m_fileStream = File.Open(szSrcFilePath, FileMode.Open);
+            }
             else
-                m_fstream = new FileStream(szLocalFilePath, FileMode.Create, FileAccess.Write, FileShare.Read);
+            {
+                m_fileStream = File.Open(szDstFilePath, FileMode.Append);
+            }
         }
 
-        /// <summary>
-        /// Read file data by chunk.
-        /// </summary>
-        /// <returns>nRead: Count of read bytes, abBuffer: File buffer.</returns>
-        public (int nRead, int nIndex, byte[] abBuffer) fnabGetChunk()
+        public enum enMethod
         {
+            Upload,
+            Download,
+        }
+
+        public void Dispose()
+        {
+            m_fileStream.Dispose();
+        }
+
+        public int fnWriteChunk(byte[] abFileChunk)
+        {
+            if (abFileChunk.Length == 0)
+                return 0;
+
+            if (m_enMethod == enMethod.Upload)
+                throw new Exception("This method is used for downloading file.");
+
+            m_fileStream.Write(abFileChunk);
+
+            m_nWritten += abFileChunk.Length;
+
+            return abFileChunk.Length;
+        }
+
+        public byte[] fnReadNextChunk()
+        {
+            if (m_enMethod == enMethod.Download)
+                throw new Exception("This method is used for uploading file.");
+
             byte[] abBuffer = new byte[m_nChunkSize];
-            int nRead = 0;
-            nRead = m_fstream.Read(abBuffer, 0, abBuffer.Length);
-            byte[] abChunkBuffer = new byte[nRead];
-            Array.Copy(abBuffer, 0, abChunkBuffer, 0, nRead);
+            long nRead = m_fileStream.Read(abBuffer, 0, m_nChunkSize);
 
-            m_nIndex++;
+            byte[] abChunk = new byte[nRead];
+            Array.Copy(abBuffer, 0, abChunk, 0, nRead);
 
-            return (nRead, m_nIndex, abChunkBuffer);
-        }
+            m_nRead += nRead;
 
-        public bool fnbWriteChunk(int nIndex, byte[] abBuffer)
-        {
-            try
-            {
-                int nOffset = nIndex * m_nChunkSize;
-                /*
-                using (FileStream f = new FileStream(m_szLocalFilePath, FileMode.Create, FileAccess.Write, FileShare.Write))
-                {
-                    f.Seek(nOffset, SeekOrigin.Begin);
-                    f.Write(abBuffer);
-                }
-                */
+            m_bFinished = nRead == 0;
 
-                Task.Run(() =>
-                {
-                    m_fstream.Seek(nOffset, SeekOrigin.Begin);
-                    m_fstream.Write(abBuffer);
-                    m_fstream.Flush();
-                });
-
-                m_nIndex++;
-
-                return true;
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(ex.Message, "fnbWriteChunk()", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                return false;
-            }
-        }
-
-        public void fnClose()
-        {
-            m_fstream.Close();
+            return abChunk;
         }
     }
 }

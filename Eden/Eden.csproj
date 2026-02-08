@@ -6,7 +6,12 @@
     <Nullable>enable</Nullable>
     <UseWindowsForms>true</UseWindowsForms>
     <ImplicitUsings>enable</ImplicitUsings>
+    <ApplicationIcon>icons8-minecraft-golden-apple-48.ico</ApplicationIcon>
   </PropertyGroup>
+
+  <ItemGroup>
+    <Content Include="icons8-minecraft-golden-apple-48.ico" />
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="ICSharpCode.TextEditorEx" Version="1.3.0" />
