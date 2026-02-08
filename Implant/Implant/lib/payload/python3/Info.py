@@ -149,6 +149,10 @@ class Info:
                 ]
 
                 return ls_msg
+            elif aMsg[0] == 'app':
+                pass
+            elif aMsg[0] == 'bash':
+                pass
             elif aMsg[0] == 'stop':
                 g_Info = g_thread = None
                 return [

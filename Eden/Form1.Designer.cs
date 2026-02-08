@@ -57,6 +57,7 @@
             toolStripSeparator1 = new ToolStripSeparator();
             toolStripMenuItem4 = new ToolStripMenuItem();
             timer1 = new System.Windows.Forms.Timer(components);
+            toolStripMenuItem8 = new ToolStripMenuItem();
             toolStrip1.SuspendLayout();
             statusStrip1.SuspendLayout();
             lvMenu.SuspendLayout();
@@ -192,53 +193,59 @@
             // lvMenu
             // 
             lvMenu.Font = new Font("Microsoft JhengHei UI", 11.25F, FontStyle.Regular, GraphicsUnit.Point, 136);
-            lvMenu.Items.AddRange(new ToolStripItem[] { toolStripMenuItem5, toolStripMenuItem1, toolStripMenuItem3, toolStripMenuItem2, toolStripSeparator1, toolStripMenuItem4 });
+            lvMenu.Items.AddRange(new ToolStripItem[] { toolStripMenuItem5, toolStripMenuItem1, toolStripMenuItem3, toolStripMenuItem8, toolStripMenuItem2, toolStripSeparator1, toolStripMenuItem4 });
             lvMenu.Name = "contextMenuStrip1";
-            lvMenu.Size = new Size(132, 130);
+            lvMenu.Size = new Size(181, 176);
             // 
             // toolStripMenuItem5
             // 
             toolStripMenuItem5.Name = "toolStripMenuItem5";
-            toolStripMenuItem5.Size = new Size(131, 24);
+            toolStripMenuItem5.Size = new Size(180, 24);
             toolStripMenuItem5.Text = "Info";
             toolStripMenuItem5.Click += toolStripMenuItem5_Click;
             // 
             // toolStripMenuItem1
             // 
             toolStripMenuItem1.Name = "toolStripMenuItem1";
-            toolStripMenuItem1.Size = new Size(131, 24);
+            toolStripMenuItem1.Size = new Size(180, 24);
             toolStripMenuItem1.Text = "File";
             toolStripMenuItem1.Click += toolStripMenuItem1_Click;
             // 
             // toolStripMenuItem3
             // 
             toolStripMenuItem3.Name = "toolStripMenuItem3";
-            toolStripMenuItem3.Size = new Size(131, 24);
+            toolStripMenuItem3.Size = new Size(180, 24);
             toolStripMenuItem3.Text = "Process";
             toolStripMenuItem3.Click += toolStripMenuItem3_Click;
             // 
             // toolStripMenuItem2
             // 
             toolStripMenuItem2.Name = "toolStripMenuItem2";
-            toolStripMenuItem2.Size = new Size(131, 24);
+            toolStripMenuItem2.Size = new Size(180, 24);
             toolStripMenuItem2.Text = "Shell";
             toolStripMenuItem2.Click += toolStripMenuItem2_Click;
             // 
             // toolStripSeparator1
             // 
             toolStripSeparator1.Name = "toolStripSeparator1";
-            toolStripSeparator1.Size = new Size(128, 6);
+            toolStripSeparator1.Size = new Size(177, 6);
             // 
             // toolStripMenuItem4
             // 
             toolStripMenuItem4.Name = "toolStripMenuItem4";
-            toolStripMenuItem4.Size = new Size(131, 24);
-            toolStripMenuItem4.Text = "Victim";
+            toolStripMenuItem4.Size = new Size(180, 24);
+            toolStripMenuItem4.Text = "Folder";
             toolStripMenuItem4.Click += toolStripMenuItem4_Click;
             // 
             // timer1
             // 
             timer1.Tick += timer1_Tick;
+            // 
+            // toolStripMenuItem8
+            // 
+            toolStripMenuItem8.Name = "toolStripMenuItem8";
+            toolStripMenuItem8.Size = new Size(180, 24);
+            toolStripMenuItem8.Text = "Service";
             // 
             // Form1
             // 
@@ -294,5 +301,6 @@
         private ColumnHeader columnHeader11;
         private ToolStripButton toolStripButton1;
         private System.Windows.Forms.Timer timer1;
+        private ToolStripMenuItem toolStripMenuItem8;
     }
 }
