@@ -1,6 +1,8 @@
 # Eden-RAT
 Linux GUI RAT written in C# and Python.
 
+Continously update: [Version-1.0.0](https://github.com/iss4cf0ng/Eden-RAT/tree/Version-1.0.0)
+
 Still in developing!!! :(
 
 If you like it, please give it a ⭐! It would mean a lot to me and really motivates me!
