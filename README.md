@@ -1,4 +1,6 @@
 # Todo List
+- Quality assurance
+- Write documents
 
 # Done
 - File Manager
