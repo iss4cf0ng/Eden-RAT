@@ -1,5 +1,6 @@
 # Eden-RAT
-Linux GUI RAT written in C# and Python.
+Linux GUI RAT written in C# and Python.  
+It is a remote access tool intended for use in the early stages of penetration testing.
 
 Continously update: [Version-1.0.0](https://github.com/iss4cf0ng/Eden-RAT/tree/Version-1.0.0)
 
