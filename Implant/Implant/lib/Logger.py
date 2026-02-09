@@ -12,25 +12,21 @@ class Formatter(logging.Formatter):
     GRAY = '\033[90m'
 
     SYMBOLS = {
-    logging.DEBUG:    ('[*]', BLUE),
-    logging.INFO:     ('[+]', GREEN),
-    logging.WARNING:  ('[!]', YELLOW),
-    logging.ERROR:    ('[-]', RED),
-    logging.CRITICAL: ('[!]', RED),
-}
+        logging.DEBUG:    ('[*]', BLUE),
+        logging.INFO:     ('[+]', GREEN),
+        logging.WARNING:  ('[!]', YELLOW),
+        logging.ERROR:    ('[-]', RED),
+        logging.CRITICAL: ('[!]', RED),
+    }
 
     def __init__(self, use_color=True):
         super().__init__()
         self.use_color = use_color and sys.stdout.isatty()
 
     def format(self, record):
-        symbol, sym_color = self.SYMBOLS.get(
-            record.levelno, ('[?]', self.BLUE)
-        )
+        symbol, sym_color = self.SYMBOLS.get(record.levelno, ('[?]', self.BLUE))
 
-        ts = datetime.datetime.fromtimestamp(
-            record.created
-        ).strftime('%Y-%m-%d %H:%M:%S')
+        ts = datetime.datetime.fromtimestamp(record.created).strftime('%Y-%m-%d %H:%M:%S')
 
         msg = record.getMessage()
 
@@ -46,8 +42,6 @@ def setup_logging(verbose: int):
         level = logging.INFO
     elif verbose >= 2:
         level = logging.DEBUG
-
-    print("VERBOSE =", verbose)
 
     root = logging.getLogger()
     root.setLevel(level)

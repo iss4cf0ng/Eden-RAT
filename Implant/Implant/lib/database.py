@@ -1,11 +1,15 @@
 import sqlite3
 import hashlib
 import getpass
+import logging
 from datetime import datetime
 
 from lib.ColorPrint import ColorPrint as cp
 
 class DB:
+    log = logging.getLogger(__name__ + '.Listener')
+    log.setLevel(logging.NOTSET)
+
     def __init__(self, db_file: str = None):
         self.dic_table = {
             'Listener' : [
@@ -244,6 +248,9 @@ class DB:
     
 class Interactive:
     def __init__(self, db: DB):
+        self.log = logging.getLogger(__name__ + '.Listener')
+        self.log.setLevel(logging.NOTSET)
+
         self.db = db
         self.dic_func = [
             self.add_user,
@@ -291,16 +298,26 @@ class Interactive:
                 return
 
     def del_user(self):
-        pass
+        while True:
+            try:
+                username = input('Username> ')
+                ans = input('Sure? >').lower()
+                if ans == 'y':
+                    self.db.del_user(username)
+            except Exception as ex:
+                self.log.error(str(ex))
 
     def sql_shell(self):
         while True:
-            sql_query = input('> ')
+            try:
+                sql_query = input('> ')
 
-            if sql_query == 'exit' or sql_query == 'q':
-                return
-            else:
-                print(self.db.sql_execute(sql_query))
+                if sql_query == 'exit' or sql_query == 'q':
+                    return
+                else:
+                    print(self.db.sql_execute(sql_query))
+            except Exception as ex:
+                self.log.error(str(ex))
         
 def main():
     db = DB()

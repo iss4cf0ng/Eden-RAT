@@ -168,7 +168,7 @@ namespace Eden
 
         private void toolStripMenuItem6_Click(object sender, EventArgs e)
         {
-            frmConnect f = new frmConnect();
+            frmConnect f = new frmConnect(null);
             f.ShowDialog();
 
             clsClient clnt = f.m_clnt;
@@ -211,10 +211,7 @@ namespace Eden
                 if (clsTools.FindForm<frmInformation>(item.Text) != null)
                     continue;
 
-                frmInformation f = new frmInformation();
-                f.m_clnt = m_clnt;
-                f.szVictimID = item.Text;
-
+                frmInformation f = new frmInformation(clsTools.fnGetVictimTag(item));
                 f.Show();
             }
         }
@@ -279,6 +276,8 @@ namespace Eden
             Text = $"Eden RAT by ISSAC | Online[{listView1.Items.Count}] | " +
                 $"Selected[{listView1.SelectedItems.Count}] | " +
                 $"Is Connected: {(fnClientIsNull() ? "False" : "True")}";
+
+            toolStripStatusLabel1.Text = $"Online[{listView1.Items.Count}]";
         }
 
         private void toolStripMenuItem4_Click(object sender, EventArgs e)

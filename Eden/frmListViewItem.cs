@@ -13,14 +13,17 @@ namespace Eden
 {
     public partial class frmListViewItem : Form
     {
-        public string szVictimID;
+        public clsVictim m_victim { get; init; }
+        public string[] m_aCols { get; init; }
+        public string[] m_aItemText { get; init; }
 
-        public string[] m_aCols;
-        public string[] m_aItemText;
-
-        public frmListViewItem()
+        public frmListViewItem(clsVictim victim, string[] asCols, string[] asItemText)
         {
             InitializeComponent();
+
+            m_victim = victim;
+            m_aCols = asCols;
+            m_aItemText = asItemText;
         }
 
         public void UpdateStatus(string szText, params string[] aSubItemText)

@@ -108,7 +108,6 @@ class Shell:
             self.client = clnt
             self.szToken = szToken
             cmd = aMsg[0]
-            print(aMsg)
 
             if cmd == 'init':
                 shell = aMsg[1] if len(aMsg) > 1 else '/bin/bash'

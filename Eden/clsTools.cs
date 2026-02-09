@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using System.Text.Json;
 using System.Reflection;
 using System.Runtime.CompilerServices;
+using System.CodeDom;
 
 namespace Eden
 {
@@ -44,6 +45,32 @@ namespace Eden
             .Select(x => x.ToString())) + (string.IsNullOrEmpty(szExt) ? "" : "." + szExt);
         }
 
+        public static T FindForm<T>(clsVictim victim, bool bBringToFront = true) where T : Form
+        {
+            foreach (Form form in Application.OpenForms)
+            {
+                if (typeof(T) == typeof(Form))
+                {
+                    string szPropName = "m_victim";
+                    var propInfo = form.GetType().GetProperty(szPropName, BindingFlags.Public | BindingFlags.Instance | BindingFlags.NonPublic);
+                    if (propInfo != null)
+                    {
+                        object? obj = propInfo.GetValue(form);
+                        if (obj != null)
+                        {
+                            clsVictim vic = (clsVictim)obj;
+                            if (string.Equals(vic.m_szID, vic.m_szID))
+                            {
+                                ((T)form).BringToFront();
+                                return (T)form;
+                            }
+                        }
+                    }
+                }
+            }
+
+            return null;
+        }
         public static T FindForm<T>(string szVictimID = null, bool bBringToFront = true) where T : Form
         {
             foreach (Form form in Application.OpenForms)
@@ -62,9 +89,24 @@ namespace Eden
                             return (T)form;
                         }
                     }
+
                     else
                     {
-                        MessageBox.Show("Cannot find field: " + szFieldName);
+                        string szPropName = szFieldName;
+                        var prop = form.GetType().GetProperty(szPropName, BindingFlags.Public | BindingFlags.Instance);
+                        if (prop != null)
+                        {
+                            object propValue = prop.GetValue(form);
+                            if (propValue != null && propValue.ToString() == szVictimID && form.GetType() == typeof(T))
+                            {
+                                ((T)form).BringToFront();
+                                return (T)form;
+                            }
+                        }
+                        else
+                        {
+                            //MessageBox.Show("Cannot find field or property: " + szFieldName);
+                        }
                     }
                 }
             }

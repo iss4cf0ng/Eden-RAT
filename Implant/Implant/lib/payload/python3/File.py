@@ -23,6 +23,7 @@ import base64
 import zipfile
 import urllib.request
 import threading
+from datetime import datetime
 
 lock = threading.Lock()
 
@@ -320,6 +321,23 @@ class File:
             elif aMsg[0] == 'write':
                 szFilename = aMsg[1]
                 szContent = Encoder.b64d2str(aMsg[2])
+                try:
+                    with open(szFilename, 'w', encoding='utf-8') as f:
+                        f.write(szContent)
+                    
+                    return [
+                        'file',
+                        'write',
+                        '1',
+                        szFilename,
+                    ]
+                except Exception as ex:
+                    return [
+                        'file',
+                        'write',
+                        '0',
+                        str(ex),
+                    ]
             elif aMsg[0] == 'read':
                 ls_results = self.read(aMsg[1:])
                 ls =  [
@@ -527,7 +545,27 @@ class File:
                     lsArchiveFilePath = EZData.oneSpliter2list(aMsg[2])
             
             elif aMsg[0] == 'dt': # Datetime
-                pass
+                try:
+                    filepath = aMsg[1]
+                    s = aMsg[2]
+                    assert isinstance(s, str)
+                    dt = datetime.fromisoformat(s.replace('Z', '+00:00'))
+                    ts = dt.timestamp()
+                    os.utime(filepath, (ts, ts))
+
+                    return [
+                        'file',
+                        'dt',
+                        '1',
+                        filepath,
+                    ]
+                except Exception as ex:
+                    return [
+                        'file',
+                        'dt',
+                        '0',
+                        str(ex),
+                    ]
 
         except Exception as ex:
             print(ex)

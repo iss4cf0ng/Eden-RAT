@@ -21,6 +21,8 @@ namespace Eden
 
             m_victim = victim;
             m_entry = entry;
+
+            Text = "Change DateTime";
         }
 
         private void fnServRecv(clsClient clnt, string szVictimID, List<string> asMsg)
@@ -34,10 +36,11 @@ namespace Eden
                 {
                     if (asMsg[1] == "dt")
                     {
-                        if (string.Equals(asMsg[2], "1"))
+                        if (int.Parse(asMsg[2]) == 1 && string.Equals(asMsg[3], m_entry.szFullName))
                         {
                             MessageBox.Show("Action successfully", "OK", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                            Close();
+
+                            Invoke(Close);
                         }
                         else
                         {
@@ -55,6 +58,7 @@ namespace Eden
         private void fnSetup()
         {
             textBox1.ReadOnly = true;
+            textBox1.Text = Path.GetFileName(m_entry.szFullName);
 
             m_victim.m_clnt.ServerMessageReceived += fnServRecv;
         }
@@ -76,7 +80,7 @@ namespace Eden
                     "File",
                     "dt",
                     szFilePath,
-                    dt.ToString("F"),
+                    dt.ToString("yyyy-MM-ddTHH:mm:ss.ffffffZ"),
                 }));
             });
         }

@@ -87,7 +87,17 @@ class Listener:
 
         #objListener.__init__(szIP, nPort)
         objClass = getattr(objListener, 'Listener')
-        objListener = objClass(szIP, nPort, self)
+        objListener = None
+
+        if szTemplate == 'TCP':
+            objListener = objClass(szIP, nPort, self)
+        elif szTemplate == 'TLS':
+            objListener = objClass(szIP, nPort, self, 'certfile', 'pemfile')
+        elif szTemplate == 'HTTP':
+            pass
+        else:
+            raise Exception('Unknown template: ' + szTemplate)
+
         objListener.set_msg_handler(c2victim.msg_handler)
         self.dic_listener[szName] = EZClass.Listener(szName, szTemplate, szIP, nPort, objListener)
 

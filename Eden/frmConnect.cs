@@ -12,11 +12,13 @@ namespace Eden
 {
     public partial class frmConnect : Form
     {
-        public clsClient m_clnt;
+        public clsClient m_clnt { get; set; }
 
-        public frmConnect()
+        public frmConnect(clsClient clnt)
         {
             InitializeComponent();
+
+            m_clnt = clnt;
         }
 
         private void fnLogin()
