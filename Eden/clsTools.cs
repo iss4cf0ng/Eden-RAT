@@ -45,32 +45,33 @@ namespace Eden
             .Select(x => x.ToString())) + (string.IsNullOrEmpty(szExt) ? "" : "." + szExt);
         }
 
-        public static T FindForm<T>(clsVictim victim, bool bBringToFront = true) where T : Form
+        public static T? FindForm<T>(clsVictim victim, bool bBringToFront = true) where T : Form
         {
             foreach (Form form in Application.OpenForms)
             {
-                if (typeof(T) == typeof(Form))
-                {
-                    string szPropName = "m_victim";
-                    var propInfo = form.GetType().GetProperty(szPropName, BindingFlags.Public | BindingFlags.Instance | BindingFlags.NonPublic);
-                    if (propInfo != null)
-                    {
-                        object? obj = propInfo.GetValue(form);
-                        if (obj != null)
-                        {
-                            clsVictim vic = (clsVictim)obj;
-                            if (string.Equals(vic.m_szID, vic.m_szID))
-                            {
-                                ((T)form).BringToFront();
-                                return (T)form;
-                            }
-                        }
-                    }
-                }
+                if (form is not T typedForm)
+                    continue;
+
+                var propInfo = form.GetType().GetProperty(
+                    "m_victim",
+                    BindingFlags.Public | BindingFlags.Instance | BindingFlags.NonPublic
+                );
+
+                if (propInfo?.GetValue(form) is not clsVictim vic)
+                    continue;
+
+                if (!string.Equals(vic.m_szID, victim.m_szID))
+                    continue;
+
+                if (bBringToFront)
+                    typedForm.BringToFront();
+
+                return typedForm;
             }
 
             return null;
         }
+
         public static T FindForm<T>(string szVictimID = null, bool bBringToFront = true) where T : Form
         {
             foreach (Form form in Application.OpenForms)
@@ -126,7 +127,7 @@ namespace Eden
 
         public static bool IsImageFilename(string szFilename)
         {
-            string ext = szFilename.Split('/').Last();
+            string ext = Path.GetExtension(szFilename).ToLower().Trim('.');
             if (string.IsNullOrEmpty(ext))
                 return false;
 
@@ -159,12 +160,12 @@ namespace Eden
             public static string TwoDList2String(List<List<string>> lsInput, string szInnerSpliter = ",", string szOuterSpliter = ";")
             {
                 return string.Join(szOuterSpliter,
-                        lsInput.Select(
-                            x => string.Join(szInnerSpliter,
-                                x.Select(y => EZCrypto.Encoder.stre2b64(y))
-                                )
+                    lsInput.Select(
+                        x => string.Join(szInnerSpliter,
+                            x.Select(y => EZCrypto.Encoder.stre2b64(y))
                             )
-                        );
+                        )
+                    );
             }
 
             public static List<string> String2OneDList(string szData, string szSpliter = ",")

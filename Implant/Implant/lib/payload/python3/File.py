@@ -502,8 +502,9 @@ class File:
                 return ls
             
             elif aMsg[0] == 'img':
-                ls = list()
+                ls = []
                 for szImgFilename in EZData.oneSpliter2list(aMsg[1]):
+                    print('Image: ' + szImgFilename)
                     tup = self.image2base64(szImgFilename)
                     ls.append(
                         [

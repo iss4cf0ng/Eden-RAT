@@ -70,11 +70,12 @@
             Controls.Add(label1);
             Font = new Font("Microsoft JhengHei UI", 11.25F, FontStyle.Regular, GraphicsUnit.Point, 136);
             FormBorderStyle = FormBorderStyle.FixedToolWindow;
-            Margin = new Padding(4, 4, 4, 4);
+            Margin = new Padding(4);
             MaximizeBox = false;
             Name = "frmFileAddDir";
             StartPosition = FormStartPosition.CenterScreen;
             Text = "frmFileAddDir";
+            FormClosed += frmFileAddDir_FormClosed;
             Load += frmFileAddDir_Load;
             ResumeLayout(false);
             PerformLayout();

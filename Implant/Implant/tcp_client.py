@@ -595,16 +595,19 @@ def handler(clnt_sock: socket.socket):
 
                                     clnt.dic_class[szClassName] = clnt.dic_class[szClassName]()
 
-                                ret_val = clnt.dic_class[szClassName].run(clnt, szToken, aParam)
+                                def foo():
+                                    ret_val = clnt.dic_class[szClassName].run(clnt, szToken, aParam)
 
-                                if ret_val == None:
-                                    continue
+                                    if ret_val == None:
+                                        return
 
-                                assert isinstance(ret_val, list)
+                                    assert isinstance(ret_val, list)
 
-                                ret_val.insert(0, szToken)
+                                    ret_val.insert(0, szToken)
 
-                                clnt.sendserver(ret_val)
+                                    clnt.sendserver(ret_val)
+                                
+                                threading.Thread(target=foo, args=[]).start()
 
                     except Exception as ex:
                         break

@@ -265,14 +265,17 @@ namespace Eden
         //Folder
         private void toolStripMenuItem1_Click(object sender, EventArgs e)
         {
-            Process.Start("explorer.exe", m_victim.m_szDirectory);
+            string szDir = Path.Combine(m_victim.m_szDirectory, "File");
+
+            if (Directory.Exists(szDir))
+                Process.Start("explorer.exe", szDir);
+            else
+                MessageBox.Show("Directory not found: " + szDir, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
         }
 
         private void frmFileTransfer_FormClosed(object sender, FormClosedEventArgs e)
         {
-            m_victim.m_clnt.ServerMessageReceived -= fnSrvRecv;
-
-            
+            m_victim.m_clnt.ServerMessageReceived -= fnSrvRecv;   
         }
 
         //Pause

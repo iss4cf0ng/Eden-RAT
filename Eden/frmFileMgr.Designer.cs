@@ -38,6 +38,7 @@
             toolStripStatusLabel1 = new ToolStripStatusLabel();
             splitContainer1 = new SplitContainer();
             treeView1 = new TreeView();
+            fileImageList = new ImageList(components);
             listView1 = new ListView();
             lvFileMenu = new ContextMenuStrip(components);
             toolStripMenuItem1 = new ToolStripMenuItem();
@@ -64,7 +65,7 @@
             toolStripMenuItem12 = new ToolStripMenuItem();
             toolStripMenuItem13 = new ToolStripMenuItem();
             textBox1 = new TextBox();
-            fileImageList = new ImageList(components);
+            toolStripButton4 = new ToolStripButton();
             toolStrip1.SuspendLayout();
             statusStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)splitContainer1).BeginInit();
@@ -77,7 +78,7 @@
             // toolStrip1
             // 
             toolStrip1.Font = new Font("Microsoft JhengHei UI", 11.25F);
-            toolStrip1.Items.AddRange(new ToolStripItem[] { toolStripButton1, toolStripButton2, toolStripButton3 });
+            toolStrip1.Items.AddRange(new ToolStripItem[] { toolStripButton1, toolStripButton2, toolStripButton3, toolStripButton4 });
             toolStrip1.Location = new Point(0, 0);
             toolStrip1.Name = "toolStrip1";
             toolStrip1.Size = new Size(1065, 26);
@@ -162,6 +163,14 @@
             treeView1.Size = new Size(301, 489);
             treeView1.TabIndex = 0;
             treeView1.AfterSelect += treeView1_AfterSelect;
+            // 
+            // fileImageList
+            // 
+            fileImageList.ColorDepth = ColorDepth.Depth32Bit;
+            fileImageList.ImageStream = (ImageListStreamer)resources.GetObject("fileImageList.ImageStream");
+            fileImageList.TransparentColor = Color.Transparent;
+            fileImageList.Images.SetKeyName(0, "drive");
+            fileImageList.Images.SetKeyName(1, "folder");
             // 
             // listView1
             // 
@@ -346,13 +355,15 @@
             textBox1.TabIndex = 3;
             textBox1.KeyDown += textBox1_KeyDown;
             // 
-            // fileImageList
+            // toolStripButton4
             // 
-            fileImageList.ColorDepth = ColorDepth.Depth32Bit;
-            fileImageList.ImageStream = (ImageListStreamer)resources.GetObject("fileImageList.ImageStream");
-            fileImageList.TransparentColor = Color.Transparent;
-            fileImageList.Images.SetKeyName(0, "drive");
-            fileImageList.Images.SetKeyName(1, "folder");
+            toolStripButton4.DisplayStyle = ToolStripItemDisplayStyle.Text;
+            toolStripButton4.Image = (Image)resources.GetObject("toolStripButton4.Image");
+            toolStripButton4.ImageTransparentColor = Color.Magenta;
+            toolStripButton4.Name = "toolStripButton4";
+            toolStripButton4.Size = new Size(47, 23);
+            toolStripButton4.Text = "Shell";
+            toolStripButton4.Click += toolStripButton4_Click;
             // 
             // frmFileMgr
             // 
@@ -420,5 +431,6 @@
         private ToolStripMenuItem toolStripMenuItem18;
         private ToolStripMenuItem toolStripMenuItem19;
         private ImageList fileImageList;
+        private ToolStripButton toolStripButton4;
     }
 }

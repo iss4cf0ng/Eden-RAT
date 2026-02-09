@@ -28,9 +28,11 @@
         /// </summary>
         private void InitializeComponent()
         {
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(frmInformation));
             tabControl1 = new TabControl();
             tabPage1 = new TabPage();
             richTextBox1 = new RichTextBox();
+            toolStrip1 = new ToolStrip();
             statusStrip1 = new StatusStrip();
             toolStripStatusLabel1 = new ToolStripStatusLabel();
             tabPage5 = new TabPage();
@@ -40,23 +42,30 @@
             toolStrip2 = new ToolStrip();
             tabPage2 = new TabPage();
             listView1 = new ListView();
+            toolStrip3 = new ToolStrip();
             statusStrip2 = new StatusStrip();
             toolStripStatusLabel3 = new ToolStripStatusLabel();
             tabPage3 = new TabPage();
             listView2 = new ListView();
+            toolStrip4 = new ToolStrip();
             statusStrip3 = new StatusStrip();
             toolStripStatusLabel4 = new ToolStripStatusLabel();
-            toolStrip1 = new ToolStrip();
-            toolStrip3 = new ToolStrip();
-            toolStrip4 = new ToolStrip();
+            toolStripButton1 = new ToolStripButton();
+            toolStripButton2 = new ToolStripButton();
+            toolStripButton3 = new ToolStripButton();
+            toolStripButton4 = new ToolStripButton();
             tabControl1.SuspendLayout();
             tabPage1.SuspendLayout();
+            toolStrip1.SuspendLayout();
             statusStrip1.SuspendLayout();
             tabPage5.SuspendLayout();
             statusStrip5.SuspendLayout();
+            toolStrip2.SuspendLayout();
             tabPage2.SuspendLayout();
+            toolStrip3.SuspendLayout();
             statusStrip2.SuspendLayout();
             tabPage3.SuspendLayout();
+            toolStrip4.SuspendLayout();
             statusStrip3.SuspendLayout();
             SuspendLayout();
             // 
@@ -74,6 +83,7 @@
             tabControl1.Size = new Size(915, 557);
             tabControl1.SizeMode = TabSizeMode.Fixed;
             tabControl1.TabIndex = 0;
+            tabControl1.KeyDown += tabControl1_KeyDown;
             // 
             // tabPage1
             // 
@@ -92,12 +102,22 @@
             // richTextBox1
             // 
             richTextBox1.Dock = DockStyle.Fill;
-            richTextBox1.Location = new Point(4, 29);
+            richTextBox1.Location = new Point(4, 30);
             richTextBox1.Margin = new Padding(4);
             richTextBox1.Name = "richTextBox1";
-            richTextBox1.Size = new Size(899, 468);
+            richTextBox1.Size = new Size(899, 467);
             richTextBox1.TabIndex = 0;
             richTextBox1.Text = "";
+            // 
+            // toolStrip1
+            // 
+            toolStrip1.Font = new Font("Microsoft JhengHei UI", 11.25F, FontStyle.Regular, GraphicsUnit.Point, 136);
+            toolStrip1.Items.AddRange(new ToolStripItem[] { toolStripButton1 });
+            toolStrip1.Location = new Point(4, 4);
+            toolStrip1.Name = "toolStrip1";
+            toolStrip1.Size = new Size(899, 26);
+            toolStrip1.TabIndex = 2;
+            toolStrip1.Text = "toolStrip1";
             // 
             // statusStrip1
             // 
@@ -130,9 +150,9 @@
             // listView4
             // 
             listView4.Dock = DockStyle.Fill;
-            listView4.Location = new Point(0, 25);
+            listView4.Location = new Point(0, 26);
             listView4.Name = "listView4";
-            listView4.Size = new Size(907, 476);
+            listView4.Size = new Size(907, 475);
             listView4.TabIndex = 2;
             listView4.UseCompatibleStateImageBehavior = false;
             // 
@@ -154,9 +174,11 @@
             // 
             // toolStrip2
             // 
+            toolStrip2.Font = new Font("Microsoft JhengHei UI", 11.25F, FontStyle.Regular, GraphicsUnit.Point, 136);
+            toolStrip2.Items.AddRange(new ToolStripItem[] { toolStripButton2 });
             toolStrip2.Location = new Point(0, 0);
             toolStrip2.Name = "toolStrip2";
-            toolStrip2.Size = new Size(907, 25);
+            toolStrip2.Size = new Size(907, 26);
             toolStrip2.TabIndex = 0;
             toolStrip2.Text = "toolStrip2";
             // 
@@ -177,11 +199,21 @@
             // listView1
             // 
             listView1.Dock = DockStyle.Fill;
-            listView1.Location = new Point(4, 29);
+            listView1.Location = new Point(4, 30);
             listView1.Name = "listView1";
-            listView1.Size = new Size(899, 468);
+            listView1.Size = new Size(899, 467);
             listView1.TabIndex = 1;
             listView1.UseCompatibleStateImageBehavior = false;
+            // 
+            // toolStrip3
+            // 
+            toolStrip3.Font = new Font("Microsoft JhengHei UI", 11.25F, FontStyle.Regular, GraphicsUnit.Point, 136);
+            toolStrip3.Items.AddRange(new ToolStripItem[] { toolStripButton3 });
+            toolStrip3.Location = new Point(4, 4);
+            toolStrip3.Name = "toolStrip3";
+            toolStrip3.Size = new Size(899, 26);
+            toolStrip3.TabIndex = 2;
+            toolStrip3.Text = "toolStrip3";
             // 
             // statusStrip2
             // 
@@ -214,11 +246,21 @@
             // listView2
             // 
             listView2.Dock = DockStyle.Fill;
-            listView2.Location = new Point(0, 25);
+            listView2.Location = new Point(0, 26);
             listView2.Name = "listView2";
-            listView2.Size = new Size(907, 476);
+            listView2.Size = new Size(907, 475);
             listView2.TabIndex = 1;
             listView2.UseCompatibleStateImageBehavior = false;
+            // 
+            // toolStrip4
+            // 
+            toolStrip4.Font = new Font("Microsoft JhengHei UI", 11.25F, FontStyle.Regular, GraphicsUnit.Point, 136);
+            toolStrip4.Items.AddRange(new ToolStripItem[] { toolStripButton4 });
+            toolStrip4.Location = new Point(0, 0);
+            toolStrip4.Name = "toolStrip4";
+            toolStrip4.Size = new Size(907, 26);
+            toolStrip4.TabIndex = 2;
+            toolStrip4.Text = "toolStrip4";
             // 
             // statusStrip3
             // 
@@ -236,29 +278,45 @@
             toolStripStatusLabel4.Size = new Size(158, 19);
             toolStripStatusLabel4.Text = "toolStripStatusLabel4";
             // 
-            // toolStrip1
+            // toolStripButton1
             // 
-            toolStrip1.Location = new Point(4, 4);
-            toolStrip1.Name = "toolStrip1";
-            toolStrip1.Size = new Size(899, 25);
-            toolStrip1.TabIndex = 2;
-            toolStrip1.Text = "toolStrip1";
+            toolStripButton1.DisplayStyle = ToolStripItemDisplayStyle.Text;
+            toolStripButton1.Image = (Image)resources.GetObject("toolStripButton1.Image");
+            toolStripButton1.ImageTransparentColor = Color.Magenta;
+            toolStripButton1.Name = "toolStripButton1";
+            toolStripButton1.Size = new Size(66, 23);
+            toolStripButton1.Text = "Refresh";
+            toolStripButton1.Click += toolStripButton1_Click;
             // 
-            // toolStrip3
+            // toolStripButton2
             // 
-            toolStrip3.Location = new Point(4, 4);
-            toolStrip3.Name = "toolStrip3";
-            toolStrip3.Size = new Size(899, 25);
-            toolStrip3.TabIndex = 2;
-            toolStrip3.Text = "toolStrip3";
+            toolStripButton2.DisplayStyle = ToolStripItemDisplayStyle.Text;
+            toolStripButton2.Image = (Image)resources.GetObject("toolStripButton2.Image");
+            toolStripButton2.ImageTransparentColor = Color.Magenta;
+            toolStripButton2.Name = "toolStripButton2";
+            toolStripButton2.Size = new Size(66, 23);
+            toolStripButton2.Text = "Refresh";
+            toolStripButton2.Click += toolStripButton2_Click;
             // 
-            // toolStrip4
+            // toolStripButton3
             // 
-            toolStrip4.Location = new Point(0, 0);
-            toolStrip4.Name = "toolStrip4";
-            toolStrip4.Size = new Size(907, 25);
-            toolStrip4.TabIndex = 2;
-            toolStrip4.Text = "toolStrip4";
+            toolStripButton3.DisplayStyle = ToolStripItemDisplayStyle.Text;
+            toolStripButton3.Image = (Image)resources.GetObject("toolStripButton3.Image");
+            toolStripButton3.ImageTransparentColor = Color.Magenta;
+            toolStripButton3.Name = "toolStripButton3";
+            toolStripButton3.Size = new Size(66, 23);
+            toolStripButton3.Text = "Refresh";
+            toolStripButton3.Click += toolStripButton3_Click;
+            // 
+            // toolStripButton4
+            // 
+            toolStripButton4.DisplayStyle = ToolStripItemDisplayStyle.Text;
+            toolStripButton4.Image = (Image)resources.GetObject("toolStripButton4.Image");
+            toolStripButton4.ImageTransparentColor = Color.Magenta;
+            toolStripButton4.Name = "toolStripButton4";
+            toolStripButton4.Size = new Size(66, 23);
+            toolStripButton4.Text = "Refresh";
+            toolStripButton4.Click += toolStripButton4_Click;
             // 
             // frmInformation
             // 
@@ -276,18 +334,26 @@
             tabControl1.ResumeLayout(false);
             tabPage1.ResumeLayout(false);
             tabPage1.PerformLayout();
+            toolStrip1.ResumeLayout(false);
+            toolStrip1.PerformLayout();
             statusStrip1.ResumeLayout(false);
             statusStrip1.PerformLayout();
             tabPage5.ResumeLayout(false);
             tabPage5.PerformLayout();
             statusStrip5.ResumeLayout(false);
             statusStrip5.PerformLayout();
+            toolStrip2.ResumeLayout(false);
+            toolStrip2.PerformLayout();
             tabPage2.ResumeLayout(false);
             tabPage2.PerformLayout();
+            toolStrip3.ResumeLayout(false);
+            toolStrip3.PerformLayout();
             statusStrip2.ResumeLayout(false);
             statusStrip2.PerformLayout();
             tabPage3.ResumeLayout(false);
             tabPage3.PerformLayout();
+            toolStrip4.ResumeLayout(false);
+            toolStrip4.PerformLayout();
             statusStrip3.ResumeLayout(false);
             statusStrip3.PerformLayout();
             ResumeLayout(false);
@@ -316,5 +382,9 @@
         private ToolStrip toolStrip1;
         private ToolStrip toolStrip3;
         private ToolStrip toolStrip4;
+        private ToolStripButton toolStripButton1;
+        private ToolStripButton toolStripButton2;
+        private ToolStripButton toolStripButton3;
+        private ToolStripButton toolStripButton4;
     }
 }

@@ -245,7 +245,7 @@ class Listener:
                             # check login
                             if aMsg[1] not in self.dic_user.keys() and nParam != 1:
                                 clnt.sendcipher(3, 0, f'User: {aMsg[1]} have not login')
-                                continue
+                                return
 
                             if nParam == 1: # Authorization
                                 user = aMsg[1]
@@ -292,16 +292,21 @@ class Listener:
     
     def boardcast_clnt(self, aMsg: list):
         if len(self.dic_user.keys()) == 0:
-            #self.log.error('No user is login.')
+            self.log.error('No user is login.')
             return
+        
+        aMsg.insert(0, '*')
 
         for szToken in self.dic_token.keys():
             if not self.send_clnt(szToken, aMsg):
+                self.log.error(szToken)
+                print(aMsg)
                 continue
 
     def send_clnt(self, szToken: str, aMsg: list) -> bool:
         if szToken == '*':
-            self.boardcast_clnt(aMsg)
+            for token in self.dic_token.keys():
+                self.send_clnt(token, aMsg)
             return
         
         if szToken not in self.dic_token.keys():
