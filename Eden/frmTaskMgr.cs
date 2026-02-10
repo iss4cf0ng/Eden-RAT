@@ -54,6 +54,27 @@ namespace Eden
                         }));
                     }
                 }
+                else if (lsMsg[1] == "kill")
+                {
+                    int nCode = int.Parse(lsMsg[2]);
+                    int nPid = int.Parse(lsMsg[3]);
+
+                    Invoke(new Action(() => toolStripStatusLabel1.Text = nCode == 1 ? "Action successfully." : "Action failed."));
+                }
+                else if (lsMsg[1] == "suspend")
+                {
+                    int nCode = int.Parse(lsMsg[2]);
+                    int nPid = int.Parse(lsMsg[3]);
+
+                    Invoke(new Action(() => toolStripStatusLabel1.Text = nCode == 1 ? "Action successfully." : "Action failed."));
+                }
+                else if (lsMsg[1] == "resume")
+                {
+                    int nCode = int.Parse(lsMsg[2]);
+                    int nPid = int.Parse(lsMsg[3]);
+
+                    Invoke(new Action(() => toolStripStatusLabel1.Text = nCode == 1 ? "Action successfully." : "Action failed."));
+                }
             }
         }
 

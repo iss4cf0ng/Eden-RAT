@@ -60,7 +60,7 @@ class Listener:
 
         while clnt_sock.fileno() != -1:
             try:
-                req = clnt_sock.recv(1024).decode('utf-8')
+                req = clnt_sock.recv(65536).decode('utf-8')
                 print(req)
                 headers, body = req.split('\r\n\r\n', 1)
 
@@ -145,6 +145,12 @@ class Listener:
         szResp = szRespHeader + szMessage
 
         return szResp
+    
+    def get_victims(self) -> dict:
+        return self.dic_victim
+    
+    def set_msg_handler(self, method: object):
+        self.msg_handler = method
 
 if __name__ == '__main__':
     pass        

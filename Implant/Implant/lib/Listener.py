@@ -94,7 +94,7 @@ class Listener:
         elif szTemplate == 'TLS':
             objListener = objClass(szIP, nPort, self, 'certfile', 'pemfile')
         elif szTemplate == 'HTTP':
-            pass
+            objListener = objClass(szIP, nPort, self)
         else:
             raise Exception('Unknown template: ' + szTemplate)
 

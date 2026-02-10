@@ -50,6 +50,25 @@ class Service:
             lsService.append(Service.ServiceInfo(name, load, active, sub, description))
 
         return lsService
+    
+    def run_command(self, command: str) -> bool:
+        try:
+            result = subprocess.run(command, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            return True
+        except subprocess.CalledProcessError:
+            return False
+        
+    def start_service(self, serv_name) -> bool:
+        command = ['systemctl', 'start', serv_name]
+        return self.run_command(command)
+    
+    def stop_service(self, serv_name) -> bool:
+        command = ['systemctl', 'stop', serv_name]
+        return self.run_command(command)
+    
+    def restart_service(self, serv_name) -> bool:
+        command = ['systemctl', 'restart', serv_name]
+        return self.run_command(command)
 
     def run(self, clnt: object, szToken: str, lsMsg: list) -> list:
         if lsMsg[0] == 'ls':
@@ -63,8 +82,27 @@ class Service:
                 'ls',
                 EZData.twoDlist2str(ls),
             ]
-        elif lsMsg[0] == 'kill':
-            pass
+        elif lsMsg[0] == 'start':
+            return [
+                'serv',
+                'start',
+                '1' if self.start_service(lsMsg[1]) else '0',
+                lsMsg[1], # service name.
+            ]
+        elif lsMsg[0] == 'stop':
+            return [
+                'serv',
+                'stop',
+                '1' if self.stop_service(lsMsg[1]) else '0',
+                lsMsg[1], # service name.
+            ]
+        elif lsMsg[0] == 'restart':
+            return [
+                'serv',
+                'restart',
+                '1' if self.restart_service(lsMsg[1]) else '0',
+                lsMsg[1], # service name.
+            ]
 
 if __name__ == '__main__':
     serv = Service()
