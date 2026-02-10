@@ -28,8 +28,13 @@ namespace Eden
                 {
                     if (aMsg[1] == "start")
                     {
-                        Dictionary<string, JsonElement> dic = clsTools.EZData.JsonStr2Dic(aMsg[2]);
-                        string szID = dic["ID"].GetString();
+                        Dictionary<string, JsonElement>? dic = clsTools.EZData.JsonStr2Dic(aMsg[2]);
+                        if (dic == null)
+                            return;
+
+                        string? szID = dic["ID"].GetString();
+                        if (string.IsNullOrEmpty(szID))
+                            return;
 
                         Invoke(new Action(() =>
                         {
@@ -44,16 +49,16 @@ namespace Eden
                                 Directory.CreateDirectory(szDirectory);
 
                             //Display in listview
-                            string szIP = dic["IP"].GetString();
-                            string szHostname = dic["Hostname"].GetString();
-                            string szUsername = dic["Username"].GetString();
-                            string szOS = dic["OS"].GetString();
+                            string? szIP = dic["IP"].GetString();
+                            string? szHostname = dic["Hostname"].GetString();
+                            string? szUsername = dic["Username"].GetString();
+                            string? szOS = dic["OS"].GetString();
                             int iUid = int.Parse(dic["uid"].GetString());
                             bool bAdmin = dic["admin"].GetBoolean();
                             bool bMonitor = dic["Monitor"].GetBoolean();
                             bool bWebcam = dic["Webcam"].GetBoolean();
                             decimal dPing = dic["Ping"].GetDecimal() + clnt.m_nLattency;
-                            string szCPU = dic["CPU"].GetString();
+                            string? szCPU = dic["CPU"].GetString();
 
                             ListViewItem item = new ListViewItem(szID);
                             item.SubItems.Add(szIP);

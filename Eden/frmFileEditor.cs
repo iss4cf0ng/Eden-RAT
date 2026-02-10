@@ -259,7 +259,7 @@ namespace Eden
             {
                 if (e.KeyCode == Keys.S)
                 {
-                    TabPage page = tabControl1.SelectedTab;
+                    TabPage? page = tabControl1.SelectedTab;
 
                     if (page == null)
                         return;
@@ -337,8 +337,17 @@ namespace Eden
             sfd.InitialDirectory = Directory.Exists(m_victim.m_szDirectory) ? m_victim.m_szDirectory : Application.StartupPath;
             if (sfd.ShowDialog() == DialogResult.OK)
             {
-                string szContent = control.editorEx.Text;
-                File.WriteAllText(sfd.FileName, szContent);
+                try
+                {
+                    string szContent = control.editorEx.Text;
+                    File.WriteAllText(sfd.FileName, szContent);
+
+                    MessageBox.Show("Save file successfully: " + sfd.FileName, "OK", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show(ex.Message, ex.GetType().Name, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
             }
         }
 

@@ -23,6 +23,8 @@ namespace Eden
             m_victim = victim;
             m_lstEntry = lstEntry;
             m_bCompress = bCompress;
+
+            Text = $@"Archive\\{victim.m_szID}";
         }
 
         private enum enUnzipMethod

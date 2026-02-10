@@ -215,24 +215,31 @@ namespace Eden
                                 string szPlain = Encoding.UTF8.GetString(m_EZAES.Decrypt(abCipher));
                                 string[] aMsg = szPlain.Split('|');
 
-                                if (nParam == 0)
+                                try
                                 {
-                                    LoginFailed?.Invoke(clnt, aMsg[0]);
-                                }
-                                else if (nParam == 2)
-                                {
-                                    StatusMessage?.Invoke(szMsg: "Login successfully.");
-                                    m_szUsername = aMsg[0];
-                                    LoginSuccessful?.Invoke(clnt, aMsg[0], 1);
-                                }
-                                else if (nParam == 4)
-                                {
-                                    aMsg = aMsg.Select(x => EZCrypto.Encoder.b64d2str(x)).ToArray();
+                                    if (nParam == 0)
+                                    {
+                                        LoginFailed?.Invoke(clnt, aMsg[0]);
+                                    }
+                                    else if (nParam == 2)
+                                    {
+                                        StatusMessage?.Invoke(szMsg: "Login successfully.");
+                                        m_szUsername = aMsg[0];
+                                        LoginSuccessful?.Invoke(clnt, aMsg[0], 1);
+                                    }
+                                    else if (nParam == 4)
+                                    {
+                                        aMsg = aMsg.Select(x => EZCrypto.Encoder.b64d2str(x)).ToArray();
 
-                                    string szVictimID = aMsg[0];
-                                    ServerMessageReceived?.Invoke(clnt, szVictimID, aMsg[1..].ToList());
+                                        string szVictimID = aMsg[0];
+                                        ServerMessageReceived?.Invoke(clnt, szVictimID, aMsg[1..].ToList());
 
-                                    PrivateHandler(aMsg);
+                                        PrivateHandler(aMsg);
+                                    }
+                                }
+                                catch (InvalidOperationException)
+                                {
+
                                 }
                             }
                         }
@@ -242,7 +249,7 @@ namespace Eden
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message);
+                MessageBox.Show(ex.Message, ex.GetType().Name, MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
 
             SocketDisconnect?.Invoke(this, null);

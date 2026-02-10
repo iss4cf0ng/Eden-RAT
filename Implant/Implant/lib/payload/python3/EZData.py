@@ -1,4 +1,4 @@
-from EZEncoder import Encoder
+from Encoder import Encoder
 
 #[THE CODE ABOVE WILL NOT BE INCLUDED IN PAYLOAD]
 

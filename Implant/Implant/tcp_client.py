@@ -5,10 +5,6 @@ import base64
 import os
 import random
 import string
-import json
-import uuid
-import getpass
-import platform
 import xml.etree.ElementTree as ET
 
 SERVER_IP = '127.0.0.1'
@@ -584,7 +580,7 @@ def handler(clnt_sock: socket.socket):
                                 clnt.sendcipher(2, 1, g_szTag)
                             elif nParam == 2: # Send machine information.
                                 aMsg = [base64.b64decode(x).decode('utf-8') for x in szDecMsg.split('|')]
-                                
+                                print(aMsg)
                                 szToken = aMsg[0]
                                 szClassName = aMsg[1]
                                 szClassStr = aMsg[2]
@@ -596,7 +592,11 @@ def handler(clnt_sock: socket.socket):
                                     clnt.dic_class[szClassName] = clnt.dic_class[szClassName]()
 
                                 def foo():
-                                    ret_val = clnt.dic_class[szClassName].run(clnt, szToken, aParam)
+                                    objClass = clnt.dic_class[szClassName]
+                                    if not hasattr(objClass, 'run'):
+                                        return
+                                    
+                                    ret_val = objClass.run(clnt, szToken, aParam)
 
                                     if ret_val == None:
                                         return

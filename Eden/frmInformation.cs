@@ -178,6 +178,11 @@ namespace Eden
             toolStripStatusLabel4.Text = string.Empty;
 
             //m_clnt.SendVictim(m_szVictimID, "Info|bash");
+
+            fnInitDetails();
+            fnInitSession();
+            fnInitUser();
+            fnInitApp();
         }
 
         private void frmInformation_Load(object sender, EventArgs e)

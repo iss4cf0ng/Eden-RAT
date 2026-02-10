@@ -185,7 +185,7 @@ namespace Eden
                     .ToList();
             }
 
-            public static Dictionary<string, JsonElement> JsonStr2Dic(string szJson)
+            public static Dictionary<string, JsonElement>? JsonStr2Dic(string szJson)
             {
                 return JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(szJson);
             }
