@@ -1,10 +1,10 @@
 # Todo List
-- Multi Listener
-  - HTTP
 - Quality assurance
 - Write documents
 
 # Done
+- Builder
+  - Build payload
 - Information
 - File Manager
   - Edit
@@ -19,3 +19,4 @@
 - Multi Listener
   - TCP
   - TLS
+  - HTTP
