@@ -13,6 +13,11 @@
   - Upload
   - Download
   - Datetime (Modify the LastAccessed and LastModified datetime)
+  - Rename
+  - Show Images
+  - Copy
+  - Move
+  - Paste
 - Virtual Terminal
 - Process
 - Service
