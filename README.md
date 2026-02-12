@@ -3,9 +3,7 @@
 - Write documents
 
 # Debug
-- File Manager
-  - Extract error.
-  - Read file error.
+
 
 # Done
 - Builder
@@ -30,3 +28,8 @@
   - TCP
   - TLS
   - HTTP
+
+# Solved
+- File Manager
+  - Extract error.
+  - Read file error.
