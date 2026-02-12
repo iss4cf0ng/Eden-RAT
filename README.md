@@ -2,6 +2,11 @@
 - Quality assurance
 - Write documents
 
+# Debug
+- File Manager
+  - Extract error.
+  - Read file error.
+
 # Done
 - Builder
   - Build payload
