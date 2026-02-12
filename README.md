@@ -21,6 +21,11 @@
   - Copy
   - Move
   - Paste
+  - Archive
+    - Compressing
+    - Extracting
+      - Current Directory
+      - Separate Directories
 - Virtual Terminal
 - Process
 - Service
