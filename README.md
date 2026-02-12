@@ -3,8 +3,6 @@
 - Write documents
 
 # Debug
-- File Manager
-  - error occured while uploading multiple files.
 
 # Done
 - Builder
@@ -39,3 +37,4 @@
 - File Manager
   - Extract error.
   - Read file error.
+  - Error occured while uploading multiple files.
