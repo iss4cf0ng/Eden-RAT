@@ -3,7 +3,8 @@
 - Write documents
 
 # Debug
-
+- File Manager
+  - error occured while uploading multiple files.
 
 # Done
 - Builder
