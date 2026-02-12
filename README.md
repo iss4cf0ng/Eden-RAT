@@ -3,10 +3,7 @@
 - Write documents
 
 # Debug
-- C2 Server:
-  - Error occurs when modifying listener.
-  - Online machines will not be deleted if listener is deleted.
-  - Delete error.
+
 
 # Done
 - Builder
@@ -42,3 +39,7 @@
   - Extract error.
   - Read file error.
   - Error occured while uploading multiple files.
+- C2 Server:
+  - Error occurs when modifying listener.
+  - Online machines will not be deleted if listener is deleted.
+  - Delete error.
