@@ -3,6 +3,9 @@
 - Write documents
 
 # Debug
+- C2 Server:
+  - Error occurs when modifying listener.
+  - Online machines will not be deleted if listener is deleted.
 
 # Done
 - Builder
