@@ -50,12 +50,12 @@ If you encounter any issues or bugs, please report them via GitHub issues.
 
 # Architecture
 <p align="center">
-<img src="https://iss4cf0ng.github.io/images/article/tools/eden/main/architecture.png" width=800>
+<img src="https://iss4cf0ng.github.io/images/article/tools/eden/main/architecture.png" width=1000>
 </p>
 
 # Leveraging an RCE Vulnerability
 <p align="center">
-<img src="https://iss4cf0ng.github.io/images/article/tools/eden/init_stage/overall.png" width="800">
+<img src="https://iss4cf0ng.github.io/images/article/tools/eden/init_stage/overall.png" width="1000">
 </p>
 
 # Usage
@@ -80,5 +80,5 @@ python3 eden_server.py -lvvp 4444
 Our Eden-Server has been deployed.
 
 <p align="center">
-    <img src="https://iss4cf0ng.github.io/images/article/tools/eden/server/1.png" width="700">
+    <img src="https://iss4cf0ng.github.io/images/article/tools/eden/server/1.png" width="1000">
 </p>
