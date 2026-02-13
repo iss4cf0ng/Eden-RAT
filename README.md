@@ -30,6 +30,20 @@ The interactive shell allows full command execution, enabling users to run comma
 <img src="https://iss4cf0ng.github.io/images/article/tools/eden/init_stage/6.png" width="700">
 </p>
 
+## Technical Overview
+Eden-RAT supprots encrypted communication using either AES/RSA hybrid encryption or TLS.
+
+The AES pure implementation is adapted from:  
+https://github.com/bozhu/AES-Python
+
+Once a payload successfully connects to the Eden server, it dynamically loads additional modules delivered by the server. These modules are executed via `exec()` and their class instances are registered within an internal dictionary-based class registry.
+
+The overall architecture is illustrated below:
+
+<p align="center">
+<img src="https://iss4cf0ng.github.io/images/article/tools/eden/main/technical.png" width=700>
+</p>
+
 ## Documentation
 - [Eden-RAT: Lightweight RAT for Initial Penetration Testing](https://iss4cf0ng.github.io/2026/02/09/2026-2-9-ToolEdenRAT/)  
 - [How to Use Eden-RAT During the Early Stage of Penetration Testing](https://iss4cf0ng.github.io/2026/02/09/2026-2-9-EdenPentestInitialStage/)
