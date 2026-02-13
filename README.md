@@ -63,6 +63,10 @@ It must **not** be used for illegal or unauthorized activities.
 The author is not responsible for any misuse or damage caused by this software.  
 If you encounter any issues or bugs, please report them via GitHub issues.
 
+<p align="center">
+<img src="https://iss4cf0ng.github.io/images/meme/koyuki_jail.jpg" width=300>
+</p>
+
 # Architecture
 <p align="center">
 <img src="https://iss4cf0ng.github.io/images/article/tools/eden/main/architecture.png" width=1000>
