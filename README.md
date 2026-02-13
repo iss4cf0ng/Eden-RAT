@@ -1,10 +1,13 @@
 # Todo List
-- Multi Listener
-  - HTTP
 - Quality assurance
 - Write documents
 
+# Debug
+
+
 # Done
+- Builder
+  - Build payload
 - Information
 - File Manager
   - Edit
@@ -13,9 +16,30 @@
   - Upload
   - Download
   - Datetime (Modify the LastAccessed and LastModified datetime)
+  - Rename
+  - Show Images
+  - Copy
+  - Move
+  - Paste
+  - Archive
+    - Compressing
+    - Extracting
+      - Current Directory
+      - Separate Directories
 - Virtual Terminal
 - Process
 - Service
 - Multi Listener
   - TCP
   - TLS
+  - HTTP
+
+# Solved
+- File Manager
+  - Extract error.
+  - Read file error.
+  - Error occured while uploading multiple files.
+- C2 Server:
+  - Error occurs when modifying listener.
+  - Online machines will not be deleted if listener is deleted.
+  - Delete error.
