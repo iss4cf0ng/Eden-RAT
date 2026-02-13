@@ -11,9 +11,13 @@ The idea of this project originated when I was learning web penetration testing.
 When discovering an RCE (Remote Code/Command Execution) vulnerability, we usually demonstrate it with simple Linux commands(e.g., `id`, `whoami`, `ls`, `cat /etc/passwd`), and that is often the end of the story. However, if we want to conduct further post-exploitation——such as pivoting into the internal network——we may rely on reverse shell tools like `metasploit`, `nc` or `openssl`. Although they are powerful and widely used, they still have certain limitations in practical penetration testing scenario.  
 Therefore, I decided to develop a GUI-based remote access tool which can be leveraged after achieving RCE, establishing a robust and secure channel with an interactive shell and file manager.
 
-Developing and maintaining this tool entirely on my own is challenging due to limited time, resources, and experience. As a result, the project may still contain undiscovered defects or design flaws. If you encounter any issues while using this tool, please feel free to open an issue or contact me.
+Developing and maintaining this tool entirely on my own is challenging due to limited time, resources, and experience. As a result, the project may still contain undiscovered defects or design flaws. If you encounter any issues while using this tool, please feel free to open an issue.
 
-If you find this tool informative or helpful, a star ⭐ will be greatly appreciated. 
+If you find this tool informative or helpful, a star ⭐ will be greatly appreciated. Your support would be a great motivation for me to continue improving this tool.
+
+<p align="center">
+<img src="https://iss4cf0ng.github.io/images/meme/nagisa_neko.png" width=200>
+</p>
 
 # Introduction
 
