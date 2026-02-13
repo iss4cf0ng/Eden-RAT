@@ -28,11 +28,13 @@
         /// </summary>
         private void InitializeComponent()
         {
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(frmFileTransfer));
             statusStrip1 = new StatusStrip();
             toolStripProgressBar1 = new ToolStripProgressBar();
             toolStripStatusLabel1 = new ToolStripStatusLabel();
             menuStrip1 = new MenuStrip();
             toolStripMenuItem2 = new ToolStripMenuItem();
+            toolStripMenuItem5 = new ToolStripMenuItem();
             toolStripMenuItem3 = new ToolStripMenuItem();
             toolStripMenuItem4 = new ToolStripMenuItem();
             toolStripMenuItem1 = new ToolStripMenuItem();
@@ -42,7 +44,6 @@
             columnHeader3 = new ColumnHeader();
             splitContainer1 = new SplitContainer();
             richTextBox1 = new RichTextBox();
-            toolStripMenuItem5 = new ToolStripMenuItem();
             statusStrip1.SuspendLayout();
             menuStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)splitContainer1).BeginInit();
@@ -91,17 +92,24 @@
             toolStripMenuItem2.Size = new Size(65, 23);
             toolStripMenuItem2.Text = "Action";
             // 
+            // toolStripMenuItem5
+            // 
+            toolStripMenuItem5.Name = "toolStripMenuItem5";
+            toolStripMenuItem5.Size = new Size(134, 24);
+            toolStripMenuItem5.Text = "Pause";
+            toolStripMenuItem5.Click += toolStripMenuItem5_Click;
+            // 
             // toolStripMenuItem3
             // 
             toolStripMenuItem3.Name = "toolStripMenuItem3";
-            toolStripMenuItem3.Size = new Size(180, 24);
+            toolStripMenuItem3.Size = new Size(134, 24);
             toolStripMenuItem3.Text = "Resume";
             toolStripMenuItem3.Click += toolStripMenuItem3_Click;
             // 
             // toolStripMenuItem4
             // 
             toolStripMenuItem4.Name = "toolStripMenuItem4";
-            toolStripMenuItem4.Size = new Size(180, 24);
+            toolStripMenuItem4.Size = new Size(134, 24);
             toolStripMenuItem4.Text = "Stop";
             toolStripMenuItem4.Click += toolStripMenuItem4_Click;
             // 
@@ -127,12 +135,12 @@
             // 
             // columnHeader1
             // 
-            columnHeader1.Text = "FileName";
+            columnHeader1.Text = "Source File";
             columnHeader1.Width = 150;
             // 
             // columnHeader2
             // 
-            columnHeader2.Text = "FullPath";
+            columnHeader2.Text = "Destination File";
             columnHeader2.Width = 150;
             // 
             // columnHeader3
@@ -168,13 +176,6 @@
             richTextBox1.TabIndex = 0;
             richTextBox1.Text = "";
             // 
-            // toolStripMenuItem5
-            // 
-            toolStripMenuItem5.Name = "toolStripMenuItem5";
-            toolStripMenuItem5.Size = new Size(180, 24);
-            toolStripMenuItem5.Text = "Pause";
-            toolStripMenuItem5.Click += toolStripMenuItem5_Click;
-            // 
             // frmFileTransfer
             // 
             AutoScaleDimensions = new SizeF(9F, 19F);
@@ -184,9 +185,11 @@
             Controls.Add(statusStrip1);
             Controls.Add(menuStrip1);
             Font = new Font("Microsoft JhengHei UI", 11.25F, FontStyle.Regular, GraphicsUnit.Point, 136);
+            Icon = (Icon)resources.GetObject("$this.Icon");
             MainMenuStrip = menuStrip1;
             Margin = new Padding(4);
             Name = "frmFileTransfer";
+            StartPosition = FormStartPosition.CenterScreen;
             Text = "frmFileTransfer";
             FormClosed += frmFileTransfer_FormClosed;
             Load += frmFileTransfer_Load;

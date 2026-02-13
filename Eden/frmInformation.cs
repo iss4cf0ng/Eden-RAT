@@ -24,6 +24,7 @@ namespace Eden
             InitializeComponent();
 
             m_victim = victim;
+            Text = $@"Information\\{victim.m_szID}";
         }
 
         void Received(clsClient clnt, string szVictimID, List<string> lsMsg)
@@ -48,6 +49,8 @@ namespace Eden
                             richTextBox1.AppendText($"{string.Concat(Enumerable.Repeat("-", 100))}{Environment.NewLine}");
                         }));
                     }
+
+                    Invoke(() => toolStripStatusLabel1.Text = "Action successfully.");
                 }
                 else if (lsMsg[1] == "app")
                 {
@@ -63,6 +66,8 @@ namespace Eden
                             listView2.Items.Add(item);
                         });
                     }
+
+                    Invoke(() => toolStripStatusLabel4.Text = $"Action successfully. Session[{listView4.Items.Count}]");
                 }
                 else if (lsMsg[1] == "user")
                 {
@@ -78,6 +83,8 @@ namespace Eden
                             listView1.Items.Add(item);
                         });
                     }
+
+                    Invoke(() => toolStripStatusLabel3.Text = $"Action successfully. User[{listView1.Items.Count}]");
                 }
                 else if (lsMsg[1] == "session")
                 {
@@ -93,15 +100,9 @@ namespace Eden
                             listView4.Items.Add(item);
                         });
                     }
-                }
 
-                Invoke(new Action(() =>
-                {
-                    toolStripStatusLabel1.Text = "Action successfully.";
-                    toolStripStatusLabel2.Text = $"Action successfully. Session[{listView4.Items.Count}]";
-                    toolStripStatusLabel3.Text = $"Action successfully. User[{listView1.Items.Count}]";
-                    toolStripStatusLabel4.Text = $"Action successfully. Application[{listView2.Items.Count}]";
-                }));
+                    Invoke(() => toolStripStatusLabel2.Text = $"Action successfully. Application[{listView2.Items.Count}]");
+                }
             }
         }
 
@@ -182,7 +183,7 @@ namespace Eden
             fnInitDetails();
             fnInitSession();
             fnInitUser();
-            fnInitApp();
+            //fnInitApp();
         }
 
         private void frmInformation_Load(object sender, EventArgs e)
@@ -241,6 +242,18 @@ namespace Eden
 
         private void toolStripButton4_Click(object sender, EventArgs e)
         {
+            DialogResult dr = MessageBox.Show(
+                "The command of this feature does not sent automatically since it might lead performance problem.\n" +
+                "Are you sure to continue?",
+                "Warning",
+                MessageBoxButtons.YesNo,
+                MessageBoxIcon.Warning,
+                MessageBoxDefaultButton.Button2
+            );
+
+            if (dr != DialogResult.Yes)
+                return;
+
             fnInitApp();
         }
     }

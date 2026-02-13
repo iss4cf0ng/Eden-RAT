@@ -22,18 +22,18 @@ import time
 import base64
 import zipfile
 import urllib.request
+import urllib.parse
 import threading
+import shutil
+
 from datetime import datetime
+from pathlib import Path
 
 lock = threading.Lock()
 
 class File:
     def __init__(self):
-        self.bUf = False
-        self.bDf = False
-
-        self.nUfChunkSize = 1024 * 5
-        self.nDfChunkSize = 1024 * 5
+        pass
 
     '''
     Convert octal to permission in string.
@@ -102,11 +102,13 @@ class File:
                             nCntFile += 1
                     
                     except Exception as ex:
-                        print(ex)
+                        #print(ex)
+                        pass
             
             return ls_result
         except Exception as ex:
-            raise ex
+            #raise ex
+            pass
     
     def write(self, szFilename: str, szContent: str) -> bool:
         try:
@@ -118,16 +120,17 @@ class File:
             return False
         
     def read(self, lsFiles: list) -> list:
-        try:
-            ls_results = list()
+        ls_results = list()
 
-            for szFilename in lsFiles:
-                with open(szFilename, 'r') as f:
+        for szFilename in lsFiles:
+            try:
+                with open(szFilename, 'r', encoding='utf-8', errors='replace') as f:
                     ls_results.append([szFilename, f.read()])
 
-            return ls_results
-        except Exception as ex:
-            return None
+            except Exception as ex:
+                ls_results.append([szFilename, str(ex)])
+        
+        return ls_results
         
     def wget(self, szUrl) -> tuple[str, str, int, str]:
         nCode = 1
@@ -146,6 +149,8 @@ class File:
                 if not szFilename:
                     szFilename = ''
                     raise Exception('szFilename is None')
+                
+                szFilename = urllib.parse.unquote(szFilename)
 
                 with open(szFilename, 'wb') as f:
                     f.write(resp.read())
@@ -161,8 +166,10 @@ class File:
         szMsg = ''
 
         try:
-            bDir = szFilename[len(szFilename) - 1] == '/'
-            os.rmdir(szFilename) if bDir else os.remove(szFilename)
+            if os.path.isdir(szFilename):
+                shutil.rmtree(szFilename)
+            else:
+                os.remove(szFilename)
 
             szMsg = 'OK'
         except Exception as ex:
@@ -256,17 +263,8 @@ class File:
         
         return (nCode, szMsg)
     
-    def rename(self, szSrcName, szDstName) -> tuple[int, str]:
-        nCode = 1
-        szMsg = 'OK'
-        
-        try:
-            os.rename(szSrcName, szDstName)
-        except Exception as ex:
-            szMsg = str(ex)
-            nCode = 0
-        
-        return (nCode, szMsg)
+    def rename(self, szSrcName, szDstName):
+        os.rename(szSrcName, szDstName)
     
     def image2base64(self, szImgFilename: str) -> tuple[int, str]:
         nCode = 1
@@ -281,23 +279,41 @@ class File:
         
         return (nCode, szMsg)
     
-    def archive_zip(self, lsFolderPath: list, lsFilePath: list, zf: zipfile.ZipFile) -> tuple[int, str]:
+    def archive_zip(self, lsFolderPath: list, lsFilePath: list, zf: zipfile.ZipFile):
         for szDirPath in lsFolderPath:
-            lsNewFolderPath = lsNewFilePath = list()
+            lsNewFolderPath = []
+            lsNewFilePath = []
 
             for entry in os.scandir(szDirPath):
                 if entry.is_file():
                     lsNewFilePath.append(entry.path)
                 elif entry.is_dir():
                     lsNewFolderPath.append(entry.path)
-            
-            self.archive_zip(lsNewFolderPath, lsNewFilePath)
+
+            self.archive_zip(lsNewFolderPath, lsNewFilePath, zf)
 
         for szFilePath in lsFilePath:
             zf.write(szFilePath)
 
-    def archive_unzip() -> tuple[int, str]:
-        pass
+    def archive_unzip(self, zip_path: str, separate_folder: bool):
+        zip_path = Path(zip_path)
+    
+        if not zip_path.is_file():
+            raise Exception('This is not a zip file.')
+        
+        if not zipfile.is_zipfile(zip_path):
+            raise Exception('File is not a valid zip archive.')
+
+        extract_to = zip_path.with_suffix('') if separate_folder else Path(zip_path.parent)
+        extract_to.mkdir(parents=True, exist_ok=True)
+
+        try:
+            with zipfile.ZipFile(zip_path, 'r') as zip_ref:
+                zip_ref.extractall(extract_to)
+        except Exception as e:
+            raise Exception(f"Failed to extract zip file: {e}")
+
+        #print(f"Extracted to {extract_to.resolve()}")
 
     def run(self, clnt: object, szToken: str, aMsg: list) -> list:
         try:
@@ -389,9 +405,7 @@ class File:
                             filepath,
                             str(ex),
                         ]
-
-                elif aMsg[1] == 'stop':
-                    self.bUf = False
+                    
             elif aMsg[0] == 'df':
                 if aMsg[1] == 'read':
                     chunk_size = int(aMsg[2])
@@ -424,9 +438,7 @@ class File:
                             filepath,
                             str(ex),
                         ]
-
-                elif aMsg[1] == "stop":
-                    self.bDf = False
+                    
             elif aMsg[0] == 'goto':
                 nCode = int(self.goto(aMsg[1]))
                 return [
@@ -434,20 +446,6 @@ class File:
                     'goto',
                     aMsg[1],
                     str(nCode),
-                ]
-            elif aMsg[0] == 'rename':
-                szSrcName = Encoder.b64d2str(aMsg[1])
-                szDstName = Encoder.b64d2str(aMsg[2])
-
-                nCode, szMsg = self.rename(szSrcName, szDstName)
-
-                return [
-                    'file',
-                    'rename',
-                    aMsg[1],
-                    aMsg[2],
-                    str(nCode),
-                    szMsg,
                 ]
             elif aMsg[0] == 'paste':
                 bMove = aMsg[1] == "1"
@@ -471,7 +469,7 @@ class File:
                         tpOutput[0] = t[1]
                         tpOutput[1] = t[2]
 
-                    ls_results.append([tpOutput[0], tpOutput[1]])
+                    ls_results.append([str(tpOutput[0]), tpOutput[1]])
 
                 return [
                     'file',
@@ -504,7 +502,6 @@ class File:
             elif aMsg[0] == 'img':
                 ls = []
                 for szImgFilename in EZData.oneSpliter2list(aMsg[1]):
-                    print('Image: ' + szImgFilename)
                     tup = self.image2base64(szImgFilename)
                     ls.append(
                         [
@@ -536,14 +533,53 @@ class File:
             elif aMsg[0] == 'archive':
                 if aMsg[1] == 'zip':
                     szArchiveFileName = aMsg[2]
-                    lsDirPath = EZData.oneSpliter2list(aMsg[3])
-                    lsFilePath = EZData.oneSpliter2list(aMsg[4])
+                    lsDirPath = [p for p in EZData.oneSpliter2list(aMsg[3]) if p]
+                    lsFilePath = [p for p in EZData.oneSpliter2list(aMsg[4]) if p]
 
-                    with zipfile.ZipFile(szArchiveFileName, mode='a') as zf:
-                        self.archive_zip(lsDirPath, lsFilePath, zf)
+                    try:
+                        with zipfile.ZipFile(szArchiveFileName, mode='a') as zf:
+                            self.archive_zip(lsDirPath, lsFilePath, zf)
+
+                        if not os.path.exists(szArchiveFileName):
+                            raise Exception('Compressing file failed: ' + szArchiveFileName)
+
+                        return [
+                            'file',
+                            'archive',
+                            'zip',
+                            '1',
+                            szArchiveFileName,
+                        ]
+                    
+                    except Exception as ex:
+                        return [
+                            'file',
+                            'archive',
+                            'zip',
+                            '0',
+                            szArchiveFileName,
+                            str(ex),
+                        ]
 
                 elif aMsg[1] == 'unzip':
-                    lsArchiveFilePath = EZData.oneSpliter2list(aMsg[2])
+                    method = aMsg[2]
+                    lsArchiveFilePath = EZData.oneSpliter2list(aMsg[3])
+                    separate_folder = method == 'Separate'
+
+                    ls_result = []
+                    for zip_file in lsArchiveFilePath:
+                        try:
+                            self.archive_unzip(zip_file, separate_folder)
+                            ls_result.append(['1', zip_file, ''])
+                        except Exception as ex:
+                            ls_result.append(['0', zip_file, str(ex)])
+
+                    return [
+                        'file',
+                        'archive',
+                        'unzip',
+                        EZData.twoDlist2str(ls_result),
+                    ]
             
             elif aMsg[0] == 'dt': # Datetime
                 try:
@@ -567,9 +603,31 @@ class File:
                         '0',
                         str(ex),
                     ]
+                
+            elif aMsg[0] == 'rename':
+                srcPath = aMsg[1]
+                dstPath = aMsg[2]
+                
+                try:
+                    src = Path(srcPath)
+                    src.rename(dstPath)
+
+                    return [
+                        'file',
+                        'rename',
+                        '1',
+                        srcPath,
+                        dstPath,
+                    ]
+                except Exception as ex:
+                    return [
+                        'file',
+                        'rename',
+                        '0',
+                        str(ex),
+                    ]
 
         except Exception as ex:
-            print(ex)
             ls = [
                 'file',
                 'error',

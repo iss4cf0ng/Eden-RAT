@@ -152,6 +152,7 @@
             Controls.Add(statusStrip1);
             Controls.Add(toolStrip1);
             Font = new Font("Microsoft JhengHei UI", 11.25F, FontStyle.Regular, GraphicsUnit.Point, 136);
+            Icon = (Icon)resources.GetObject("$this.Icon");
             Margin = new Padding(4);
             Name = "frmService";
             StartPosition = FormStartPosition.CenterScreen;

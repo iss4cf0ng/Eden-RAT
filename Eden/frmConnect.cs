@@ -19,17 +19,44 @@ namespace Eden
             InitializeComponent();
 
             m_clnt = clnt;
+            Text = "Login Panel";
         }
 
-        private void fnLogin()
+        private async void fnLogin()
         {
+            if (string.IsNullOrEmpty(textBox1.Text))
+            {
+                MessageBox.Show("Server host cannot be null or empty.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+
+            if (string.IsNullOrEmpty(textBox2.Text))
+            {
+                MessageBox.Show("Username cannot be null or empty.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+
+            if (string.IsNullOrEmpty(textBox3.Text))
+            {
+                MessageBox.Show("Passowrd cannot be null or empty.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+
+            toolStripStatusLabel1.Text = "Connecting, please wait...";
+
             clsClient clnt = new clsClient();
             clnt.SecureServerSocketEstablished += ServerSocketEstablished;
             clnt.LoginSuccessful += LoginSuccessed;
             clnt.LoginFailed += LoginFailed;
             clnt.StatusMessage += StatusMessage;
 
-            new Thread(() => clnt.Connect(textBox1.Text, (int)numericUpDown1.Value)).Start();
+            if (!await clnt.ConnectAsync(textBox1.Text, (int)numericUpDown1.Value))
+            {
+                clnt.SecureServerSocketEstablished -= ServerSocketEstablished;
+                clnt.LoginSuccessful -= LoginSuccessed;
+                clnt.LoginFailed -= LoginFailed;
+                clnt.StatusMessage -= StatusMessage;
+            }
         }
 
         private void ServerSocketEstablished(clsClient clnt)
@@ -39,6 +66,11 @@ namespace Eden
         private void LoginSuccessed(clsClient clnt, string szUsername, int nAuthority)
         {
             MessageBox.Show("Login successfully.", "OK", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            if (m_clnt != null)
+            {
+                m_clnt.Disconnect();
+            }
+
             m_clnt = clnt;
 
             Invoke(new Action(Close));
@@ -46,6 +78,7 @@ namespace Eden
         private void LoginFailed(clsClient clnt, string szUsername, string szMsg)
         {
             MessageBox.Show(szMsg, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+
         }
         private void StatusMessage(int nCode, string szMsg)
         {
@@ -78,6 +111,16 @@ namespace Eden
         }
 
         private void textBox3_KeyDown(object sender, KeyEventArgs e)
+        {
+            switch (e.KeyCode)
+            {
+                case Keys.Enter:
+                    fnLogin();
+                    break;
+            }
+        }
+
+        private void textBox2_KeyDown(object sender, KeyEventArgs e)
         {
             switch (e.KeyCode)
             {

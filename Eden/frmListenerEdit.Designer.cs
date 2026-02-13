@@ -119,6 +119,7 @@
             Name = "frmListenerEdit";
             StartPosition = FormStartPosition.CenterScreen;
             Text = "frmListenerEdit";
+            FormClosed += frmListenerEdit_FormClosed;
             Load += frmListenerEdit_Load;
             ((System.ComponentModel.ISupportInitialize)numericUpDown1).EndInit();
             ResumeLayout(false);

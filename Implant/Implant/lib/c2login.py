@@ -2,7 +2,7 @@ import hashlib
 
 from lib.database import DB
 
-def authorization(user: str, password: str) -> bool:
+def authorization(username: str, password: str) -> bool:
     db = DB()
     ls_result = db.sql_execute('select Username, Password from User')
     
@@ -13,4 +13,4 @@ def authorization(user: str, password: str) -> bool:
     user = result[0]
     passwd = result[1]
 
-    return password == passwd
+    return password == passwd and user == username

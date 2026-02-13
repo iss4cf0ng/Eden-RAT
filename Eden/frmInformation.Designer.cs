@@ -33,6 +33,7 @@
             tabPage1 = new TabPage();
             richTextBox1 = new RichTextBox();
             toolStrip1 = new ToolStrip();
+            toolStripButton1 = new ToolStripButton();
             statusStrip1 = new StatusStrip();
             toolStripStatusLabel1 = new ToolStripStatusLabel();
             tabPage5 = new TabPage();
@@ -40,20 +41,19 @@
             statusStrip5 = new StatusStrip();
             toolStripStatusLabel2 = new ToolStripStatusLabel();
             toolStrip2 = new ToolStrip();
+            toolStripButton2 = new ToolStripButton();
             tabPage2 = new TabPage();
             listView1 = new ListView();
             toolStrip3 = new ToolStrip();
+            toolStripButton3 = new ToolStripButton();
             statusStrip2 = new StatusStrip();
             toolStripStatusLabel3 = new ToolStripStatusLabel();
             tabPage3 = new TabPage();
             listView2 = new ListView();
             toolStrip4 = new ToolStrip();
+            toolStripButton4 = new ToolStripButton();
             statusStrip3 = new StatusStrip();
             toolStripStatusLabel4 = new ToolStripStatusLabel();
-            toolStripButton1 = new ToolStripButton();
-            toolStripButton2 = new ToolStripButton();
-            toolStripButton3 = new ToolStripButton();
-            toolStripButton4 = new ToolStripButton();
             tabControl1.SuspendLayout();
             tabPage1.SuspendLayout();
             toolStrip1.SuspendLayout();
@@ -119,6 +119,16 @@
             toolStrip1.TabIndex = 2;
             toolStrip1.Text = "toolStrip1";
             // 
+            // toolStripButton1
+            // 
+            toolStripButton1.DisplayStyle = ToolStripItemDisplayStyle.Text;
+            toolStripButton1.Image = (Image)resources.GetObject("toolStripButton1.Image");
+            toolStripButton1.ImageTransparentColor = Color.Magenta;
+            toolStripButton1.Name = "toolStripButton1";
+            toolStripButton1.Size = new Size(66, 23);
+            toolStripButton1.Text = "Refresh";
+            toolStripButton1.Click += toolStripButton1_Click;
+            // 
             // statusStrip1
             // 
             statusStrip1.Font = new Font("Microsoft JhengHei UI", 11.25F, FontStyle.Regular, GraphicsUnit.Point, 136);
@@ -182,16 +192,26 @@
             toolStrip2.TabIndex = 0;
             toolStrip2.Text = "toolStrip2";
             // 
+            // toolStripButton2
+            // 
+            toolStripButton2.DisplayStyle = ToolStripItemDisplayStyle.Text;
+            toolStripButton2.Image = (Image)resources.GetObject("toolStripButton2.Image");
+            toolStripButton2.ImageTransparentColor = Color.Magenta;
+            toolStripButton2.Name = "toolStripButton2";
+            toolStripButton2.Size = new Size(66, 23);
+            toolStripButton2.Text = "Refresh";
+            toolStripButton2.Click += toolStripButton2_Click;
+            // 
             // tabPage2
             // 
             tabPage2.Controls.Add(listView1);
             tabPage2.Controls.Add(toolStrip3);
             tabPage2.Controls.Add(statusStrip2);
-            tabPage2.Location = new Point(4, 28);
+            tabPage2.Location = new Point(4, 24);
             tabPage2.Margin = new Padding(4);
             tabPage2.Name = "tabPage2";
             tabPage2.Padding = new Padding(4);
-            tabPage2.Size = new Size(907, 525);
+            tabPage2.Size = new Size(907, 529);
             tabPage2.TabIndex = 1;
             tabPage2.Text = "User";
             tabPage2.UseVisualStyleBackColor = true;
@@ -201,7 +221,7 @@
             listView1.Dock = DockStyle.Fill;
             listView1.Location = new Point(4, 30);
             listView1.Name = "listView1";
-            listView1.Size = new Size(899, 467);
+            listView1.Size = new Size(899, 471);
             listView1.TabIndex = 1;
             listView1.UseCompatibleStateImageBehavior = false;
             // 
@@ -215,11 +235,21 @@
             toolStrip3.TabIndex = 2;
             toolStrip3.Text = "toolStrip3";
             // 
+            // toolStripButton3
+            // 
+            toolStripButton3.DisplayStyle = ToolStripItemDisplayStyle.Text;
+            toolStripButton3.Image = (Image)resources.GetObject("toolStripButton3.Image");
+            toolStripButton3.ImageTransparentColor = Color.Magenta;
+            toolStripButton3.Name = "toolStripButton3";
+            toolStripButton3.Size = new Size(66, 23);
+            toolStripButton3.Text = "Refresh";
+            toolStripButton3.Click += toolStripButton3_Click;
+            // 
             // statusStrip2
             // 
             statusStrip2.Font = new Font("Microsoft JhengHei UI", 11.25F, FontStyle.Regular, GraphicsUnit.Point, 136);
             statusStrip2.Items.AddRange(new ToolStripItem[] { toolStripStatusLabel3 });
-            statusStrip2.Location = new Point(4, 497);
+            statusStrip2.Location = new Point(4, 501);
             statusStrip2.Name = "statusStrip2";
             statusStrip2.Size = new Size(899, 24);
             statusStrip2.TabIndex = 0;
@@ -262,6 +292,16 @@
             toolStrip4.TabIndex = 2;
             toolStrip4.Text = "toolStrip4";
             // 
+            // toolStripButton4
+            // 
+            toolStripButton4.DisplayStyle = ToolStripItemDisplayStyle.Text;
+            toolStripButton4.Image = (Image)resources.GetObject("toolStripButton4.Image");
+            toolStripButton4.ImageTransparentColor = Color.Magenta;
+            toolStripButton4.Name = "toolStripButton4";
+            toolStripButton4.Size = new Size(66, 23);
+            toolStripButton4.Text = "Refresh";
+            toolStripButton4.Click += toolStripButton4_Click;
+            // 
             // statusStrip3
             // 
             statusStrip3.Font = new Font("Microsoft JhengHei UI", 11.25F, FontStyle.Regular, GraphicsUnit.Point, 136);
@@ -277,46 +317,6 @@
             toolStripStatusLabel4.Name = "toolStripStatusLabel4";
             toolStripStatusLabel4.Size = new Size(158, 19);
             toolStripStatusLabel4.Text = "toolStripStatusLabel4";
-            // 
-            // toolStripButton1
-            // 
-            toolStripButton1.DisplayStyle = ToolStripItemDisplayStyle.Text;
-            toolStripButton1.Image = (Image)resources.GetObject("toolStripButton1.Image");
-            toolStripButton1.ImageTransparentColor = Color.Magenta;
-            toolStripButton1.Name = "toolStripButton1";
-            toolStripButton1.Size = new Size(66, 23);
-            toolStripButton1.Text = "Refresh";
-            toolStripButton1.Click += toolStripButton1_Click;
-            // 
-            // toolStripButton2
-            // 
-            toolStripButton2.DisplayStyle = ToolStripItemDisplayStyle.Text;
-            toolStripButton2.Image = (Image)resources.GetObject("toolStripButton2.Image");
-            toolStripButton2.ImageTransparentColor = Color.Magenta;
-            toolStripButton2.Name = "toolStripButton2";
-            toolStripButton2.Size = new Size(66, 23);
-            toolStripButton2.Text = "Refresh";
-            toolStripButton2.Click += toolStripButton2_Click;
-            // 
-            // toolStripButton3
-            // 
-            toolStripButton3.DisplayStyle = ToolStripItemDisplayStyle.Text;
-            toolStripButton3.Image = (Image)resources.GetObject("toolStripButton3.Image");
-            toolStripButton3.ImageTransparentColor = Color.Magenta;
-            toolStripButton3.Name = "toolStripButton3";
-            toolStripButton3.Size = new Size(66, 23);
-            toolStripButton3.Text = "Refresh";
-            toolStripButton3.Click += toolStripButton3_Click;
-            // 
-            // toolStripButton4
-            // 
-            toolStripButton4.DisplayStyle = ToolStripItemDisplayStyle.Text;
-            toolStripButton4.Image = (Image)resources.GetObject("toolStripButton4.Image");
-            toolStripButton4.ImageTransparentColor = Color.Magenta;
-            toolStripButton4.Name = "toolStripButton4";
-            toolStripButton4.Size = new Size(66, 23);
-            toolStripButton4.Text = "Refresh";
-            toolStripButton4.Click += toolStripButton4_Click;
             // 
             // frmInformation
             // 

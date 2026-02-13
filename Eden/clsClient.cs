@@ -11,8 +11,10 @@ using System.Threading.Tasks;
 
 namespace Eden
 {
-    public class clsClient
+    public class clsClient : IDisposable
     {
+        private bool _disposed = false;
+
         public delegate void StatusMessageHandler(int nCode = 0, string szMsg = null);
         public event StatusMessageHandler StatusMessage;
 
@@ -67,39 +69,75 @@ namespace Eden
             MessageBox.Show(clsTools.Debug.DisplayBytes(abBuffer));
         }
 
-        public bool Connect(string szIPAddr, int nPort)
+        public void Dispose()
         {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (_disposed)
+                return;
+
+            if (disposing)
+            {
+                //Dispose managed resources here
+                m_sktServ.Close();
+            }
+
+            //Free unmanaged resources here (if any)
+
+            _disposed = true;
+        }
+
+        public Task<bool> ConnectAsync(string szIPAddr, int nPort)
+        {
+            var tcs = new TaskCompletionSource<bool>();
+
             try
             {
                 m_szSrvIP = szIPAddr;
                 m_nSrvPort = nPort;
 
                 Socket socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-                socket.BeginConnect(new IPEndPoint(IPAddress.Parse(szIPAddr), nPort), new AsyncCallback(ConnectCallback), socket);
-
-                return true;
+                socket.BeginConnect(new IPEndPoint(IPAddress.Parse(szIPAddr), nPort), ar => ConnectCallback(ar, tcs), socket);
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message);
-                return false;
+                tcs.SetResult(false);
             }
+
+            return tcs.Task;
         }
 
-        public void ConnectCallback(IAsyncResult ar)
+        public void ConnectCallback(IAsyncResult ar, TaskCompletionSource<bool> tcs)
         {
+            if (ar.AsyncState == null)
+            {
+                tcs.SetResult(false);
+                return;
+            }
+
+            Socket socket = (Socket)ar.AsyncState;
             try
             {
-                Socket socket = (Socket)ar.AsyncState;
                 socket.EndConnect(ar);
+                if (!socket.Connected)
+                {
+                    tcs.SetResult(false);
+                    return;
+                }
 
                 clsClient clnt = this;
                 clnt.m_sktServ = socket;
                 socket.BeginReceive(clnt.m_abBuffer, 0, MAX_BUFFER_LENGTH, SocketFlags.None, new AsyncCallback(ReceiveCallback), clnt);
 
                 //Connect successfully.\\
-                StatusMessage(szMsg: "PlainSocket is established.");
+                StatusMessage?.Invoke(szMsg: "PlainSocket is established.");
                 m_sktServ = socket;
+
+                tcs.SetResult(true);
 
                 SendCmdParam(0, 1);
                 Thread.Sleep(1000);
@@ -107,17 +145,25 @@ namespace Eden
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message);
+                MessageBox.Show(ex.Message, ex.GetType().Name, MessageBoxButtons.OK, MessageBoxIcon.Error);
+
+                socket.Close();
+                StatusMessage?.Invoke(szMsg: "Connect failed.");
+
+                tcs.SetResult(false);
             }
         }
 
         public void ReceiveCallback(IAsyncResult ar)
         {
+            if (ar.AsyncState == null)
+                return;
+
             clsClient clnt = (clsClient)ar.AsyncState;
             try
             {
                 Socket socket = clnt.m_sktServ;
-                clsEP ep = null;
+                clsEP? ep = null;
 
                 int nRecvLength = 0;
                 byte[] abStaticRecv = new byte[MAX_BUFFER_LENGTH];
@@ -220,6 +266,7 @@ namespace Eden
                                     if (nParam == 0)
                                     {
                                         LoginFailed?.Invoke(clnt, aMsg[0]);
+                                        StatusMessage?.Invoke(szMsg: "Login failed.");
                                     }
                                     else if (nParam == 2)
                                     {
@@ -246,6 +293,10 @@ namespace Eden
                     }
                 } 
                 while (nRecvLength > 0);
+            }
+            catch (SocketException)
+            {
+
             }
             catch (Exception ex)
             {
@@ -315,6 +366,8 @@ namespace Eden
             Send(nCmd, nParam, clsTools.GenerateRandomString());
         }
 
+        public void fnSendCommand(List<string> lsMsg) => SendCommand(string.Join("|", lsMsg));
+        public void fnSendCommand(string[] asMsg) => SendCommand(string.Join("|", asMsg));
         public void SendCommand(string szMsg, bool bAsync = true)
         {
             SendCipher(SERVER_COMMAND.nCmd, SERVER_COMMAND.nParam, $"user|{m_szUsername}|{szMsg}", bAsync);
@@ -327,8 +380,7 @@ namespace Eden
 
         public void Disconnect()
         {
-            m_sktServ.Close();
-            SocketDisconnect(this);
+            Dispose();
         }
 
         #region Server Function

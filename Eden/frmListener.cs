@@ -12,11 +12,17 @@ namespace Eden
 {
     public partial class frmListener : Form
     {
-        public clsClient m_clnt;
+        private frmMain m_frmMain { get; init; }
+        public clsClient m_clnt { get; init; }
 
-        public frmListener()
+        public frmListener(frmMain frmMain, clsClient clnt)
         {
             InitializeComponent();
+
+            m_frmMain = frmMain;
+            m_clnt = clnt;
+
+            Text = "Listener";
         }
 
         void MessageReceived(clsClient clnt, string szVictimID, List<string> aMsg)
@@ -34,6 +40,9 @@ namespace Eden
                             {
                                 foreach (List<string> ls in lsListener)
                                 {
+                                    if (string.IsNullOrWhiteSpace(ls[0]) || string.IsNullOrEmpty(ls[0]))
+                                        continue;
+
                                     ListViewItem item = new ListViewItem(ls[0]);
                                     item.SubItems.AddRange(ls.Skip(1).ToList().Select(x => new ListViewItem.ListViewSubItem() { Text = x }).ToArray());
                                     listView1.Items.Add(item);
@@ -43,19 +52,24 @@ namespace Eden
                             }));
                         }
                     }
-                    else if (aMsg[1] == "add")
-                    {
-                        if (aMsg[2] == "1")
-                        {
-                            MessageBox.Show("Add listener successfully.", "OK", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                            GetListener();
-                        }
-                    }
                     else if (aMsg[1] == "del")
                     {
-                        if (aMsg[2] == "1")
+                        int nCode = int.Parse(aMsg[2]);
+                        if (nCode == 1)
                         {
                             MessageBox.Show("Delete listener successfully.", "OK", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                            GetListener();
+                        }
+                        else
+                        {
+                            MessageBox.Show("Delete listener failed.", "Failed", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        }
+                    }
+                    else if (aMsg[1] == "add")
+                    {
+                        int nCode = int.Parse(aMsg[2]);
+                        if (nCode == 1)
+                        {
                             GetListener();
                         }
                     }
@@ -120,7 +134,7 @@ namespace Eden
                 }
                 else
                 {
-                    ListViewItem item = listView1.FindItemWithText(szName);
+                    ListViewItem? item = listView1.FindItemWithText(szName);
                     if (item == null)
                     {
                         return;
@@ -134,6 +148,7 @@ namespace Eden
         void setup()
         {
             m_clnt.ServerMessageReceived += MessageReceived;
+
             GetListener();
         }
 
@@ -169,7 +184,7 @@ namespace Eden
         //Delete
         private void toolStripButton3_Click(object sender, EventArgs e)
         {
-            DialogResult dr = MessageBox.Show("Are you sure?", "Delete", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+            DialogResult dr = MessageBox.Show("Are you sure?", "Delete", MessageBoxButtons.YesNo, MessageBoxIcon.Question, MessageBoxDefaultButton.Button2);
             if (dr == DialogResult.Yes)
             {
                 m_clnt.SendCommand("listener|del|" + clsTools.EZData.OneDList2String(listView1.SelectedItems.Cast<ListViewItem>().Select(x => x.Text).ToList()));
@@ -203,7 +218,11 @@ namespace Eden
                 }
                 else if (e.KeyCode == Keys.Delete)
                 {
-                    DeleteListener();
+                    DialogResult dr = MessageBox.Show("Are you sure?", "Delete", MessageBoxButtons.YesNo, MessageBoxIcon.Question, MessageBoxDefaultButton.Button2);
+                    if (dr == DialogResult.Yes)
+                    {
+                        m_clnt.SendCommand("listener|del|" + clsTools.EZData.OneDList2String(listView1.SelectedItems.Cast<ListViewItem>().Select(x => x.Text).ToList()));
+                    }
                 }
             }
         }

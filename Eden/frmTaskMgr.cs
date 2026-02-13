@@ -31,6 +31,8 @@ namespace Eden
             if (!string.Equals(szVictimID, m_szVictimID))
                 return;
 
+
+
             if (lsMsg[0] == "proc")
             {
                 if (lsMsg[1] == "ls")
@@ -62,21 +64,33 @@ namespace Eden
                     int nCode = int.Parse(lsMsg[2]);
                     int nPid = int.Parse(lsMsg[3]);
 
-                    Invoke(new Action(() => toolStripStatusLabel1.Text = nCode == 1 ? "Action successfully." : "Kill process failed."));
+                    Invoke(new Action(() =>
+                    {
+                        toolStripStatusLabel1.Text = nCode == 1 ? "Action successfully." : "Kill process failed.";
+                        
+                        if (nCode == 1)
+                            fnGetProcesses();
+                    }));
                 }
                 else if (lsMsg[1] == "suspend")
                 {
                     int nCode = int.Parse(lsMsg[2]);
                     int nPid = int.Parse(lsMsg[3]);
 
-                    Invoke(new Action(() => toolStripStatusLabel1.Text = nCode == 1 ? "Action successfully." : "Suspend process failed."));
+                    Invoke(new Action(() =>
+                    {
+                        toolStripStatusLabel1.Text = nCode == 1 ? "Action successfully." : "Suspend process failed.";
+                    }));
                 }
                 else if (lsMsg[1] == "resume")
                 {
                     int nCode = int.Parse(lsMsg[2]);
                     int nPid = int.Parse(lsMsg[3]);
 
-                    Invoke(new Action(() => toolStripStatusLabel1.Text = nCode == 1 ? "Action successfully." : "Resume process failed."));
+                    Invoke(new Action(() => 
+                    { 
+                        toolStripStatusLabel1.Text = nCode == 1 ? "Action successfully." : "Resume process failed."; 
+                    }));
                 }
             }
         }
@@ -134,14 +148,14 @@ namespace Eden
                 ColumnHeader column = listView1.Columns[i];
                 ToolStripMenuItem item = new ToolStripMenuItem(column.Text);
 
+                int nIdx = i;
                 item.Click += (s, e) =>
                 {
                     List<ListViewItem> items = listView1.SelectedItems.Cast<ListViewItem>().ToList();
                     if (items.Count == 0)
                         return;
 
-                    int nIdx = i;
-                    string szContext = string.Join("\n", items.Select(x => x.SubItems[i].Text));
+                    string szContext = string.Join("\n", items.Select(x => x.SubItems[nIdx].Text));
 
                     Clipboard.SetText(szContext);
                     toolStripStatusLabel1.Text = "Clipboard set text successfully.";

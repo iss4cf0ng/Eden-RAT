@@ -24,6 +24,7 @@ namespace Eden
             m_victim = victim;
             m_aCols = asCols;
             m_aItemText = asItemText;
+            Text = "Status View";
         }
 
         public void UpdateStatus(string szText, params string[] aSubItemText)

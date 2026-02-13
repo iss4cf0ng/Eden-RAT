@@ -9,6 +9,8 @@ import xml.etree.ElementTree as ET
 
 HTTP_SERVER_IP = '127.0.0.1'
 HTTP_SERVER_PORT = 8080
+INTERVAL_INFO = 1
+INTERVAL_RECONN = 1
 
 g_bConnected = False
 
@@ -383,6 +385,7 @@ class Client:
         self.szChallenge = None
 
         self.dic_class = dict()
+        self.dic_class['INTERVAL_INFO'] = INTERVAL_INFO
 
     def send(self, nCmd: int, nParam: int, szMsg: str):
         buffer = C2P(nCmd=nCmd, nParam=nParam, abData=szMsg.encode('ascii')).get_buffer()
@@ -520,8 +523,7 @@ class Encoder:
         return base64.b64encode(text.encode('utf-8')).decode('utf-8')
 
 def handler(serv_sock: socket.socket):
-
-    #req = get_body_get('hello', '/0')
+    global g_bConnected
 
     clnt = Client(serv_sock)
     clnt.http_send(1, 0)
@@ -563,9 +565,16 @@ def handler(serv_sock: socket.socket):
 
         if nCmd == 0:
             if nParam == 0:
-                pass
+                exit()
             elif nParam == 1:
-                pass
+                def send_lattency():
+                    time.sleep(1)
+                    clnt.send(0, 1, C2P.random_str())
+
+                t = threading.Thread(target=send_lattency)
+                t.daemon = True
+
+                t.start()
 
         elif nCmd == 1:
             if nParam == 1:
@@ -599,7 +608,7 @@ def handler(serv_sock: socket.socket):
                 szPlain = plain.decode('utf-8')
 
                 lsMsg = [base64.b64decode(x).decode('utf-8') for x in szPlain.split('|')]
-                
+
                 szToken = lsMsg[0]
                 szClassName = lsMsg[1]
                 szClassStr = lsMsg[2]
@@ -611,22 +620,35 @@ def handler(serv_sock: socket.socket):
                     clnt.dic_class[szClassName] = clnt.dic_class[szClassName]()
 
                 def foo():
-                    objClass = clnt.dic_class[szClassName]
-                    if not hasattr(objClass, 'run'):
-                        return
-                    
-                    ret_val = objClass.run(clnt, szToken, aParam)
+                    try:
+                        objClass = clnt.dic_class[szClassName]
+                        if not hasattr(objClass, 'run'):
+                            return
+                        
+                        ret_val = objClass.run(clnt, szToken, aParam)
 
-                    if ret_val == None:
-                        return
+                        if ret_val == None:
+                            return
 
-                    assert isinstance(ret_val, list)
+                        assert isinstance(ret_val, list)
 
-                    ret_val.insert(0, szToken)
+                        ret_val.insert(0, szToken)
 
-                    clnt.sendserver(ret_val)
+                        clnt.sendserver(ret_val)
+
+                    except OSError as ex:
+                        if ex.errno == 9:
+                            serv_sock.close()
+
+                            global g_bConnected
+                            g_bConnected = False
                 
                 threading.Thread(target=foo, args=[]).start()
+
+    serv_sock.close()
+    clnt = None
+
+    g_bConnected = False
 
 def main():
     global g_bConnected
@@ -641,7 +663,7 @@ def main():
 
                 handler(sock)
             except Exception as ex:
-                raise ex
+                pass
         
         time.sleep(1)
         

@@ -28,6 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(frmShell));
             textBox1 = new TextBox();
             button1 = new Button();
             webView21 = new Microsoft.Web.WebView2.WinForms.WebView2();
@@ -79,6 +80,7 @@
             Controls.Add(button1);
             Controls.Add(textBox1);
             Font = new Font("Microsoft JhengHei UI", 11.25F, FontStyle.Regular, GraphicsUnit.Point, 136);
+            Icon = (Icon)resources.GetObject("$this.Icon");
             Margin = new Padding(4);
             Name = "frmShell";
             StartPosition = FormStartPosition.CenterScreen;

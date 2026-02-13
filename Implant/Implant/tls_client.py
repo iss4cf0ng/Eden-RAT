@@ -8,6 +8,8 @@ import string
 
 SERVER_IP = '127.0.0.1'
 SERVER_PORT = 5001
+INTERVAL_INFO = 1
+INTERVAL_RECONN = 1
 
 g_bConnected = False
 
@@ -112,6 +114,7 @@ class Client:
         self.szChallenge = None
 
         self.dic_class = dict()
+        self.dic_class['INTERVAL_INFO'] = INTERVAL_INFO
 
     def send(self, nCmd: int, nParam: int, szMsg: str):
         buffer = C2P(nCmd=nCmd, nParam=nParam, abData=szMsg.encode('ascii')).get_buffer()
@@ -134,6 +137,7 @@ def combine_bytes(abFirst: bytes, nIdxFirst: int, nLenFirst: int, abSecond: byte
     return abFirst[nIdxFirst:nIdxFirst + nLenFirst] + abSecond[nIdxSecond:nIdxSecond + nLenSecond]
 
 def handler(clnt_sock: socket.socket):
+    global g_bConnected
     abStaticRecv = b''
     abDynamicRecv = b''
 
@@ -141,7 +145,7 @@ def handler(clnt_sock: socket.socket):
 
     clnt.sendcommand(1, 0) # Send hello handshake.
 
-    while True:
+    while g_bConnected:
         try:
             abStaticRecv = clnt_sock.recv(C2P.BUFFER_MAX_LENGTH)
             nRecvLength = len(abStaticRecv)
@@ -170,9 +174,16 @@ def handler(clnt_sock: socket.socket):
 
                         if nCmd == 0:
                             if nParam == 0:
-                                pass
+                                exit()
                             elif nParam == 1:
-                                pass
+                                def send_lattency():
+                                    time.sleep(1)
+                                    clnt.send(0, 1, C2P.random_str())
+
+                                t = threading.Thread(target=send_lattency)
+                                t.daemon = True
+
+                                t.start()
                         
                         elif nCmd == 1:
                             if nParam == 1:
@@ -198,27 +209,40 @@ def handler(clnt_sock: socket.socket):
                                     clnt.dic_class[szClassName] = clnt.dic_class[szClassName]()
 
                                 def foo():
-                                    objClass = clnt.dic_class[szClassName]
-                                    if not hasattr(objClass, 'run'):
-                                        return
-                                    
-                                    ret_val = objClass.run(clnt, szToken, aParam)
+                                    try:
+                                        objClass = clnt.dic_class[szClassName]
+                                        if not hasattr(objClass, 'run'):
+                                            return
+                                        
+                                        ret_val = objClass.run(clnt, szToken, aParam)
 
-                                    if ret_val == None:
-                                        return
+                                        if ret_val == None:
+                                            return
 
-                                    assert isinstance(ret_val, list)
+                                        assert isinstance(ret_val, list)
 
-                                    ret_val.insert(0, szToken)
+                                        ret_val.insert(0, szToken)
 
-                                    clnt.sendserver(ret_val)
+                                        clnt.sendserver(ret_val)
+
+                                    except OSError as ex:
+                                        if ex.errno == 9:
+                                            clnt_sock.close()
+                                            global g_bConnected
+                                            g_bConnected = False
                                 
                                 threading.Thread(target=foo, args=[]).start()
 
                     except Exception as ex:
-                        print(str(ex))
+                        continue
+
         except Exception as ex:
-            pass
+            continue
+
+    clnt_sock.close()
+    clnt = None
+
+    g_bConnected = False
 
 def main():
     global g_bConnected
@@ -237,8 +261,9 @@ def main():
                 g_bConnected = True
 
                 handler(tls_sock)
+                
             except Exception as ex:
-                print(str(ex))
+                pass
 
             time.sleep(1)
 

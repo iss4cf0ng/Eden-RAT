@@ -49,12 +49,28 @@ namespace Eden
 
         public void Dispose()
         {
-            m_fileStream.Dispose();
+            try
+            {
+                m_fileStream.Close();
+            }
+            catch
+            {
+
+            }
+            
+            try
+            {
+                m_fileStream.Dispose();
+            }
+            catch
+            {
+
+            }
         }
 
         public int fnWriteChunk(byte[] abFileChunk)
         {
-            if (abFileChunk.Length == 0)
+            if (abFileChunk.Length == 0 || !m_fileStream.CanWrite)
                 return 0;
 
             if (m_enMethod == enMethod.Upload)
@@ -71,6 +87,9 @@ namespace Eden
         {
             if (m_enMethod == enMethod.Download)
                 throw new Exception("This method is used for uploading file.");
+
+            if (!m_fileStream.CanRead || m_nChunkSize == 0)
+                return new byte[] { };
 
             byte[] abBuffer = new byte[m_nChunkSize];
             long nRead = m_fileStream.Read(abBuffer, 0, m_nChunkSize);

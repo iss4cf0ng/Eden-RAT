@@ -30,6 +30,8 @@
         {
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(frmFileImage));
             statusStrip1 = new StatusStrip();
+            toolStripProgressBar1 = new ToolStripProgressBar();
+            toolStripStatusLabel1 = new ToolStripStatusLabel();
             toolStrip1 = new ToolStrip();
             toolStripDropDownButton1 = new ToolStripDropDownButton();
             toolStripMenuItem1 = new ToolStripMenuItem();
@@ -37,11 +39,11 @@
             toolStripDropDownButton2 = new ToolStripDropDownButton();
             toolStripMenuItem3 = new ToolStripMenuItem();
             toolStripMenuItem4 = new ToolStripMenuItem();
+            toolStripSeparator1 = new ToolStripSeparator();
+            toolStripMenuItem5 = new ToolStripMenuItem();
             tabControl1 = new TabControl();
             tabPage1 = new TabPage();
             listView1 = new ListView();
-            toolStripProgressBar1 = new ToolStripProgressBar();
-            toolStripStatusLabel1 = new ToolStripStatusLabel();
             statusStrip1.SuspendLayout();
             toolStrip1.SuspendLayout();
             tabControl1.SuspendLayout();
@@ -58,6 +60,17 @@
             statusStrip1.Size = new Size(845, 24);
             statusStrip1.TabIndex = 0;
             statusStrip1.Text = "statusStrip1";
+            // 
+            // toolStripProgressBar1
+            // 
+            toolStripProgressBar1.Name = "toolStripProgressBar1";
+            toolStripProgressBar1.Size = new Size(200, 18);
+            // 
+            // toolStripStatusLabel1
+            // 
+            toolStripStatusLabel1.Name = "toolStripStatusLabel1";
+            toolStripStatusLabel1.Size = new Size(158, 19);
+            toolStripStatusLabel1.Text = "toolStripStatusLabel1";
             // 
             // toolStrip1
             // 
@@ -82,21 +95,21 @@
             // toolStripMenuItem1
             // 
             toolStripMenuItem1.Name = "toolStripMenuItem1";
-            toolStripMenuItem1.Size = new Size(133, 24);
-            toolStripMenuItem1.Text = "Save";
+            toolStripMenuItem1.Size = new Size(174, 24);
+            toolStripMenuItem1.Text = "Save Selected";
             toolStripMenuItem1.Click += toolStripMenuItem1_Click;
             // 
             // toolStripMenuItem2
             // 
             toolStripMenuItem2.Name = "toolStripMenuItem2";
-            toolStripMenuItem2.Size = new Size(133, 24);
+            toolStripMenuItem2.Size = new Size(174, 24);
             toolStripMenuItem2.Text = "Save All";
             toolStripMenuItem2.Click += toolStripMenuItem2_Click;
             // 
             // toolStripDropDownButton2
             // 
             toolStripDropDownButton2.DisplayStyle = ToolStripItemDisplayStyle.Text;
-            toolStripDropDownButton2.DropDownItems.AddRange(new ToolStripItem[] { toolStripMenuItem3, toolStripMenuItem4 });
+            toolStripDropDownButton2.DropDownItems.AddRange(new ToolStripItem[] { toolStripMenuItem3, toolStripMenuItem4, toolStripSeparator1, toolStripMenuItem5 });
             toolStripDropDownButton2.Image = (Image)resources.GetObject("toolStripDropDownButton2.Image");
             toolStripDropDownButton2.ImageTransparentColor = Color.Magenta;
             toolStripDropDownButton2.Name = "toolStripDropDownButton2";
@@ -117,6 +130,18 @@
             toolStripMenuItem4.Text = "Show All";
             toolStripMenuItem4.Click += toolStripMenuItem4_Click;
             // 
+            // toolStripSeparator1
+            // 
+            toolStripSeparator1.Name = "toolStripSeparator1";
+            toolStripSeparator1.Size = new Size(136, 6);
+            // 
+            // toolStripMenuItem5
+            // 
+            toolStripMenuItem5.Name = "toolStripMenuItem5";
+            toolStripMenuItem5.Size = new Size(139, 24);
+            toolStripMenuItem5.Text = "Close All";
+            toolStripMenuItem5.Click += toolStripMenuItem5_Click;
+            // 
             // tabControl1
             // 
             tabControl1.Controls.Add(tabPage1);
@@ -127,6 +152,7 @@
             tabControl1.SelectedIndex = 0;
             tabControl1.Size = new Size(845, 481);
             tabControl1.TabIndex = 2;
+            tabControl1.KeyDown += tabControl1_KeyDown;
             // 
             // tabPage1
             // 
@@ -151,17 +177,6 @@
             listView1.UseCompatibleStateImageBehavior = false;
             listView1.DoubleClick += listView1_DoubleClick;
             // 
-            // toolStripProgressBar1
-            // 
-            toolStripProgressBar1.Name = "toolStripProgressBar1";
-            toolStripProgressBar1.Size = new Size(200, 18);
-            // 
-            // toolStripStatusLabel1
-            // 
-            toolStripStatusLabel1.Name = "toolStripStatusLabel1";
-            toolStripStatusLabel1.Size = new Size(158, 19);
-            toolStripStatusLabel1.Text = "toolStripStatusLabel1";
-            // 
             // frmFileImage
             // 
             AutoScaleDimensions = new SizeF(9F, 19F);
@@ -171,6 +186,7 @@
             Controls.Add(toolStrip1);
             Controls.Add(statusStrip1);
             Font = new Font("Microsoft JhengHei UI", 11.25F, FontStyle.Regular, GraphicsUnit.Point, 136);
+            Icon = (Icon)resources.GetObject("$this.Icon");
             Margin = new Padding(4);
             Name = "frmFileImage";
             StartPosition = FormStartPosition.CenterScreen;
@@ -202,5 +218,7 @@
         private ToolStripMenuItem toolStripMenuItem4;
         private ToolStripProgressBar toolStripProgressBar1;
         private ToolStripStatusLabel toolStripStatusLabel1;
+        private ToolStripSeparator toolStripSeparator1;
+        private ToolStripMenuItem toolStripMenuItem5;
     }
 }
