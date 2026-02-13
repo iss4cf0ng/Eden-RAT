@@ -118,3 +118,7 @@ The Eden-Server is running now.
 <p align="center">
     <img src="https://iss4cf0ng.github.io/images/article/tools/eden/server/1.png" width="1000">
 </p>
+
+# Anticipation
+- Plugins
+- Proxy chains
