@@ -71,6 +71,10 @@ The overall architecture is illustrated below:
 <img src="https://iss4cf0ng.github.io/images/article/tools/eden/main/4.png" width=700>
 </p>
 
+<p align="center">
+<img src="https://iss4cf0ng.github.io/images/article/tools/eden/file/1.png" width=700>
+</p>
+
 ## Disclaimer
 This project was developed purely for cybersecurity research and educational purposes.  
 It must **not** be used for illegal or unauthorized activities.  
