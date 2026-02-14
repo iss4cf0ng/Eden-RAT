@@ -40,7 +40,7 @@ banner = '''
 Project: Eden-RAT
 Version: 1.0.0
 Author: ISSAC
-Github: https://github.com/Eden-RAT/
+Github: https://github.com/iss4cf0ng/Eden-RAT/
 '''
 
 print(banner)
