@@ -1,5 +1,11 @@
 # Eden-RAT
 
+![status](https://img.shields.io/badge/status-maintenance-orange)
+![language](https://img.shields.io/badge/language-Python-blue)
+![language](https://img.shields.io/badge/language-C%23-purple)
+![license](https://img.shields.io/badge/license-MIT-green)
+![release](https://img.shields.io/github/v/release/iss4cf0ng/Eden-RAT)
+
 <p align="center">
 <img src="https://iss4cf0ng.github.io/images/article/tools/eden/main/icon.png" width=100>
 </p>
